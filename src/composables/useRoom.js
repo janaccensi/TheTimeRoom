@@ -21,25 +21,30 @@ export default function useRoom(canvas) {
     color: 0xd2c4b2,
   });
   
-  // Terra (ara amb gruix)
-  const floorGeometry = new THREE.BoxGeometry(roomWidth, wallThickness, roomDepth);
-  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  floor.position.y = -wallThickness/2;
-  scene.add(floor);
+  // Creació de l'habitació amb geometria unificada
+  function createRoom() {
+    // Terra (ara amb gruix)
+    const floorGeometry = new THREE.BoxGeometry(roomWidth, wallThickness, roomDepth);
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.position.y = -wallThickness/2;
+    scene.add(floor);
+    
+    // Paret davantera amb ajustament per encaixar amb el terra
+    const frontWallGeometry = new THREE.BoxGeometry(roomWidth, roomHeight, wallThickness);
+    const frontWall = new THREE.Mesh(frontWallGeometry, wallMaterial);
+    frontWall.position.z = -(roomDepth-wallThickness)/2;
+    frontWall.position.y = roomHeight/2;
+    scene.add(frontWall);
+    
+    // Paret lateral esquerra amb ajustament per encaixar amb el terra
+    const leftWallGeometry = new THREE.BoxGeometry(wallThickness, roomHeight, roomDepth);
+    const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+    leftWall.position.x = -(roomWidth-wallThickness)/2;
+    leftWall.position.y = roomHeight/2;
+    scene.add(leftWall);
+  }
   
-  // Paret davantera (amb gruix)
-  const frontWallGeometry = new THREE.BoxGeometry(roomWidth, roomHeight, wallThickness);
-  const frontWall = new THREE.Mesh(frontWallGeometry, wallMaterial);
-  frontWall.position.z = -roomDepth/2;
-  frontWall.position.y = roomHeight/2;
-  scene.add(frontWall);
-  
-  // Paret lateral esquerra (amb gruix)
-  const leftWallGeometry = new THREE.BoxGeometry(wallThickness, roomHeight, roomDepth);
-  const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
-  leftWall.position.x = -roomWidth/2;
-  leftWall.position.y = roomHeight/2;
-  scene.add(leftWall);
+  createRoom();
   
   // Les parets dreta i posterior s'han eliminat per permetre veure millor l'interior
   
