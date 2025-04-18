@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createRoom } from '../three/objects/Room.js';
-import { createTable } from '../three/objects/Furniture.js';
+import {createTable} from '../three/objects/Table.js';
+import { createBookshelf } from '../three/objects/Bookshelf.js';
 import { setupLighting } from '../three/systems/Lighting.js';
-import { getMaterials } from '../utils/materials.js';
 
 export default function useRoom(canvas) {
   // Configuració bàsica
@@ -21,6 +21,7 @@ export default function useRoom(canvas) {
   // Crear els elements de l'escena
   createRoom(scene, roomConfig);
   createTable(scene, roomConfig);
+  createBookshelf(scene, roomConfig); // Afegim l'estanteria
   setupLighting(scene);
   
   // Mides

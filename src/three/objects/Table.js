@@ -3,7 +3,36 @@ import { getMaterials } from '../../utils/materials.js';
 
 export function createTable(scene, roomConfig) {
   const { width, wallThickness } = roomConfig;
-  const { woodMaterial } = getMaterials();
+  // Utilitzar el material específic per a taula
+  const { tableWoodMaterial } = getMaterials();
+  
+  // Funció auxiliar per orientar textura (igual que a l'estanteria)
+  function createOrientedTableMaterial(isVertical = false, rotation = 0) {
+    const material = tableWoodMaterial.clone();
+    
+    if (material.map) {
+      material.map = material.map.clone();
+      material.map.rotation = rotation;
+      material.map.repeat.set(isVertical ? 1 : 2, isVertical ? 2 : 1);
+      material.map.needsUpdate = true;
+    }
+    
+    if (material.normalMap) {
+      material.normalMap = material.normalMap.clone();
+      material.normalMap.rotation = rotation;
+      material.normalMap.repeat.set(isVertical ? 1 : 2, isVertical ? 2 : 1);
+      material.normalMap.needsUpdate = true;
+    }
+    
+    if (material.roughnessMap) {
+      material.roughnessMap = material.roughnessMap.clone();
+      material.roughnessMap.rotation = rotation;
+      material.roughnessMap.repeat.set(isVertical ? 1 : 2, isVertical ? 2 : 1);
+      material.roughnessMap.needsUpdate = true;
+    }
+    
+    return material;
+  }
   
   // Dimensions de la taula
   const tableDepth = 2; 
@@ -11,15 +40,17 @@ export function createTable(scene, roomConfig) {
   const tableHeight = 0.1;
   const tableTopHeight = 0.75;
   
-  // Superfície
+  // Superfície amb textura orientada horitzontalment
   const tableTopGeometry = new THREE.BoxGeometry(tableWidth, tableHeight, tableDepth);
-  const tableTop = new THREE.Mesh(tableTopGeometry, woodMaterial);
+  const tableTopMaterial = createOrientedTableMaterial(false, Math.PI/2);
+  const tableTop = new THREE.Mesh(tableTopGeometry, tableTopMaterial);
+  
   tableTop.position.x = -(width-wallThickness)/2 + tableWidth/2 +0.1;
   tableTop.position.y = tableTopHeight-0.03;
   tableTop.position.z = -(width-wallThickness)/6;
   scene.add(tableTop);
   
-  // Potes
+  // Potes amb textura orientada verticalment
   const legWidth = 0.05;
   const legHeight = tableTopHeight - tableHeight/2;
   const legDepth = 0.05;
@@ -34,7 +65,8 @@ export function createTable(scene, roomConfig) {
   
   const legs = legPositions.map((pos) => {
     const legGeometry = new THREE.BoxGeometry(legWidth, legHeight, legDepth);
-    const leg = new THREE.Mesh(legGeometry, woodMaterial);
+    const legMaterial = createOrientedTableMaterial(true); // Textura vertical per a les potes
+    const leg = new THREE.Mesh(legGeometry, legMaterial);
     leg.position.x = pos.x;
     leg.position.y = tableTopHeight/2 - tableHeight/2;
     leg.position.z = pos.z;
