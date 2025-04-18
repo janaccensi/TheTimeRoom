@@ -1,22 +1,42 @@
 import * as THREE from 'three';
 
-// Afegim el TextureLoader
+// TextureLoader per carregar les textures
 const textureLoader = new THREE.TextureLoader();
 
 export function getMaterials() {
-  // Materials per a les parets i terra
+  // Materials per a les parets
   const wallMaterial = new THREE.MeshStandardMaterial({ 
     color: 0xe8e8e8,
   });
   
-  const floorMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0xd2c4b2,
+  // Textures pel terra (parquet)
+  const floorTexture = textureLoader.load('/textures/floor/parquet_diffuse.jpg');
+  const floorNormalMap = textureLoader.load('/textures/floor/parquet_normal.jpg');
+  const floorRoughnessMap = textureLoader.load('/textures/floor/parquet_roughness.jpg');
+  
+  // Configuració de repetició per la textura del terra
+  floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+  floorNormalMap.wrapS = floorNormalMap.wrapT = THREE.RepeatWrapping;
+  floorRoughnessMap.wrapS = floorRoughnessMap.wrapT = THREE.RepeatWrapping;
+  
+  // Augmentar la repetició per tenir un patró més petit i realista
+  floorTexture.repeat.set(3, 3);
+  floorNormalMap.repeat.set(3, 3);
+  floorRoughnessMap.repeat.set(3, 3);
+  
+  // Material pel terra amb textura de parquet
+  const floorMaterial = new THREE.MeshStandardMaterial({
+    map: floorTexture,
+    normalMap: floorNormalMap,
+    roughnessMap: floorRoughnessMap,
+    roughness: 0.8,
+    metalness: 0.1
   });
   
-    // Textures de fusta per estanteries (més clara)
-  const shelfWoodTexture = textureLoader.load('textures/wood/hardwood2_diffuse.jpg');
-  const shelfWoodNormalMap = textureLoader.load('textures/wood/hardwood2_roughness.jpg');
-  const shelfWoodRoughness = textureLoader.load('textures/wood/hardwood2_roughness.jpg');
+  // Textures de fusta per estanteries (més clara)
+  const shelfWoodTexture = textureLoader.load('/textures/wood/hardwood2_diffuse.jpg');
+  const shelfWoodNormalMap = textureLoader.load('/textures/wood/hardwood2_roughness.jpg');
+  const shelfWoodRoughness = textureLoader.load('/textures/wood/hardwood2_roughness.jpg');
   
   // Configuració de repetició per les textures d'estanteria
   shelfWoodTexture.wrapS = shelfWoodTexture.wrapT = THREE.RepeatWrapping;
