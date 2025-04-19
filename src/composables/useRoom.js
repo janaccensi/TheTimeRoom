@@ -4,6 +4,7 @@ import { createRoom } from '../three/objects/Room.js';
 import {createTable} from '../three/objects/Table.js';
 import { createBookshelf } from '../three/objects/Bookshelf.js';
 import { setupLighting } from '../three/systems/Lighting.js';
+import { createCalendar } from '@/three/objects/Calendar.js';
 
 export default function useRoom(canvas) {
   // Configuració bàsica
@@ -22,6 +23,7 @@ export default function useRoom(canvas) {
   createRoom(scene, roomConfig);
   createTable(scene, roomConfig);
   createBookshelf(scene, roomConfig); // Afegim l'estanteria
+  createCalendar(scene, roomConfig); // Afegim el calendari
   setupLighting(scene);
   
   // Mides
