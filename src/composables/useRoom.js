@@ -5,6 +5,8 @@ import {createTable} from '../three/objects/Table.js';
 import { createBookshelf } from '../three/objects/Bookshelf.js';
 import { setupLighting } from '../three/systems/Lighting.js';
 import { createCalendar } from '@/three/objects/Calendar.js';
+import { createDumbbell } from '@/three/objects/Dumbbell.js'; 
+import { createTV } from '../three/objects/TV.js'; 
 
 export default function useRoom(canvas) {
   // Configuració bàsica
@@ -25,6 +27,20 @@ export default function useRoom(canvas) {
   createBookshelf(scene, roomConfig); // Afegim l'estanteria
   createCalendar(scene, roomConfig); // Afegim el calendari
   setupLighting(scene);
+
+  // En una función de configuración Three.js
+  const dumbbell = createDumbbell(scene, {
+    position: { x: 1.5, y: 0.2, z: 0.8 }, 
+    weight: 8,
+    color: 0x222222
+  });
+
+  // También puedes crear varias con diferentes pesos
+  const lightDumbbell = createDumbbell(scene, {
+    position: { x: 1.7, y: 0.2, z: 0.8 },
+    weight: 3,
+    color: 0x444444
+  });
   
   // Mides
   const sizes = {
