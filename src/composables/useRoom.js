@@ -13,6 +13,8 @@ import { createPlant } from '@/three/objects/Plant.js';
 import { createComputer } from '@/three/objects/Computer.js';
 import { createChair } from '@/three/objects/Chair.js';
 import { createCarpet } from '@/three/objects/Carpet.js';
+import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
+
 
 export default function useRoom(canvas) {
   // Configuració bàsica
@@ -57,6 +59,23 @@ export default function useRoom(canvas) {
     position: { x: 1.5, y: 0.2, z: 0.8 }, 
     weight: 8,
     color: 0x222222
+  });
+  // Afegim la TV
+  const tv = createTV(scene, {
+    position: { x: 0, y: 1.5, z: -2.3 },
+    size: { width: 1.2, height: 0.7, depth: 0.1 },
+    screenColor: 0x000000,
+    frameColor: 0x333333,
+    isOn: true,
+    standType: 'simple'
+  });
+
+  // Añadimos el micrófono encima de la mesa
+  const microphone = createMicrophone(scene, {
+    position: { x: -1.8, y: 0.77, z: -0.2 }, // Coordenadas encima de la mesa
+    baseColor: 0x111111,
+    accentColor: 0xff0000,
+    isOn: true
   });
 
   // También puedes crear varias con diferentes pesos
