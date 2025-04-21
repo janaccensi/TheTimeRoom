@@ -79,6 +79,24 @@ export function getMaterials() {
     roughness: 0.5,
     metalness: 0.1
   });
-  
-  return { wallMaterial, floorMaterial, woodMaterial, tableWoodMaterial, paperMaterial };
+
+  // Material blanco para las tablas de la mesa
+  const whitePlankMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.7,
+    metalness: 0.1
+  });
+
+  // Material marrón para los cajones (reusa la madera de mesa)
+  const woodDrawerMaterial = tableWoodMaterial;
+
+  return { 
+    wallMaterial, 
+    floorMaterial, 
+    woodMaterial, 
+    tableWoodMaterial, 
+    paperMaterial, 
+    whitePlankMaterial, 
+    woodDrawerMaterial 
+  };
 }

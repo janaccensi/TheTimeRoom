@@ -9,6 +9,7 @@ import { createDumbbell } from '@/three/objects/Dumbbell.js';
 import { createTV } from '../three/objects/TV.js'; 
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
 import { createBroom } from '../three/objects/Broom.js'; // Importar la función de escoba
+import { createTVTable } from '@/three/objects/TVTable.js';
 
 export default function useRoom(canvas) {
   // Configuració bàsica
@@ -38,7 +39,7 @@ export default function useRoom(canvas) {
   });
   // Afegim la TV
   const tv = createTV(scene, {
-    position: { x: 0, y: 1.5, z: -2.3 },
+    position: { x: 0.55, y: 1.08, z: -2.15 },
     size: { width: 1.2, height: 0.7, depth: 0.1 },
     screenColor: 0x000000,
     frameColor: 0x333333,
@@ -63,9 +64,20 @@ export default function useRoom(canvas) {
 
   // Añadimos la escoba en una esquina
   const broom = createBroom(scene, {
-    position: { x: 2.2, y: 1.1, z: -2.1 },  // Esquina de la habitación
+    position: { x: 2.2, y: 1.1, z: -2. },  // Esquina de la habitación
     handleColor: 0xc4a484,  // Marrón claro
     bristleColor: 0xd2b48c  // Color paja natural
+  });
+
+  // Añadimos la mesa de TV
+  const tvTable = createTVTable(scene, {
+    position: { x: 0.5, y: 0.3, z: -2.15 }, // Coordenadas de la mesa
+    tableWidth: 2.5,
+    tableHeight: 0.6,
+    tableDepth: 0.8,
+    woodColor: 0xd8b89e, // Color madera claro
+    drawerColor: 0xffffff, // Color blanco para los cajones
+    legColor: 0x333333 // Color oscuro para las patas
   });
 
   // Mides
