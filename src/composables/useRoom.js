@@ -8,6 +8,7 @@ import { createCalendar } from '@/three/objects/Calendar.js';
 import { createDumbbell } from '@/three/objects/Dumbbell.js'; 
 import { createTV } from '../three/objects/TV.js'; 
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
+import { createBroom } from '../three/objects/Broom.js'; // Importar la función de escoba
 
 export default function useRoom(canvas) {
   // Configuració bàsica
@@ -59,7 +60,14 @@ export default function useRoom(canvas) {
     weight: 3,
     color: 0x444444
   });
-  
+
+  // Añadimos la escoba en una esquina
+  const broom = createBroom(scene, {
+    position: { x: 2.2, y: 1.1, z: -2.1 },  // Esquina de la habitación
+    handleColor: 0xc4a484,  // Marrón claro
+    bristleColor: 0xd2b48c  // Color paja natural
+  });
+
   // Mides
   const sizes = {
     width: window.innerWidth,
