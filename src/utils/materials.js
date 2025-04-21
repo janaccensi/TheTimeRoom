@@ -70,6 +70,15 @@ export function getMaterials() {
     metalness: 0.1,
     color: 0xbb6633 // Tint taronja-marró per intensificar el color de la fusta
   });
+  // Material de paper per al calendari
+  const paperTexture = textureLoader.load('/textures/paper/Paper001_1K-JPG_Color.jpg');
+  paperTexture.wrapS = paperTexture.wrapT = THREE.RepeatWrapping;
+  paperTexture.repeat.set(1, 1);
+  const paperMaterial = new THREE.MeshStandardMaterial({
+    map: paperTexture,
+    roughness: 0.5,
+    metalness: 0.1
+  });
   
-  return { wallMaterial, floorMaterial, woodMaterial, tableWoodMaterial };
+  return { wallMaterial, floorMaterial, woodMaterial, tableWoodMaterial, paperMaterial };
 }
