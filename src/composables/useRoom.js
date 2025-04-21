@@ -13,6 +13,8 @@ import { createPlant } from '@/three/objects/Plant.js';
 import { createComputer } from '@/three/objects/Computer.js';
 import { createChair } from '@/three/objects/Chair.js';
 import { createCarpet } from '@/three/objects/Carpet.js';
+import { createSofa } from '@/three/objects/Sofa.js';
+import { createBroom } from '@/three/objects/Broom.js';
 
 export default function useRoom(canvas) {
   // Configuració bàsica
@@ -64,6 +66,23 @@ export default function useRoom(canvas) {
     position: { x: 1.7, y: 0.2, z: 0.8 },
     weight: 3,
     color: 0x444444
+  });
+
+  const sofa = createSofa(scene, {
+    position: { x: 0.2, y: 0, z: 0.2 },
+    rotation: Math.PI,
+    color: 0x2c3e50,
+    type: 'sectional',
+    cornerSide: 'right'
+  });
+
+  const broom = createBroom(scene, {
+    position: { x: -0.5, y: 0.2, z: -2 },
+    rotation: Math.PI / 4,
+    leaning: true,
+    leaningAngle: -0.3,
+    handleColor: 0xc19a6b,
+    bristlesColor: 0xdec683
   });
   
   // Mides
