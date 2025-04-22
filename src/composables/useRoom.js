@@ -84,27 +84,27 @@ export default function useRoom(canvas) {
   });
 
   const plant = createPlant(scene, {
-    position: { x: 2, y: 0, z: -2 },
+    position: { x: 1.4, y: 0.72, z: -2.1 },
     size: 'medium',
     type: 'indoor'
   });
 
   // En una función de configuración Three.js
   const dumbbell = createDumbbell(scene, {
-    position: { x: 1.5, y: 0.2, z: 0.8 }, 
+    position: { x: 1.05, y: 0.177, z: 0.8 }, 
     weight: 8,
     color: 0x222222
   });
   // Afegim la TV
-  /*
+  
   const tv = createTV(scene, {
-    position: { x: 0.55, y: 1.08, z: -2.15 },
+    position: { x: 0.35, y: 1.08, z: -2.15 },
     size: { width: 1.2, height: 0.7, depth: 0.1 },
     screenColor: 0x000000,
     frameColor: 0x333333,
     isOn: true,
     standType: 'simple'
-  });*/
+  });
 
   // Añadimos el micrófono encima de la mesa
   const microphone = createMicrophone(scene, {
@@ -116,13 +116,13 @@ export default function useRoom(canvas) {
 
   // También puedes crear varias con diferentes pesos
   const lightDumbbell = createDumbbell(scene, {
-    position: { x: 1.7, y: 0.2, z: 0.8 },
+    position: { x: 1.4, y: 0.15, z: 0.8 },
     weight: 3,
     color: 0x444444
   });
 
   const sofa = createSofa(scene, {
-    position: { x: 0.2, y: 0, z: 0.2 },
+    position: { x: 0.5, y: 0, z: 0 },
     rotation: Math.PI,
     color: 0x2c3e50,
     type: 'sectional',
@@ -150,7 +150,7 @@ export default function useRoom(canvas) {
     position: { x: 0.5, y: 0.3, z: -2.15 }, // Coordenadas de la mesa
     tableWidth: 2.5,
     tableHeight: 0.6,
-    tableDepth: 0.8,
+    tableDepth: 1,
     woodColor: 0xd8b89e, // Color madera claro
     drawerColor: 0xffffff, // Color blanco para los cajones
     legColor: 0x333333 // Color oscuro para las patas
@@ -162,14 +162,6 @@ export default function useRoom(canvas) {
     height: window.innerHeight
   };
 
-  const tv = createTV(scene, {
-    position: { x: 0.5, y: 1.5, z: -2.3},
-    size: { width: 1.2, height: 0.7, depth: 0.1 },
-    screenColor: 0x000000,
-    frameColor: 0x333333,
-    isOn: true,
-    standType: 'wall'
-  });
 
   /*
   // Función para dibujar código simulado
