@@ -105,7 +105,7 @@ export function createComputer(scene, options = {}) {
     
     if (type === 'gaming') {
       // Gabinete gaming más estilizado
-      const caseWidth = 0.2;
+      const caseWidth = 0.3;
       const caseHeight = 0.5;
       const caseDepth = 0.45;
       
@@ -141,7 +141,7 @@ export function createComputer(scene, options = {}) {
         pcCase.add(rgbStrip);
         
         // Ventiladores con luz
-        const fanSize = 0.1;
+        const fanSize = 0.08;
         const fanGeometry = new THREE.CircleGeometry(fanSize, 16);
         const fanMaterial = new THREE.MeshStandardMaterial({
           color: 0x333333,
@@ -324,7 +324,7 @@ export function createComputer(scene, options = {}) {
     computerGroup.add(monitorGroup);
     computerGroup.add(base);
     
-    pcGroup.position.set(-0.4, 0.25, 0.1);
+    pcGroup.position.set(0.62, 0.25, 0.1);
     computerGroup.add(pcGroup);
     
     keyboardGroup.position.set(0, 0.01, 0.3);
