@@ -1,35 +1,90 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createRoom } from '../three/objects/Room.js';
-import {createTable} from '../three/objects/Table.js';
+import { createTable } from '../three/objects/Table.js';
 import { createBookshelf } from '../three/objects/Bookshelf.js';
+import { createBooks } from '../three/objects/Books.js'; // Afegim aquesta importació
 import { setupLighting } from '../three/systems/Lighting.js';
 import { createCalendar } from '@/three/objects/Calendar.js';
 import { createDumbbell } from '@/three/objects/Dumbbell.js'; 
 import { createTV } from '../three/objects/TV.js'; 
+import { setupPostProcessing } from '@/three/systems/PostProcessing.js';
+import { createLamp } from '@/three/objects/Lamp.js';
+import { createPlant } from '@/three/objects/Plant.js';
+import { createComputer } from '@/three/objects/Computer.js';
+import { createChair } from '@/three/objects/Chair.js';
+import { createCarpet } from '@/three/objects/Carpet.js';
+import { createSofa } from '@/three/objects/Sofa.js';
+import { createBroom } from '@/three/objects/Broom.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
+
+import { InteractionManager } from '../three/interactions/InteractionManager';
+import { ActivityModal } from '../components/ActivityModal';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
+
 import { createBroom } from '../three/objects/Broom.js'; // Importar la función de escoba
 import { createTVTable } from '@/three/objects/TVTable.js';
+
 
 export default function useRoom(canvas) {
   // Configuració bàsica
   const scene = new THREE.Scene();  
-  scene.background = new THREE.Color(0xffffff);
+  scene.background = new THREE.Color(0xf5f5f5); // Color gris clar
   
   // Mides de l'habitació
   const roomConfig = {
     width: 5,
     height: 3,
     depth: 5,
-    wallThickness: 0.15
+    wallThickness: 0.15,
+    wallColor: 0xe8e0d5, // Beix clar
+    floorColor: 0xd7c9aa, // Color de parquet fusta clara
+    ceilingColor: 0xffffff 
   };
   
   // Crear els elements de l'escena
   createRoom(scene, roomConfig);
   createTable(scene, roomConfig);
-  createBookshelf(scene, roomConfig); // Afegim l'estanteria
+  
+  // Afegim l'estanteria
+  const bookshelf = createBookshelf(scene, roomConfig); 
+  
+  // Afegir llibres interactius a les prestatgeries
+  // Hem de fer això per cada prestatge de l'estanteria
+  for (const shelf of bookshelf.shelves) {
+    createBooks(scene, {
+      shelfX: shelf.position.x,
+      shelfY: shelf.position.y,
+      shelfZ: shelf.position.z,
+      shelfWidth: shelf.width,
+      shelfDepth: shelf.depth,
+      isParallelToWall: shelf.isParallelToWall || false
+    }, (book) => {
+      console.log(`Llibre clicat: ${book.userData.title}`);
+    });
+  }
+  
   createCalendar(scene, roomConfig); // Afegim el calendari
   setupLighting(scene);
+  //setupPostProcessing(scene);
+
+  const lamp = createLamp(scene, {
+    position: { x: 2, y: 0, z: 2 },
+    color: 0xffeecc,
+    height: 1.5,
+    intensity: 1,
+    isOn: true
+  });
+
+  const plant = createPlant(scene, {
+    position: { x: 2, y: 0, z: -2 },
+    size: 'medium',
+    type: 'indoor'
+  });
 
   // En una función de configuración Three.js
   const dumbbell = createDumbbell(scene, {
@@ -38,6 +93,7 @@ export default function useRoom(canvas) {
     color: 0x222222
   });
   // Afegim la TV
+  /*
   const tv = createTV(scene, {
     position: { x: 0.55, y: 1.08, z: -2.15 },
     size: { width: 1.2, height: 0.7, depth: 0.1 },
@@ -45,7 +101,7 @@ export default function useRoom(canvas) {
     frameColor: 0x333333,
     isOn: true,
     standType: 'simple'
-  });
+  });*/
 
   // Añadimos el micrófono encima de la mesa
   const microphone = createMicrophone(scene, {
@@ -61,6 +117,23 @@ export default function useRoom(canvas) {
     weight: 3,
     color: 0x444444
   });
+
+  const sofa = createSofa(scene, {
+    position: { x: 0.2, y: 0, z: 0.2 },
+    rotation: Math.PI,
+    color: 0x2c3e50,
+    type: 'sectional',
+    cornerSide: 'right'
+  });
+
+  /*const broom = createBroom(scene, {
+    position: { x: -0.5, y: 0.2, z: -2 },
+    rotation: Math.PI / 4,
+    leaning: true,
+    leaningAngle: -0.3,
+    handleColor: 0xc19a6b,
+    bristlesColor: 0xdec683
+  });*/
 
   // Añadimos la escoba en una esquina
   const broom = createBroom(scene, {
@@ -85,7 +158,79 @@ export default function useRoom(canvas) {
     width: window.innerWidth,
     height: window.innerHeight
   };
-  
+
+  const tv = createTV(scene, {
+    position: { x: 0.5, y: 1.5, z: -2.3},
+    size: { width: 1.2, height: 0.7, depth: 0.1 },
+    screenColor: 0x000000,
+    frameColor: 0x333333,
+    isOn: true,
+    standType: 'wall'
+  });
+
+  /*
+  // Función para dibujar código simulado
+  function drawCodeScreen() {
+    context.fillStyle = 'rgba(40, 44, 52, 1)'; // Fondo oscuro tipo editor
+    context.fillRect(0, 0, codeCanvas.width, codeCanvas.height);
+    
+    // Configurar fuente para código
+    context.font = '12px Courier New';
+    
+    // Diferentes colores para simular sintaxis highlighting
+    const colors = ['#61afef', '#98c379', '#e06c75', '#d19a66', '#c678dd', '#56b6c2'];
+    
+    // Dibujar líneas de código
+    for (let i = 0; i < 18; i++) {
+      // Variar longitud de líneas y colores
+      const lineLength = 5 + Math.floor(Math.random() * 20);
+      context.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+      
+      // Diferentes indentaciones
+      const indent = Math.floor(Math.random() * 4) * 8;
+      
+      // Generar texto de código pseudo-aleatorio
+      let text = ' '.repeat(indent / 8);
+      for (let j = 0; j < lineLength; j++) {
+        text += String.fromCharCode(97 + Math.floor(Math.random() * 26));
+      }
+      
+      // Dibujar la línea
+      context.fillText(text, 10, 20 + i * 14);
+    }
+    
+    // Marcar la textura como necesaria de actualizar
+    codeTexture.needsUpdate = true;
+  }
+
+  // Dibujar código inicial
+  drawCodeScreen();*/
+
+  // Añadir ordenador
+  const computer = createComputer(scene, {
+    position: { x: -2, y: 0.78, z: -1 },
+    type: 'gaming',
+    isOn: true,
+    rotation: Math.PI / 2,
+    screenColor: 0x000000,  // Color naranja como en la imagen
+    hasRGB: true
+    //screenTexture: codeTexture // Añadir la textura del código
+  });
+
+  const chair = createChair(scene, {
+    position: { x: -1, y: 0.0, z: -1 },
+    color: 0x2c3e50,
+    type: 'office',
+    rotation: 5*Math.PI / 3
+  });
+
+  const carpet = createCarpet(scene, {
+    position: { x: 0.2, y: 0, z: 0.2 },
+    width: 2,
+    depth: 3,
+    color: 0x8B4513 // Color marró
+  });
+
   // Càmera
   const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
   camera.position.set(roomConfig.width/2 + 1, 2, roomConfig.depth/2 + 1);
@@ -104,6 +249,9 @@ export default function useRoom(canvas) {
   });
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding; // Millora els colors
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; // Millor contrast
+  renderer.toneMappingExposure = 1.2; // Més exposició (lluminositat)
   
   // Gestió de la redimensió
   const handleResize = () => {
@@ -115,16 +263,123 @@ export default function useRoom(canvas) {
     
     renderer.setSize(sizes.width, sizes.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Actualitzem també la mida del compositor d'efectes
+    if (composer) {
+      composer.setSize(sizes.width, sizes.height);
+    }
+    
+    // Actualitzem el outlinePass
+    if (outlinePass) {
+      outlinePass.resolution.set(sizes.width, sizes.height);
+    }
   };
   
   window.addEventListener('resize', handleResize);
+  
+  // Inicialització del compositor d'efectes i l'outline pass
+  let composer, outlinePass;
+  
+  function initPostprocessing() {
+    // Configuració del compositor d'efectes amb renderTarget correcte
+    const renderTarget = new THREE.WebGLRenderTarget(
+      window.innerWidth, 
+      window.innerHeight, 
+      {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        format: THREE.RGBAFormat,
+        encoding: THREE.sRGBEncoding
+      }
+    );
+    composer = new EffectComposer(renderer, renderTarget);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    
+    // Configura OutlinePass amb millors paràmetres
+    outlinePass = new OutlinePass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight), 
+      scene, 
+      camera
+    );
+    
+    // Reduïm l'impacte de l'outline perquè no afecti tant la lluminositat general
+    outlinePass.edgeStrength = 2.5;
+    outlinePass.edgeGlow = 0.7;
+    outlinePass.edgeThickness = 1.0;
+    outlinePass.pulsePeriod = 0;
+    outlinePass.visibleEdgeColor.set('#3498db');
+    outlinePass.hiddenEdgeColor.set('#256ea5');
+    outlinePass.overlayMaterial.blending = THREE.NormalBlending; // Ajusta la barreja
+    
+    composer.addPass(outlinePass);
+    
+    // Afegeix un ShaderPass per ajustar la lluminositat final si és necessari
+    const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+    composer.addPass(gammaCorrectionPass);
+  }
+  
+  // Funció per inicialitzar les interaccions
+  function initInteractions() {
+    // Assegurem-nos que canvas, camera, scene i renderer existeixen
+    if (!canvas || !camera || !scene || !renderer) {
+      console.error("No s'han inicialitzat els elements necessaris per a les interaccions");
+      return;
+    }
+    
+    // Creem el gestor d'interaccions
+    const interactionManager = new InteractionManager(camera, scene, renderer, canvas);
+    interactionManager.outlinePass = outlinePass;
+    
+    // Creem el modal d'activitats
+    const activityModal = new ActivityModal();
+    
+    // Configurem el callback quan es clica un llibre
+    interactionManager.setOnObjectClick(object => {
+      if (object.userData && object.userData.type === 'book') {
+        activityModal.show(object);
+      }
+    });
+    
+    // Configurem el callback quan es desa una activitat
+    activityModal.setOnSave(activityData => {
+      saveActivity(activityData);
+    });
+  }
+  
+  // Funció per desar activitats
+  function saveActivity(activityData) {
+    const existingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+    existingActivities.push(activityData);
+    localStorage.setItem('readingActivities', JSON.stringify(existingActivities));
+    console.log('Activitat desada:', activityData);
+  }
+  
+  // Inicialitzar l'escena i configurar tot
+  function init() {
+    // Assegura't que tot es carrega abans d'inicialitzar les interaccions
+    console.log("Iniciant postprocessing...");
+    initPostprocessing();
+    
+    console.log("Iniciant interaccions...");
+    // Compte d'objects a l'escena
+    console.log("Objectes a l'escena:", scene.children.length);
+    initInteractions();
+  }
+  
+  // Cridem la funció d'inicialització després de crear tots els objectes
+  init();
   
   // Loop d'animació
   let animationFrameId = null;
   
   const animate = () => {
     controls.update();
+
+    
     renderer.render(scene, camera);
+    composer.render();
+
     animationFrameId = window.requestAnimationFrame(animate);
   };
   
