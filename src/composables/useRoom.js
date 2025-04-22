@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createRoom } from '../three/objects/Room.js';
-import {createTable} from '../three/objects/Table.js';
+import { createTable } from '../three/objects/Table.js';
 import { createBookshelf } from '../three/objects/Bookshelf.js';
+import { createBooks } from '../three/objects/Books.js'; // Afegim aquesta importació
 import { setupLighting } from '../three/systems/Lighting.js';
 import { createCalendar } from '@/three/objects/Calendar.js';
 import { createDumbbell } from '@/three/objects/Dumbbell.js'; 
@@ -16,6 +17,13 @@ import { createCarpet } from '@/three/objects/Carpet.js';
 import { createSofa } from '@/three/objects/Sofa.js';
 import { createBroom } from '@/three/objects/Broom.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
+import { InteractionManager } from '../three/interactions/InteractionManager';
+import { ActivityModal } from '../components/ActivityModal';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
 
 export default function useRoom(canvas) {
   // Configuració bàsica
@@ -36,7 +44,25 @@ export default function useRoom(canvas) {
   // Crear els elements de l'escena
   createRoom(scene, roomConfig);
   createTable(scene, roomConfig);
-  createBookshelf(scene, roomConfig); // Afegim l'estanteria
+  
+  // Afegim l'estanteria
+  const bookshelf = createBookshelf(scene, roomConfig); 
+  
+  // Afegir llibres interactius a les prestatgeries
+  // Hem de fer això per cada prestatge de l'estanteria
+  for (const shelf of bookshelf.shelves) {
+    createBooks(scene, {
+      shelfX: shelf.position.x,
+      shelfY: shelf.position.y,
+      shelfZ: shelf.position.z,
+      shelfWidth: shelf.width,
+      shelfDepth: shelf.depth,
+      isParallelToWall: shelf.isParallelToWall || false
+    }, (book) => {
+      console.log(`Llibre clicat: ${book.userData.title}`);
+    });
+  }
+  
   createCalendar(scene, roomConfig); // Afegim el calendari
   setupLighting(scene);
   //setupPostProcessing(scene);
@@ -207,6 +233,9 @@ export default function useRoom(canvas) {
   });
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding; // Millora els colors
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; // Millor contrast
+  renderer.toneMappingExposure = 1.2; // Més exposició (lluminositat)
   
   // Gestió de la redimensió
   const handleResize = () => {
@@ -218,17 +247,123 @@ export default function useRoom(canvas) {
     
     renderer.setSize(sizes.width, sizes.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Actualitzem també la mida del compositor d'efectes
+    if (composer) {
+      composer.setSize(sizes.width, sizes.height);
+    }
+    
+    // Actualitzem el outlinePass
+    if (outlinePass) {
+      outlinePass.resolution.set(sizes.width, sizes.height);
+    }
   };
   
   window.addEventListener('resize', handleResize);
+  
+  // Inicialització del compositor d'efectes i l'outline pass
+  let composer, outlinePass;
+  
+  function initPostprocessing() {
+    // Configuració del compositor d'efectes amb renderTarget correcte
+    const renderTarget = new THREE.WebGLRenderTarget(
+      window.innerWidth, 
+      window.innerHeight, 
+      {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        format: THREE.RGBAFormat,
+        encoding: THREE.sRGBEncoding
+      }
+    );
+    composer = new EffectComposer(renderer, renderTarget);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    
+    // Configura OutlinePass amb millors paràmetres
+    outlinePass = new OutlinePass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight), 
+      scene, 
+      camera
+    );
+    
+    // Reduïm l'impacte de l'outline perquè no afecti tant la lluminositat general
+    outlinePass.edgeStrength = 2.5;
+    outlinePass.edgeGlow = 0.7;
+    outlinePass.edgeThickness = 1.0;
+    outlinePass.pulsePeriod = 0;
+    outlinePass.visibleEdgeColor.set('#3498db');
+    outlinePass.hiddenEdgeColor.set('#256ea5');
+    outlinePass.overlayMaterial.blending = THREE.NormalBlending; // Ajusta la barreja
+    
+    composer.addPass(outlinePass);
+    
+    // Afegeix un ShaderPass per ajustar la lluminositat final si és necessari
+    const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+    composer.addPass(gammaCorrectionPass);
+  }
+  
+  // Funció per inicialitzar les interaccions
+  function initInteractions() {
+    // Assegurem-nos que canvas, camera, scene i renderer existeixen
+    if (!canvas || !camera || !scene || !renderer) {
+      console.error("No s'han inicialitzat els elements necessaris per a les interaccions");
+      return;
+    }
+    
+    // Creem el gestor d'interaccions
+    const interactionManager = new InteractionManager(camera, scene, renderer, canvas);
+    interactionManager.outlinePass = outlinePass;
+    
+    // Creem el modal d'activitats
+    const activityModal = new ActivityModal();
+    
+    // Configurem el callback quan es clica un llibre
+    interactionManager.setOnObjectClick(object => {
+      if (object.userData && object.userData.type === 'book') {
+        activityModal.show(object);
+      }
+    });
+    
+    // Configurem el callback quan es desa una activitat
+    activityModal.setOnSave(activityData => {
+      saveActivity(activityData);
+    });
+  }
+  
+  // Funció per desar activitats
+  function saveActivity(activityData) {
+    const existingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+    existingActivities.push(activityData);
+    localStorage.setItem('readingActivities', JSON.stringify(existingActivities));
+    console.log('Activitat desada:', activityData);
+  }
+  
+  // Inicialitzar l'escena i configurar tot
+  function init() {
+    // Assegura't que tot es carrega abans d'inicialitzar les interaccions
+    console.log("Iniciant postprocessing...");
+    initPostprocessing();
+    
+    console.log("Iniciant interaccions...");
+    // Compte d'objects a l'escena
+    console.log("Objectes a l'escena:", scene.children.length);
+    initInteractions();
+  }
+  
+  // Cridem la funció d'inicialització després de crear tots els objectes
+  init();
   
   // Loop d'animació
   let animationFrameId = null;
   
   const animate = () => {
     controls.update();
+
     
     renderer.render(scene, camera);
+    composer.render();
+
     animationFrameId = window.requestAnimationFrame(animate);
   };
   
