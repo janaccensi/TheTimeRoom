@@ -15,11 +15,8 @@ import { createComputer } from '@/three/objects/Computer.js';
 import { createChair } from '@/three/objects/Chair.js';
 import { createCarpet } from '@/three/objects/Carpet.js';
 
-import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
-
 
 import { createSofa } from '@/three/objects/Sofa.js';
-import { createBroom } from '@/three/objects/Broom.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
 
 import { InteractionManager } from '../three/interactions/InteractionManager';
@@ -32,6 +29,7 @@ import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectio
 
 import { createBroom } from '../three/objects/Broom.js'; // Importar la función de escoba
 import { createTVTable } from '@/three/objects/TVTable.js';
+import { CalendarPanel } from '@/components/CalendarPanel.js';
 
 
 
@@ -338,11 +336,33 @@ export default function useRoom(canvas) {
     
     // Creem el modal d'activitats
     const activityModal = new ActivityModal();
+
+    // Crear el panel del calendario
+    const calendarPanel = new CalendarPanel();
     
     // Configurem el callback quan es clica un llibre
     interactionManager.setOnObjectClick(object => {
       if (object.userData && object.userData.type === 'book') {
         activityModal.show(object);
+      }
+      // Detectar clic en calendario
+      else if (object.userData && object.userData.type === 'calendar') {
+        calendarPanel.show(object);
+      }
+    });
+
+    // Configuramos el hover sobre objetos interactivos
+    interactionManager.setOnObjectHover(object => {
+      if (object) {
+        // Si hay un objeto bajo el cursor, lo añadimos al outline
+        if (outlinePass) {
+          outlinePass.selectedObjects = [object];
+        }
+      } else {
+        // Si no hay objeto, limpiamos el outline
+        if (outlinePass) {
+          outlinePass.selectedObjects = [];
+        }
       }
     });
     

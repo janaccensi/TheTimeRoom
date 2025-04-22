@@ -38,6 +38,11 @@ export function createCalendar(scene, roomConfig) {
     calendarMesh.position.set(posX, posY, posZ);
     calendarMesh.rotation.y = -Math.PI / 2;  // Rotación inversa para que apunte al interior desde la pared izquierda
     
+    // Añadir propiedades para interacción
+    calendarMesh.userData.type = 'calendar';
+    calendarMesh.userData.isInteractive = true;
+    calendarMesh.userData.title = 'Calendario';
+
     // Afegir el calendari a l'escena
     scene.add(calendarMesh);
     
