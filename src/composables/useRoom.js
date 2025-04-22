@@ -15,8 +15,6 @@ import { createComputer } from '@/three/objects/Computer.js';
 import { createChair } from '@/three/objects/Chair.js';
 import { createCarpet } from '@/three/objects/Carpet.js';
 
-import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
-
 
 import { createSofa } from '@/three/objects/Sofa.js';
 import { createBroom } from '@/three/objects/Broom.js';
@@ -30,7 +28,6 @@ import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
 
-import { createBroom } from '../three/objects/Broom.js'; // Importar la función de escoba
 import { createTVTable } from '@/three/objects/TVTable.js';
 
 
