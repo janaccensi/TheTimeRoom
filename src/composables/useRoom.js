@@ -14,6 +14,10 @@ import { createPlant } from '@/three/objects/Plant.js';
 import { createComputer } from '@/three/objects/Computer.js';
 import { createChair } from '@/three/objects/Chair.js';
 import { createCarpet } from '@/three/objects/Carpet.js';
+
+import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
+
+
 import { createSofa } from '@/three/objects/Sofa.js';
 import { createBroom } from '@/three/objects/Broom.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
@@ -28,6 +32,7 @@ import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectio
 
 import { createBroom } from '../three/objects/Broom.js'; // Importar la función de escoba
 import { createTVTable } from '@/three/objects/TVTable.js';
+
 
 
 export default function useRoom(canvas) {
@@ -375,6 +380,8 @@ export default function useRoom(canvas) {
   
   const animate = () => {
     controls.update();
+
+
 
     
     renderer.render(scene, camera);
