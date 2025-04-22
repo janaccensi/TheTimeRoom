@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export function createBooks(scene, shelfInfo) {
+export function createBooks(scene, shelfInfo, onBookClick) {
   const { shelfX, shelfY, shelfZ, shelfWidth, shelfDepth, isParallelToWall = false } = shelfInfo;
   const books = [];
   
@@ -80,6 +80,17 @@ export function createBooks(scene, shelfInfo) {
       // Crear el llibre
       const bookGeom = new THREE.BoxGeometry(bookWidth, bookHeight, bookDepth);
       const book = new THREE.Mesh(bookGeom, bookMaterial);
+      
+      // Afegim propietats per a la interacció
+      book.userData = {
+        id: `book_parallel_${i}`,
+        type: 'book',
+        title: `Llibre ${i+1}`,
+        category: getRandomBookCategory()
+      };
+      
+      // Fem el llibre "clicable" (això serà utilitzat pel raycaster)
+      book.isInteractive = true;
       
       // Posicionar el llibre (convertim la posició relativa a absoluta)
       const bookPosZ = shelfZ - totalDepth/2 + positions[i];
@@ -187,6 +198,17 @@ export function createBooks(scene, shelfInfo) {
       const bookGeom = new THREE.BoxGeometry(bookWidth, bookHeight, bookDepth);
       const book = new THREE.Mesh(bookGeom, bookMaterial);
       
+      // Afegim propietats per a la interacció
+      book.userData = {
+        id: `book_perpendicular_${i}`,
+        type: 'book',
+        title: `Llibre ${i+1}`,
+        category: getRandomBookCategory()
+      };
+      
+      // Fem el llibre "clicable"
+      book.isInteractive = true;
+      
       // Convertim la posició relativa a absoluta
       const bookPosX = shelfX - totalWidth/2 + positions[i];
       
@@ -205,4 +227,10 @@ export function createBooks(scene, shelfInfo) {
   }
   
   return books;
+}
+
+// Funció per generar categories de llibres aleatòries
+function getRandomBookCategory() {
+  const categories = ['Novel·la', 'Ciència', 'Història', 'Poesia', 'Assaig', 'Fantasia'];
+  return categories[Math.floor(Math.random() * categories.length)];
 }
