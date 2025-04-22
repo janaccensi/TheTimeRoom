@@ -22,6 +22,11 @@ export class InteractionManager {
   setOnObjectClick(callback) {
     this.onObjectClick = callback;
   }
+
+  // Add this new method
+  setOnObjectHover(callback) {
+    this.onHoverCallback = callback;
+  }
   
   onClick(event) {
     // Actualitzem posició del ratolí normalitzada
@@ -34,7 +39,10 @@ export class InteractionManager {
     const intersects = this.raycaster.intersectObjects(this.scene.children, true)
       .filter(intersection => 
         intersection.object.isInteractive || 
-        (intersection.object.userData && intersection.object.userData.type === 'book')
+        (intersection.object.userData && (
+          intersection.object.userData.type === 'book' ||
+          intersection.object.userData.type === 'calendar'
+        ))      
       );
     
     if (intersects.length > 0) {
@@ -56,7 +64,10 @@ export class InteractionManager {
         // Log per veure quins objectes troba
         console.log('Objecte trobat:', intersection.object);
         return intersection.object.isInteractive || 
-          (intersection.object.userData && intersection.object.userData.type === 'book');
+        (intersection.object.userData && (
+          intersection.object.userData.type === 'book' ||
+          intersection.object.userData.type === 'calendar'
+        ));
       });
     
     console.log('Interseccions:', intersects.length);
