@@ -16,7 +16,6 @@ import { createCarpet } from '@/three/objects/Carpet.js';
 import { createSofa } from '@/three/objects/Sofa.js';
 import { createBroom } from '@/three/objects/Broom.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
-import { createBroom } from '../three/objects/Broom.js'; // Importar la función de escoba
 
 export default function useRoom(canvas) {
   // Configuració bàsica
