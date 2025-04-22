@@ -1,137 +1,115 @@
 import * as THREE from 'three';
 
-export function createBroom(scene, options = {}) {
-  const {
-    position = { x: 0, y: 0, z: 0 },
-    rotation = 0,
-    leaning = false,
-    leaningAngle = 0.3,
-    handleColor = 0xc19a6b, // Color de palo de madera natural
-    bristlesColor = 0xdec683 // Color paja/fibras naturales
-  } = options;
-  
-  const broomGroup = new THREE.Group();
-  
-  // Materiales
-  const handleMaterial = new THREE.MeshStandardMaterial({
-    color: handleColor,
-    roughness: 0.8,
-    metalness: 0.1
-  });
-  
-  const bristlesMaterial = new THREE.MeshStandardMaterial({
-    color: bristlesColor,
-    roughness: 1.0,
-    metalness: 0
-  });
-  
-  // Palo - más largo y fino como en la imagen
-  const handleHeight = 1.8;
-  const handleRadius = 0.012;
-  const handleGeometry = new THREE.CylinderGeometry(
-    handleRadius, handleRadius * 1.1, handleHeight, 8
-  );
-  const handle = new THREE.Mesh(handleGeometry, handleMaterial);
-  
-  // Centrar el palo con origen en la base
-  handle.position.y = handleHeight / 2;
-  broomGroup.add(handle);
-  
-  // Base de las cerdas - forma triangular/cónica como se ve en la imagen
-  const bristlesHeight = 0.45; // Más largo para parecerse a la imagen
-  const bristlesTopRadius = 0.015;
-  const bristlesBottomRadius = 0.12; // Más ancho en la base
-  
-  // Crear forma de cono para las cerdas principales
-  const bristlesConeGeometry = new THREE.CylinderGeometry(
-    bristlesTopRadius, bristlesBottomRadius, bristlesHeight, 12
-  );
-  const bristlesCone = new THREE.Mesh(bristlesConeGeometry, bristlesMaterial);
-  bristlesCone.position.y = 0;
-  broomGroup.add(bristlesCone);
-  
-  // Atadura - donde el palo se une a las cerdas
-  const bindingGeometry = new THREE.CylinderGeometry(
-    handleRadius * 2, handleRadius * 2.5, 0.05, 8
-  );
-  const bindingMaterial = new THREE.MeshStandardMaterial({
-    color: 0xa67c52,
-    roughness: 0.6,
-    metalness: 0.1
-  });
-  const binding = new THREE.Mesh(bindingGeometry, bindingMaterial);
-  binding.position.y = 0.02;
-  broomGroup.add(binding);
-  
-  // Líneas decorativas en las cerdas (como en la imagen)
-  const stripePositions = [0.08, 0.16, 0.24];
-  const stripeColors = [0xa86032, 0x2d7d36, 0x853e3e]; // Colores sutiles para las líneas
-  
-  stripePositions.forEach((pos, index) => {
-    const stripeGeometry = new THREE.TorusGeometry(
-      bristlesBottomRadius * (1 - pos/bristlesHeight * 0.4), 
-      0.004, 
-      8, 
-      16
-    );
-    const stripeMaterial = new THREE.MeshStandardMaterial({
-      color: stripeColors[index % stripeColors.length],
-      roughness: 0.8
+export const createBroom = (scene, config = {}) => {
+    // Configuración con valores por defecto
+    const {
+        position = { x: 0, y: 0, z: 0 },
+        handleColor = 0xc4a484,    // Marrón claro natural
+        bristleColor = 0xd2b48c,   // Color paja/beige
+        ringColor = 0xff0000       // Color del anillo decorativo
+    } = config;
+    
+    // Grupo principal
+    const broomGroup = new THREE.Group();
+    
+    // === PALO DE LA ESCOBA ===
+    const handleMaterial = new THREE.MeshStandardMaterial({
+        color: handleColor,
+        roughness: 0.7,     
+        metalness: 0.1,     
     });
     
-    const stripe = new THREE.Mesh(stripeGeometry, stripeMaterial);
-    stripe.position.y = pos;
-    stripe.rotation.x = Math.PI / 2;
-    bristlesCone.add(stripe);
-  });
-  
-  // Efecto minimalista de las fibras individuales (simplificado pero visual)
-  const fiberCount = 30; // Reducido para estilo minimalista
-  
-  for (let i = 0; i < fiberCount; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const radiusPosition = Math.random() * bristlesBottomRadius * 0.85;
+    // Geometría del palo de la escoba
+    const handleLength = 1.4;
+    const handleGeometry = new THREE.CylinderGeometry(0.02, 0.02, handleLength, 8);
+    const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+    broomGroup.add(handle);
     
-    const fiberHeight = bristlesHeight * (0.85 + Math.random() * 0.3);
-    const fiberGeometry = new THREE.CylinderGeometry(
-      0.002, 0.001, fiberHeight, 3
-    );
-    
-    const fiberMaterial = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(bristlesColor).offsetHSL(0, 0, (Math.random() - 0.5) * 0.1),
-      roughness: 1.0
+    // === NÚCLEO DEL CEPILLO ===
+    const coreMaterial = new THREE.MeshStandardMaterial({
+        color: 0x8b4513,    // Marrón más oscuro
+        roughness: 0.8,
+        metalness: 0.1,
     });
     
-    const fiber = new THREE.Mesh(fiberGeometry, fiberMaterial);
+    // Núcleo cilíndrico
+    const coreGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.05, 8);
+    const brushCore = new THREE.Mesh(coreGeometry, coreMaterial);
+    brushCore.position.set(0, -handleLength / 2, 0);
+    broomGroup.add(brushCore);
     
-    // Posicionar aleatoriamente dentro del área de cerdas
-    fiber.position.x = Math.sin(angle) * radiusPosition;
-    fiber.position.z = Math.cos(angle) * radiusPosition;
-    fiber.position.y = -fiberHeight / 2 + 0.05;
+    // === CEPILLO CÓNICO CON TEXTURA DE PAJA ===
+    const bristleMaterial = new THREE.MeshStandardMaterial({
+        color: bristleColor,
+        roughness: 0.9,
+        metalness: 0.0,
+    });
     
-    // Inclinar ligeramente las fibras hacia afuera
-    const inclineAngle = Math.atan2(radiusPosition, bristlesHeight);
-    fiber.rotation.x = (Math.random() - 0.5) * 0.2;
-    fiber.rotation.z = angle + Math.PI;
-    fiber.rotation.y = inclineAngle;
+    // Geometría del cepillo cónico (cerrado)
+    const bristleGeometry = new THREE.CylinderGeometry(0.05, 0.2, 0.4, 32, 1, false); // openEnded = false
+    const bristle = new THREE.Mesh(bristleGeometry, bristleMaterial);
+    bristle.position.set(0, -handleLength / 2 - 0.2, 0);
+    broomGroup.add(bristle);
     
-    bristlesCone.add(fiber);
-  }
-  
-  // Aplicar inclinación si está apoyada
-  if (leaning) {
-    broomGroup.rotation.x = leaningAngle;
-    // Ajustar posición para que toque el suelo
-    const yOffset = Math.sin(leaningAngle) * (handleHeight / 2);
-    broomGroup.position.y += yOffset;
-  }
-  
-  // Posicionamiento y rotación final
-  broomGroup.position.set(position.x, position.y, position.z);
-  broomGroup.rotation.y = rotation;
-  
-  // Añadir a la escena
-  scene.add(broomGroup);
-  
-  return broomGroup;
-}
+    // Añadir líneas verticales para simular fibras de paja
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x8b5a2b }); // Color marrón oscuro
+    const lineGroup = new THREE.Group();
+    const lineCount = 128; // Aumentar el número de líneas para más textura
+    const radiusTop = 0.05;
+    const radiusBottom = 0.2;
+    const height = 0.4;
+
+    for (let i = 0; i < lineCount; i++) {
+        const angle = (i / lineCount) * Math.PI * 2;
+        const xTop = Math.cos(angle) * radiusTop;
+        const zTop = Math.sin(angle) * radiusTop;
+        const xBottom = Math.cos(angle) * radiusBottom;
+        const zBottom = Math.sin(angle) * radiusBottom;
+
+        const points = [
+            new THREE.Vector3(xTop, height / 2, zTop),
+            new THREE.Vector3(xBottom, -height / 2, zBottom),
+        ];
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(lineGeometry, lineMaterial);
+        lineGroup.add(line);
+    }
+    lineGroup.position.set(0, -handleLength / 2 - 0.2, 0);
+    broomGroup.add(lineGroup);
+    
+    // Añadir ruido a las líneas para simular irregularidades
+    lineGroup.children.forEach((line, index) => {
+        const noiseFactor = 0.005; // Factor de ruido
+        line.geometry.attributes.position.array.forEach((value, idx) => {
+            if (idx % 3 !== 1) { // Solo afecta a X y Z
+                line.geometry.attributes.position.array[idx] += (Math.random() - 0.5) * noiseFactor;
+            }
+        });
+        line.geometry.attributes.position.needsUpdate = true;
+    });
+    
+    // === ANILLO DECORATIVO ===
+    const ringMaterial = new THREE.MeshStandardMaterial({
+        color: ringColor,
+        roughness: 0.5,
+        metalness: 0.3,
+    });
+    const ringGeometry = new THREE.TorusGeometry(0.09, 0.01, 16, 100);
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(0, -handleLength / 2 - 0.1, 0);
+    broomGroup.add(ring);
+    
+    // Posicionamiento final
+    broomGroup.position.set(position.x, position.y, position.z);
+    
+    // Añadir a la escena
+    scene.add(broomGroup);
+    
+    return {
+        group: broomGroup,
+        update: () => {
+            // Para futuras actualizaciones
+        }
+    };
+};
