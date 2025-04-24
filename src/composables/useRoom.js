@@ -76,7 +76,7 @@ export default function useRoom(canvas) {
   //setupPostProcessing(scene);
 
   const lamp = createLamp(scene, {
-    position: { x: 2, y: 0, z: 2 },
+    position: { x: 2.1, y: 0, z: -2.0 },
     color: 0xffeecc,
     height: 1.5,
     intensity: 1,
@@ -140,7 +140,7 @@ export default function useRoom(canvas) {
 
   // Añadimos la escoba en una esquina
   const broom = createBroom(scene, {
-    position: { x: 2.2, y: 1.1, z: -2. },  // Esquina de la habitación
+    position: { x: -2.1, y: 1.1, z: 2.25 },  // Esquina de la habitación
     handleColor: 0xc4a484,  // Marrón claro
     bristleColor: 0xd2b48c  // Color paja natural
   });
