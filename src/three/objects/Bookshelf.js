@@ -45,7 +45,7 @@ export function createBookshelf(scene, roomConfig) {
   // Posició - a l'esquerra de la taula, paral·lel a leftWall
   const posX = -(width-wallThickness)/2 + shelfWidth/2;
   const posY = shelfHeight/2;
-  const posZ = -(width-wallThickness)/3 + 3; // Més proper a la paret frontal
+  const posZ = -(width-wallThickness)/3 + 2.8; // Més proper a la paret frontal
   
   // Marc posterior (tocat a leftWall) - textura vertical
   const backFrameGeom = new THREE.BoxGeometry(shelfThickness, shelfHeight, shelfDepth);
