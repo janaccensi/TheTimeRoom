@@ -4,11 +4,22 @@ import * as THREE from 'three';
 const textureLoader = new THREE.TextureLoader();
 
 export function getMaterials() {
-  // Materials per a les parets
-  const wallMaterial = new THREE.MeshStandardMaterial({ 
+  // Cargamos la textura de alfombra que usaremos también en la pared frontal
+
+
+  // Material compartido para alfombra y pared frontal
+  const carpetMaterial = new THREE.MeshStandardMaterial({
+    color: 0xf5886b,
+  });
+
+  // Usamos el mismo material para la pared frontal
+  const frontWallMaterial = carpetMaterial;
+
+  // Material per a les parets laterals
+  const sideWallMaterial = new THREE.MeshStandardMaterial({
     color: 0xe8e8e8,
   });
-  
+
   // Textures pel terra (parquet)
   const floorTexture = textureLoader.load('/textures/floor/parquet_diffuse.jpg');
   const floorNormalMap = textureLoader.load('/textures/floor/parquet_normal.jpg');
@@ -32,7 +43,7 @@ export function getMaterials() {
     roughness: 0.8,
     metalness: 0.1
   });
-  
+
   // Textures de fusta per estanteries (més clara)
   const shelfWoodTexture = textureLoader.load('/textures/wood/hardwood2_diffuse.jpg');
   const shelfWoodNormalMap = textureLoader.load('/textures/wood/hardwood2_roughness.jpg');
@@ -91,12 +102,14 @@ export function getMaterials() {
   const woodDrawerMaterial = tableWoodMaterial;
 
   return { 
-    wallMaterial, 
+    frontWallMaterial, 
     floorMaterial, 
     woodMaterial, 
     tableWoodMaterial, 
     paperMaterial, 
     whitePlankMaterial, 
-    woodDrawerMaterial 
+    woodDrawerMaterial,
+    sideWallMaterial,
+    carpetMaterial
   };
 }

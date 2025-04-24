@@ -1,23 +1,18 @@
 import * as THREE from 'three';
+import { getMaterials } from '../../utils/materials.js';
 
 export function createCarpet(scene, options = {}) {
+  const { carpetMaterial } = getMaterials();
   const {
     position = { x: 0.2, y: 0.01, z: 2 },  // Ligeramente sobre el suelo
     size = { width: 3, height: 0.02, depth: 2 },
-    color = 0x8b4513,  // Marrón
-    pattern = 'simple'  // 'simple', 'geometric', 'ornate'
+    color = 0xf5886b,  // Marrón
+    pattern = 'ornate'  // 'simple', 'geometric', 'ornate'
   } = options;
   
   const carpetGroup = new THREE.Group();
   
-  // Material base
-  const carpetMaterial = new THREE.MeshStandardMaterial({
-    color: color,
-    roughness: 0.9,
-    metalness: 0,
-    side: THREE.DoubleSide
-  });
-  
+
   // Geometría base
   const carpetGeometry = new THREE.BoxGeometry(
     size.width, size.height, size.depth
