@@ -116,7 +116,7 @@ export function createMicrophone(scene, options = {}) {
   // Aplicamos rotaciones al grupo del brazo 3
   // Usando ángulos específicos para apuntar hacia arriba y a la derecha
   arm3Group.rotation.z = Math.PI/4; // Rotación para apuntar hacia arriba (45 grados)
-  arm3Group.rotation.x = -Math.PI/6; // Ligera rotación en X para efecto 3D
+  arm3Group.rotation.x = Math.PI/6; // Ligera rotación en X para efecto 3D
   
   // Articulación 3 - punto de conexión entre brazo 3 y micrófono
   const joint3Geometry = new THREE.SphereGeometry(0.02, 16, 16);

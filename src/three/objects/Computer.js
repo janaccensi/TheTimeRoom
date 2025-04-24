@@ -324,7 +324,7 @@ export function createComputer(scene, options = {}) {
     computerGroup.add(monitorGroup);
     computerGroup.add(base);
     
-    pcGroup.position.set(0.62, 0.25, 0.1);
+    pcGroup.position.set(0.7, 0.25, 0.1);
     computerGroup.add(pcGroup);
     
     keyboardGroup.position.set(0, 0.01, 0.3);
