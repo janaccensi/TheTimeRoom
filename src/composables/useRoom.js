@@ -124,7 +124,7 @@ export default function useRoom(canvas) {
   const sofa = createSofa(scene, {
     position: { x: 0.8, y: 0, z: 1 },
     rotation: Math.PI,
-    color: 0x2c3e50,
+    color: 0xccc9aa,
     type: 'sectional',
     cornerSide: 'right'
   });
@@ -215,7 +215,7 @@ export default function useRoom(canvas) {
   const chair = createChair(scene, {
     position: { x: -1, y: 0.0, z: -1 },
     color: 0x2c3e50,
-    type: 'office',
+    type: 'gaming',
     rotation: 5*Math.PI / 3
   });
 
