@@ -36,7 +36,7 @@ import { CalendarPanel } from '@/components/CalendarPanel.js';
 export default function useRoom(canvas) {
   // Configuració bàsica
   const scene = new THREE.Scene();  
-  scene.background = new THREE.Color(0xf5f5f5); // Color gris clar
+  scene.background = new THREE.Color(0x000000); // Color gris clar
   
   // Mides de l'habitació
   const roomConfig = {
@@ -84,14 +84,14 @@ export default function useRoom(canvas) {
   });
 
   const plant = createPlant(scene, {
-    position: { x: 1.4, y: 0.72, z: -2.1 },
+    position: { x: 1.45, y: 0.72, z: -2.03 },
     size: 'medium',
     type: 'indoor'
   });
 
   // En una función de configuración Three.js
   const dumbbell = createDumbbell(scene, {
-    position: { x: 1.05, y: 0.177, z: 0.8 }, 
+    position: { x: 1.05, y: 0.177, z: 1.8 }, 
     weight: 8,
     color: 0x222222
   });
@@ -99,7 +99,7 @@ export default function useRoom(canvas) {
   
   const tv = createTV(scene, {
     position: { x: 0.35, y: 1.08, z: -2.15 },
-    size: { width: 1.2, height: 0.7, depth: 0.1 },
+    size: { width: 1.5, height: 0.7, depth: 0.1 },
     screenColor: 0x000000,
     frameColor: 0x333333,
     isOn: true,
@@ -108,7 +108,7 @@ export default function useRoom(canvas) {
 
   // Añadimos el micrófono encima de la mesa
   const microphone = createMicrophone(scene, {
-    position: { x: -1.8, y: 0.77, z: -0.2 }, // Coordenadas encima de la mesa
+    position: { x: -1.8, y: 0.77, z: 0 }, // Coordenadas encima de la mesa
     baseColor: 0x111111,
     accentColor: 0xff0000,
     isOn: true
@@ -116,13 +116,13 @@ export default function useRoom(canvas) {
 
   // También puedes crear varias con diferentes pesos
   const lightDumbbell = createDumbbell(scene, {
-    position: { x: 1.4, y: 0.15, z: 0.8 },
+    position: { x: 1.7, y: 0.15, z: 1.8 },
     weight: 3,
     color: 0x444444
   });
 
   const sofa = createSofa(scene, {
-    position: { x: 0.8, y: 0, z: 0 },
+    position: { x: 0.8, y: 0, z: 1 },
     rotation: Math.PI,
     color: 0xccc9aa,
     type: 'sectional',
@@ -203,7 +203,7 @@ export default function useRoom(canvas) {
 
   // Añadir ordenador
   const computer = createComputer(scene, {
-    position: { x: -2, y: 0.78, z: -1 },
+    position: { x: -2, y: 0.78, z: -0.8 },
     type: 'gaming',
     isOn: true,
     rotation: Math.PI / 2,
@@ -220,10 +220,9 @@ export default function useRoom(canvas) {
   });
 
   const carpet = createCarpet(scene, {
-    position: { x: 0.2, y: 0, z: 0.2 },
+    position: { x: 0.5, y: 0, z: 1.2 },
     width: 2,
     depth: 3,
-    color: 0x8B4513 // Color marró
   });
 
   // Càmera
