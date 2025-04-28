@@ -85,7 +85,7 @@ export function createBooks(scene, shelfInfo, onBookClick) {
       book.userData = {
         id: `book_parallel_${i}`,
         type: 'book',
-        title: `Llibre ${i+1}`,
+        title: `Llibre`,
         category: getRandomBookCategory()
       };
       
@@ -202,7 +202,7 @@ export function createBooks(scene, shelfInfo, onBookClick) {
       book.userData = {
         id: `book_perpendicular_${i}`,
         type: 'book',
-        title: `Llibre ${i+1}`,
+        title: `Llibre`,
         category: getRandomBookCategory()
       };
       
