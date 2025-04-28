@@ -38,6 +38,26 @@ export class CalendarPanel {
     
     // Añadir estilos
     this.addStyles();
+
+    // Escuchar eventos de actividades de lectura
+    document.addEventListener('reading-activity-added', (event) => {
+      // Actualizar la vista si estamos mostrando el día relacionado con la actividad añadida
+      const addedDate = new Date(event.detail.activity.date);
+      const currentViewDate = this.selectedDate;
+      
+      if (addedDate.getDate() === currentViewDate.getDate() &&
+          addedDate.getMonth() === currentViewDate.getMonth() &&
+          addedDate.getFullYear() === currentViewDate.getFullYear()) {
+        this.renderDayTasks();
+      }
+      
+      // Si estamos en vista mensual y es este mes, actualizar los días
+      if (this.currentView === 'month' && 
+          addedDate.getMonth() === this.currentDate.getMonth() &&
+          addedDate.getFullYear() === this.currentDate.getFullYear()) {
+        this.renderMonthDays();
+      }
+    });
   }
   
   updatePanelContent() {
@@ -331,6 +351,11 @@ export class CalendarPanel {
       const timeContent = document.createElement('div');
       timeContent.className = 'time-content';
       
+      // Añadir evento de doble clic para crear tarea rápidamente
+      timeSlot.addEventListener('dblclick', () => {
+        this.showAddTaskForm(hour); // Pasar la hora como parámetro
+      });
+      
       timeSlot.appendChild(timeLabel);
       timeSlot.appendChild(timeContent);
       
@@ -353,12 +378,11 @@ export class CalendarPanel {
              actDate.getFullYear() === this.selectedDate.getFullYear();
     });
     
-    // También cargar tareas del CalendarPanel
-    const dayTasks = this.tasks[dateKey] || [];
-    
     // Contenedores por hora
     const timeContents = this.panel.querySelectorAll('.time-content');
-    if (!timeContents.length) return;
+    timeContents.forEach(container => {
+      container.innerHTML = '';
+    });
     
     // Limpiar contenidos anteriores
     timeContents.forEach(container => {
@@ -377,15 +401,41 @@ export class CalendarPanel {
       if (index >= 0 && index < timeContents.length) {
         const taskElement = document.createElement('div');
         taskElement.className = 'day-task-item';
+
+        // Añadir una clase específica según el origen
+        if (activity.sourceType === 'reading') {
+          taskElement.classList.add('reading-activity');
+        } else {
+          taskElement.classList.add('calendar-task');
+        }
+
         taskElement.style.backgroundColor = this.getCategoryColor(activity.category);
         
         const title = document.createElement('div');
         title.className = 'task-title';
-        title.textContent = activity.category || activity.bookTitle || 'Tarea';
+        //title.textContent = activity.category || activity.bookTitle || 'Tarea';
+        if (activity.sourceType === 'reading') {
+          title.textContent = activity.bookTitle || 'Lectura';
+          
+          // Agregar un icono o indicador de que es actividad de lectura
+          const indicator = document.createElement('span');
+          indicator.className = 'activity-type-icon';
+          indicator.textContent = '📚'; // Icono de libro
+          title.prepend(indicator);
+        } else {
+          title.textContent = activity.text || 'Tarea';
+        }
         
         const detail = document.createElement('div');
         detail.className = 'task-detail';
-        detail.textContent = activity.notes || activity.text || '';
+        
+        // Mostrar la duración o las horas si están disponibles
+        if (activity.duration || activity.hours) {
+          const durationValue = activity.duration || activity.hours;
+          detail.textContent = `${activity.notes ? activity.notes + ' - ' : ''}${durationValue} hora${durationValue !== 1 ? 's' : ''}`;
+        } else {
+          detail.textContent = activity.notes || activity.text || '';
+        }
         
         taskElement.appendChild(title);
         taskElement.appendChild(detail);
@@ -401,6 +451,7 @@ export class CalendarPanel {
         // Eventos de las acciones
         const checkbox = actions.querySelector('.task-done');
         const deleteBtn = actions.querySelector('.delete-task');
+
         
         checkbox.addEventListener('change', () => {
           activity.completed = checkbox.checked;
@@ -422,83 +473,48 @@ export class CalendarPanel {
         timeContents[index].appendChild(taskElement);
       }
     });
-    
-    // Añadir también tareas específicas del calendario
-    dayTasks.forEach(task => {
-      // Tareas del calendario van a la franja de las 12:00 por defecto
-      const index = 4; // 12:00
-      
-      if (index < timeContents.length) {
-        const taskElement = document.createElement('div');
-        taskElement.className = 'day-task-item';
-        if (task.completed) taskElement.classList.add('task-completed');
-        
-        const title = document.createElement('div');
-        title.className = 'task-title';
-        title.textContent = task.text || 'Tarea';
-        
-        taskElement.appendChild(title);
-        
-        // Añadir acciones
-        const actions = document.createElement('div');
-        actions.className = 'task-actions';
-        actions.innerHTML = `
-          <label><input type="checkbox" class="task-done" ${task.completed ? 'checked' : ''}> Completado</label>
-          <button class="delete-task">Eliminar</button>
-        `;
-        
-        // Eventos de las acciones
-        const checkbox = actions.querySelector('.task-done');
-        const deleteBtn = actions.querySelector('.delete-task');
-        
-        checkbox.addEventListener('change', () => {
-          task.completed = checkbox.checked;
-          this.saveTasks();
-          
-          if (checkbox.checked) {
-            taskElement.classList.add('task-completed');
-          } else {
-            taskElement.classList.remove('task-completed');
-          }
-        });
-        
-        deleteBtn.addEventListener('click', () => {
-          const taskIndex = dayTasks.indexOf(task);
-          if (taskIndex !== -1) {
-            dayTasks.splice(taskIndex, 1);
-            this.saveTasks();
-            taskElement.remove();
-          }
-        });
-        
-        taskElement.appendChild(actions);
-        timeContents[index].appendChild(taskElement);
-      }
-    });
   }
   
-  showAddTaskForm() {
-
+  showAddTaskForm(preselectedHour = null) {
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const formattedDate = this.selectedDate.toLocaleDateString('es-ES', dateOptions);
     
     // Crear formulario para añadir tarea
     const taskForm = document.createElement('div');
     taskForm.className = 'task-form-overlay';
+  
+    // Generar opciones de horas - CORREGIDO
+    let hourOptions = '';
+    for (let h = 8; h <= 18; h++) {
+      // Verificar correctamente si esta hora debería estar preseleccionada
+      const selected = (h === preselectedHour) ? 'selected' : '';
+      hourOptions += `<option value="${h}" ${selected}>${h}:00</option>`;
+    }
+  
+    // Generar opciones de duración
+    let durationOptions = '';
+    for (let d = 0.5; d <= 8; d += 0.5) {
+      durationOptions += `<option value="${d}">${d} hora${d !== 1 ? 's' : ''}</option>`;
+    }
+  
     taskForm.innerHTML = `
       <div class="task-form-container">
         <h3>Nueva tarea para ${formattedDate}</h3>
         <form id="add-task-form">
           <div class="form-group">
             <label for="task-text">Descripción:</label>
-            <input type="text" id="task-text" required>
+            <input type="text" id="task-text" required autofocus>
           </div>
           <div class="form-group">
-            <label for="task-hour">Hora:</label>
+            <label for="task-hour">Hora de inicio:</label>
             <select id="task-hour">
-              ${Array.from({length: 11}, (_, i) => i + 8).map(h => 
-                `<option value="${h}">${h}:00</option>`
-              ).join('')}
+              ${hourOptions}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="task-duration">Duración:</label>
+            <select id="task-duration">
+              ${durationOptions}
             </select>
           </div>
           <div class="form-group">
@@ -522,15 +538,20 @@ export class CalendarPanel {
     
     document.body.appendChild(taskForm);
     
-    // Configurar eventos
+    // IMPORTANTE: Primero añadir al DOM, luego acceder a los elementos
     const form = taskForm.querySelector('#add-task-form');
     const cancelBtn = taskForm.querySelector('#cancel-task');
     
+    cancelBtn.addEventListener('click', () => {
+      document.body.removeChild(taskForm);
+    });
+  
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       
       const text = form.querySelector('#task-text').value;
       const hour = form.querySelector('#task-hour').value;
+      const duration = form.querySelector('#task-duration').value; // Obtener duración
       const category = form.querySelector('#task-category').value;
       
       // Garantizar que usamos la fecha correcta
@@ -548,15 +569,22 @@ export class CalendarPanel {
         category: category,
         date: `${taskDate.getFullYear()}-${(taskDate.getMonth() + 1).toString().padStart(2, '0')}-${taskDate.getDate().toString().padStart(2, '0')}`,
         timestamp: taskDate.toISOString(),
-        completed: false
+        completed: false,
+        duration: parseFloat(duration) // Añadir duración como número
       });
         
-        document.body.removeChild(taskForm);
-        this.renderDayTasks();
-    });
-    
-    cancelBtn.addEventListener('click', () => {
       document.body.removeChild(taskForm);
+      this.renderDayTasks();
+      
+      // Desplazar a la franja horaria correspondiente
+      setTimeout(() => {
+        const hourIndex = parseInt(hour) - 8; // Las franjas empiezan en 8:00
+        const timeSlots = this.panel.querySelectorAll('.time-slot');
+        
+        if (hourIndex >= 0 && hourIndex < timeSlots.length) {
+          timeSlots[hourIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     });
   }
   
@@ -583,26 +611,45 @@ export class CalendarPanel {
   
   // Corregir la conversión de actividades
   getAllActivityData() {
-    // Combinar datos de ActivityModal y CalendarPanel
+    // Obtener actividades de lectura
     const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
     
-    // Convertir tareas del calendario al formato de actividades
+    // Convertir actividades de lectura al formato de calendario sin alterar su estructura original
+    const formattedReadingActivities = readingActivities.map(activity => {
+      return {
+        ...activity, // Mantener todos los campos originales
+        // Solo añadir campos necesarios para la visualización si no existen
+        text: activity.bookTitle || activity.notes || activity.category,
+        category: activity.category || 'Lectura',
+        date: activity.date,
+        timestamp: activity.timestamp || new Date().toISOString(),
+        // Usar un ID para diferenciar el origen
+        sourceType: 'reading'
+      };
+    });
+    
+    // Convertir tareas del calendario para formato uniforme
     const calendarTasks = [];
     Object.entries(this.tasks).forEach(([dateKey, tasks]) => {
       const [year, month, day] = dateKey.split('-').map(Number);
       tasks.forEach(task => {
-        // Corregir: month ya viene en formato 1-12, así que restamos 1 para JS Date
         calendarTasks.push({
           text: task.text,
           date: `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
-          completed: task.completed,
+          completed: task.completed || false,
           timestamp: task.createdAt || new Date(year, month-1, day, 12, 0, 0).toISOString(),
-          category: 'Calendario'
+          category: task.category,
+          // Añadir duración
+          duration: task.duration || 1,
+          // Resto del código...
+          sourceType: 'calendar',
+          taskId: task.createdAt
         });
       });
     });
     
-    return [...readingActivities, ...calendarTasks];
+    // Devolver ambos tipos de actividades
+    return [...formattedReadingActivities, ...calendarTasks];
   }
   
   getMonthActivitiesMap(year, month) {
@@ -628,65 +675,122 @@ export class CalendarPanel {
   
   // Corregir la adición de nuevas actividades
   addNewActivity(activity) {
-    // Si es una tarea para el calendario, la guardamos en el sistema de tareas
-    if (activity.category === 'Calendario') {
-      // Usar directamente la fecha del objeto activity
-      const activityDate = new Date(activity.date);
-      const dateKey = `${activityDate.getFullYear()}-${activityDate.getMonth() + 1}-${activityDate.getDate()}`;
-      
-      if (!this.tasks[dateKey]) {
-        this.tasks[dateKey] = [];
-      }
-      
-      this.tasks[dateKey].push({
-        text: activity.text,
-        completed: false,
-        createdAt: new Date().toISOString()
-      });
-      
-      this.saveTasks();
-    } 
-    // Si no, la guardamos como actividad de lectura
-    else {
-      const activities = JSON.parse(localStorage.getItem('readingActivities')) || [];
-      activities.push(activity);
-      localStorage.setItem('readingActivities', JSON.stringify(activities));
+    // Si tiene bookId, es una actividad de lectura (no la procesamos aquí)
+    if (activity.bookId || activity.sourceType === 'reading') {
+      console.warn("Las actividades de lectura deben añadirse desde ActivityModal");
+      return;
     }
+    
+    // Guardar como tarea del calendario
+    const activityDate = new Date(activity.date);
+    const dateKey = this.formatDateKey(activityDate);
+    
+    if (!this.tasks[dateKey]) {
+      this.tasks[dateKey] = [];
+    }
+    
+    this.tasks[dateKey].push({
+      text: activity.text,
+      category: activity.category,
+      completed: activity.completed || false,
+      createdAt: activity.timestamp || new Date().toISOString(),
+      duration: activity.duration || 1 // Guardar duración, por defecto 1 hora
+    });
+    
+    this.saveTasks();
   }
-  
+
   updateActivity(activity) {
-    if (activity.bookId) {
-      // Es una actividad de lectura
-      const activities = JSON.parse(localStorage.getItem('readingActivities')) || [];
-      const index = activities.findIndex(a => 
-        a.bookId === activity.bookId && a.timestamp === activity.timestamp
+    // Si es actividad de lectura, actualizar en localStorage
+    if (activity.sourceType === 'reading' || activity.bookId) {
+      const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+      const activityIndex = readingActivities.findIndex(act => 
+        act.timestamp === activity.timestamp || 
+        (act.bookId === activity.bookId && act.date === activity.date)
       );
       
-      if (index !== -1) {
-        activities[index] = activity;
-        localStorage.setItem('readingActivities', JSON.stringify(activities));
+      if (activityIndex !== -1) {
+        readingActivities[activityIndex].completed = activity.completed;
+        localStorage.setItem('readingActivities', JSON.stringify(readingActivities));
+        
+        // Disparar evento para actualizar otras vistas
+        document.dispatchEvent(new CustomEvent('reading-activity-updated', { 
+          detail: { activity: readingActivities[activityIndex] }
+        }));
       }
-    } else {
-      // Es una tarea del calendario
-      this.saveTasks();
+      return;
+    }
+  
+  // Para tareas de calendario
+  if (activity.sourceType === 'calendar' && activity.taskId) {
+    const dateKey = this.formatDateKey(new Date(activity.date));
+    if (this.tasks[dateKey]) {
+      const taskIndex = this.tasks[dateKey].findIndex(t => t.createdAt === activity.taskId);
+      if (taskIndex !== -1) {
+        // Verificar si cambia el estado de completado
+        const wasCompleted = this.tasks[dateKey][taskIndex].completed;
+        const nowCompleted = activity.completed;
+        
+        this.tasks[dateKey][taskIndex] = {
+          ...this.tasks[dateKey][taskIndex],
+          text: activity.text,
+          completed: activity.completed
+        };
+        this.saveTasks();
+        
+        // Si cambió el estado a completado, disparar un evento para actualizar estadísticas
+        if (!wasCompleted && nowCompleted) {
+          document.dispatchEvent(new CustomEvent('calendar-task-completed', { 
+            detail: { 
+              task: this.tasks[dateKey][taskIndex],
+              category: this.tasks[dateKey][taskIndex].category
+            }
+          }));
+        }
+        // Si cambió de completado a no completado
+        else if (wasCompleted && !nowCompleted) {
+          document.dispatchEvent(new CustomEvent('calendar-task-uncompleted', { 
+            detail: { 
+              task: this.tasks[dateKey][taskIndex],
+              category: this.tasks[dateKey][taskIndex].category
+            }
+          }));
+        }
+      }
     }
   }
-  
+}
+
   deleteActivity(activity) {
-    if (activity.bookId) {
-      // Es una actividad de lectura
-      const activities = JSON.parse(localStorage.getItem('readingActivities')) || [];
-      const filteredActivities = activities.filter(a => 
-        !(a.bookId === activity.bookId && a.timestamp === activity.timestamp)
+    // Si es una actividad de lectura, eliminarla del localStorage
+    if (activity.sourceType === 'reading' || activity.bookId) {
+      const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+      const filteredActivities = readingActivities.filter(act => 
+        act.timestamp !== activity.timestamp && 
+        !(act.bookId === activity.bookId && act.date === activity.date)
       );
+      
+      // Guardar las actividades actualizadas
       localStorage.setItem('readingActivities', JSON.stringify(filteredActivities));
-    } else {
-      // Es una tarea del calendario
+      
+      // Disparar evento para actualizar otras vistas
+      document.dispatchEvent(new CustomEvent('reading-activity-deleted', { 
+        detail: { activity: activity }
+      }));
+      
+      return;
+    }
+    
+    // Para tareas del calendario continuar con el código existente
+    if (activity.sourceType === 'calendar' || activity.taskId) {
       const dateKey = this.formatDateKey(new Date(activity.date));
       if (this.tasks[dateKey]) {
-        const index = this.tasks[dateKey].findIndex(t => t.createdAt === activity.timestamp);
-        if (index !== -1) {
-          this.tasks[dateKey].splice(index, 1);
+        const filteredTasks = this.tasks[dateKey].filter(
+          t => t.createdAt !== (activity.taskId || activity.timestamp)
+        );
+        
+        if (filteredTasks.length !== this.tasks[dateKey].length) {
+          this.tasks[dateKey] = filteredTasks;
           this.saveTasks();
         }
       }
