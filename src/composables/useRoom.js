@@ -14,9 +14,10 @@ import { createPlant } from '@/three/objects/Plant.js';
 import { createComputer } from '@/three/objects/Computer.js';
 import { createChair } from '@/three/objects/Chair.js';
 import { createCarpet } from '@/three/objects/Carpet.js';
+import { createRemoteController } from '@/three/objects/RemoteController.js';
 
 import { createBroom } from '@/three/objects/Broom.js'; // Importar la función de escoba
-
+import { createCenterTable } from '@/three/objects/CenterTable.js'; // Importar la función de mesa central
 import { createSofa } from '@/three/objects/Sofa.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
 
@@ -83,6 +84,7 @@ export default function useRoom(canvas) {
     isOn: true
   });
 
+  // Afegim la taula central
   const plant = createPlant(scene, {
     position: { x: 1.45, y: 0.72, z: -2.03 },
     size: 'medium',
@@ -98,14 +100,19 @@ export default function useRoom(canvas) {
   // Afegim la TV
   
   const tv = createTV(scene, {
-    position: { x: 0.35, y: 1.08, z: -2.15 },
-    size: { width: 1.5, height: 0.7, depth: 0.1 },
+    position: { x: 0.35, y: 1.1, z: -2.15 },
+    size: { width: 1.5, height: 0.8, depth: 0.005 },
     screenColor: 0x000000,
     frameColor: 0x333333,
     isOn: true,
     standType: 'simple'
   });
-
+  // Añadir mando a distancia sobre la mesa central
+  const remoteController = createRemoteController(scene, {
+    position: { x: 0.5, y: 0.415, z: -0.7 },
+    rotation: { x: 0, y: Math.PI, z: 0 },
+    scale: 1
+  });
   // Añadimos el micrófono encima de la mesa
   const microphone = createMicrophone(scene, {
     position: { x: -1.8, y: 0.77, z: 0 }, // Coordenadas encima de la mesa
@@ -128,6 +135,7 @@ export default function useRoom(canvas) {
     type: 'sectional',
     cornerSide: 'right'
   });
+  
 
   /*const broom = createBroom(scene, {
     position: { x: -0.5, y: 0.2, z: -2 },
@@ -154,6 +162,12 @@ export default function useRoom(canvas) {
     woodColor: 0xd8b89e, // Color madera claro
     drawerColor: 0xffffff, // Color blanco para los cajones
     legColor: 0x333333 // Color oscuro para las patas
+  });
+
+
+  const centerTable = createCenterTable(scene, {
+    position: { x: 0.5, y: 0, z: -0.7 }, 
+    rotation: 0
   });
 
   // Mides
