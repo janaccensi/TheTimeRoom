@@ -8,6 +8,23 @@ export class ActivityModal {
     
     // Afegim activitats simulades si no hi ha dades
     this.addMockActivities();
+
+    // Escuchar eventos de actividades de calendario
+    document.addEventListener('calendar-task-completed', () => {
+      // Actualizar estadísticas cuando se completa una tarea del calendario
+      if (this.currentBook) {
+        this.loadBookStats(this.currentBook.userData.id);
+      }
+      this.loadCategoryStats();
+    });
+    
+    document.addEventListener('calendar-task-uncompleted', () => {
+      // Actualizar estadísticas cuando una tarea cambia a no completada
+      if (this.currentBook) {
+        this.loadBookStats(this.currentBook.userData.id);
+      }
+      this.loadCategoryStats();
+    });
   }
   
   init() {
@@ -205,25 +222,54 @@ export class ActivityModal {
   }
   
   loadBookStats(bookId) {
-    // Recuperem l'historial d'activitats per aquest llibre
-    const activitats = this.getActivitatsByBookId(bookId);
+    if (!bookId) return;
+
+    // Obtener actividades de lectura relacionadas con este libro
+    const actividades = this.getActivitatsByBookId(bookId);
+    
+    // Obtener tareas del calendario que estén relacionadas con este libro
+    const calendarTasksRaw = JSON.parse(localStorage.getItem('calendar-tasks')) || {};
+    const calendarActivities = [];
+    
+    // Buscar tareas del calendario que coincidan con las categorías de este libro
+    // Para esto, necesitamos saber qué categorías usa este libro
+    const bookCategories = new Set(actividades.map(act => act.category));
+    
+    Object.entries(calendarTasksRaw).forEach(([dateKey, tasks]) => {
+      tasks.forEach(task => {
+        // Si la tarea está completada y su categoría coincide con alguna usada en este libro
+        if (task.completed && bookCategories.has(task.category)) {
+          calendarActivities.push({
+            category: task.category,
+            hours: task.duration || 1,
+            timestamp: task.createdAt || new Date().toISOString()
+          });
+        }
+      });
+    });
+  
+    // Combinar ambas fuentes de datos
+    const allActivities = [...actividades, ...calendarActivities];
     
     // Actualitzem els elements d'estadística
     const totalHoursElement = this.modal.querySelector('#total-hours');
     const lastSessionElement = this.modal.querySelector('#last-session');
     const sessionsCountElement = this.modal.querySelector('#sessions-count');
     
-    // Total d'hores
-    const totalHores = activitats.reduce((sum, act) => sum + act.hours, 0);
-    totalHoursElement.textContent = totalHores.toFixed(1);
+    // Calcular estadísticas combinadas
+    const totalHoras = allActivities.reduce((sum, act) => {
+      const hours = parseFloat(act.hours || act.duration || 0);
+      return sum + (isNaN(hours) ? 0 : hours);
+    }, 0);
+    totalHoursElement.textContent = totalHoras.toFixed(1);
     
     // Nombre de sessions
-    sessionsCountElement.textContent = activitats.length;
+    sessionsCountElement.textContent = actividades.length;
     
     // Última sessió
-    if (activitats.length > 0) {
+    if (actividades.length > 0) {
       // Ordenem per data més recent
-      const sortedActivitats = [...activitats].sort((a, b) => 
+      const sortedActivitats = [...actividades].sort((a, b) => 
         new Date(b.date) - new Date(a.date)
       );
       
@@ -236,8 +282,28 @@ export class ActivityModal {
   }
   
   loadCategoryStats() {
-    // Obtenim totes les activitats
-    const allActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+    // Obtener actividades de lectura
+    const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+
+    // Obtener tareas del calendario
+    const calendarTasksRaw = JSON.parse(localStorage.getItem('calendar-tasks')) || {};
+    const calendarActivities = [];
+
+    // Convertir el formato de tareas de calendario a un array similar al de lectura
+    Object.entries(calendarTasksRaw).forEach(([dateKey, tasks]) => {
+      tasks.forEach(task => {
+        if (task.completed) { // Solo contar las tareas completadas
+          calendarActivities.push({
+            category: task.category || 'Otros',
+            hours: task.duration || 1,
+            timestamp: task.createdAt || new Date().toISOString()
+          });
+        }
+      });
+    });
+    
+    // Combinar ambas fuentes de actividades
+    const allActivities = [...readingActivities, ...calendarActivities];
     
     if (allActivities.length === 0) {
       const categoriesContainer = this.modal.querySelector('#categories-progress');
@@ -255,9 +321,10 @@ export class ActivityModal {
       const category = activity.category;
       if (!categoryHours[category]) {
         categoryHours[category] = 0;
-      }
-      categoryHours[category] += parseFloat(activity.hours);
-      totalHours += parseFloat(activity.hours);
+      } 
+      const hours = parseFloat(activity.hours || activity.duration || 0);
+      categoryHours[category] += isNaN(hours) ? 0 : hours;
+      totalHours += isNaN(hours) ? 0 : hours;
     });
     
     // Trobem la categoria amb més hores per escalar els percentatges
@@ -270,11 +337,13 @@ export class ActivityModal {
     Object.entries(categoryHours)
       .sort((a, b) => b[1] - a[1]) // Ordenem per hores (descendent)
       .forEach(([category, hours]) => {
-        // Calculem percentatge real per a la visualització
-        const realPercentage = Math.round((hours / totalHours) * 100);
+        // Usar toFixed para mostrar siempre un decimal en el porcentaje
+        const realPercentage = totalHours > 0 ? (hours / totalHours * 100).toFixed(1) : '0.0';
         
-        // Calculem percentatge escalat per a la barra de progrés
-        const scaledPercentage = Math.round((hours / maxHours) * 100);
+        const scaledPercentage = maxHours > 0 ? Math.round((hours / maxHours) * 100) : 0;
+        
+        // Mismo toFixed para horas
+        const formattedHours = hours.toFixed(1);
         
         const categoryElement = document.createElement('div');
         categoryElement.className = 'category-item';
@@ -291,9 +360,9 @@ export class ActivityModal {
           <div class="progress-container">
             <div class="progress-bar" style="width: ${scaledPercentage}%; background-color: ${color}"></div>
           </div>
-          <div class="category-hours">${hours.toFixed(1)} hores</div>
+          <div class="category-hours">${formattedHours} hores</div>
         `;
-        
+
         categoriesContainer.appendChild(categoryElement);
       });
   }
@@ -319,31 +388,46 @@ export class ActivityModal {
   }
   
   saveActivity() {
-    if (!this.currentBook || !this.onSave) return;
-    
+    if (!this.currentBook) return;
+  
     const categorySelect = this.formModal.querySelector('#activity-category');
     const dateInput = this.formModal.querySelector('#activity-date');
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
+
+    const hours = parseFloat(timeInput.value);
+    if (isNaN(hours)) {
+      alert('Por favor, introduce un número válido de horas');
+      return;
+    }
     
     const activityData = {
       bookId: this.currentBook.userData.id,
       bookTitle: this.currentBook.userData.title,
-      category: categorySelect.value, // Utilitzem la categoria seleccionada
+      category: categorySelect.value,
       date: dateInput.value,
-      hours: parseFloat(timeInput.value),
+      hours: hours,
       notes: notesInput.value,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      sourceType: 'reading',
+      completed: true, // Marcar automáticamente como completado
+      duration: hours // Añadir también la duración para consistencia
     };
     
-    // Desem l'activitat utilitzant el callback
-    this.onSave(activityData);
+    // El resto del código permanece igual
+    const activities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+    activities.push(activityData);
+    localStorage.setItem('readingActivities', JSON.stringify(activities));
     
-    // Actualitzem les estadístiques abans de tancar el modal
+    // Disparar un evento que CalendarPanel pueda escuchar para actualizar su vista
+    const event = new CustomEvent('reading-activity-added', { 
+      detail: { activity: activityData }
+    });
+    document.dispatchEvent(event);
+    
+    // Actualizar estadísticas y cerrar el formulario
     this.loadBookStats(this.currentBook.userData.id);
     this.loadCategoryStats();
-    
-    // Mostrem el modal d'estadístiques actualitzat
     this.formModal.classList.add('hidden');
     this.modal.classList.remove('hidden');
   }
