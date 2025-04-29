@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export function createComputer(scene, options = {}) {
-  const {
+  let {
     position = { x: 0, y: 0, z: 0 },
     type = 'desktop', // laptop, desktop, gaming
     isOn = true,
