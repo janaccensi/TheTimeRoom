@@ -28,3 +28,5 @@ coverage
 
 *.tsbuildinfo
 .qodo
+
+git_info_rellevant.txt
