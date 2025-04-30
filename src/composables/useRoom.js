@@ -354,6 +354,26 @@ export default function useRoom(canvas) {
       else if (object.userData && object.userData.type === 'calendar') {
         calendarPanel.show(object);
       }
+      else if (object.userData && object.userData.type === 'tv') {
+        activityModal.show(object);
+        // Si el televisor té una funció de togglePower, la cridem
+        if (tv.togglePowerFunction) {
+          tv.togglePowerFunction();
+        }
+      }
+      else if (object.userData && object.userData.type === 'dumbbell') {
+        activityModal.show(object);
+      }
+      else if (object.userData && object.userData.type === 'remote-controller') {
+        activityModal.show(object);
+      }
+      else if (object.userData && object.userData.type === 'microphone') {
+        activityModal.show(object);
+      }
+      else if (object.userData && object.userData.type === 'broom') {
+        activityModal.show(object);
+      }
+      
     });
 
     // Configuramos el hover sobre objetos interactivos

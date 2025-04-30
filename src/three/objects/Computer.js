@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export function createComputer(scene, options = {}) {
   let {
     position = { x: 0, y: 0, z: 0 },
-    type = 'desktop', // laptop, desktop, gaming
+    type = 'gaming', // laptop, desktop, gaming
     isOn = true,
     rotation = 0, // Rotación en el eje Y
     screenColor = 0x0066cc, // Color de la pantalla cuando está encendida
@@ -11,6 +11,20 @@ export function createComputer(scene, options = {}) {
   } = options;
   
   const computerGroup = new THREE.Group();
+  
+  // NUEVA FUNCIÓN: Hacer que todas las partes sean interactivas
+  function setInteractiveProperties(object) {
+    if (object.isMesh) {
+      // Hacer que cada mesh SÍ sea interactivo, con el mismo tipo
+      object.userData = {
+        type: 'computer',          // Todos los meshes tienen el mismo tipo
+        isInteractive: true,       // Todos son interactivos
+        title: 'Ordinador',
+        description: 'Un ordinador potent',
+        action: 'toggleComputer'   // Acción para encender/apagar
+      };
+    }
+  }
 
   if (type === 'desktop' || type === 'gaming') {
     // MONITOR
@@ -27,7 +41,6 @@ export function createComputer(scene, options = {}) {
       metalness: 0.8
     });
     
-    
     // Material de la pantalla (screenMaterial):
     const screenMaterial = new THREE.MeshStandardMaterial({
         color: isOn ? screenColor : 0x111111,
@@ -37,10 +50,10 @@ export function createComputer(scene, options = {}) {
         emissiveIntensity: isOn ? 0.4 : 0
     });
     
-    
     // Marco del monitor con bordes redondeados
     const monitorGeometry = new THREE.BoxGeometry(monitorWidth, monitorHeight, monitorDepth);
     const monitor = new THREE.Mesh(monitorGeometry, monitorMaterial);
+    setInteractiveProperties(monitor); // MODIFICADO: Ahora es interactivo
     
     // Pantalla (ligeramente más pequeña que el marco)
     const screenMargin = 0.03;
@@ -50,6 +63,7 @@ export function createComputer(scene, options = {}) {
     const screenGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
     const screen = new THREE.Mesh(screenGeometry, screenMaterial);
     screen.position.z = monitorDepth / 2 + 0.001;
+    setInteractiveProperties(screen); // MODIFICADO: Ahora es interactivo
     monitor.add(screen);
     
     // Logo en la parte inferior (como un fabricante)
@@ -62,6 +76,7 @@ export function createComputer(scene, options = {}) {
     const logo = new THREE.Mesh(logoGeometry, logoMaterial);
     logo.position.y = -monitorHeight/2 + 0.02;
     logo.position.z = monitorDepth/2 + 0.001;
+    setInteractiveProperties(logo); // MODIFICADO: Ahora es interactivo
     monitor.add(logo);
     
     // Soporte del monitor (más estilizado)
@@ -76,17 +91,20 @@ export function createComputer(scene, options = {}) {
     const baseGeometry = new THREE.BoxGeometry(baseWidth, 0.02, 0.25);
     baseGeometry.translate(0, -0.01, 0); // Centrar en el origen
     const base = new THREE.Mesh(baseGeometry, standBaseMaterial);
+    setInteractiveProperties(base); // MODIFICADO: Ahora es interactivo
     
     // Pata principal
     const neckGeometry = new THREE.BoxGeometry(0.05, 0.4, 0.05);
     neckGeometry.translate(0, 0.2, 0); // Centrar en el origen
     const neck = new THREE.Mesh(neckGeometry, standBaseMaterial);
+    setInteractiveProperties(neck); // MODIFICADO: Ahora es interactivo
     base.add(neck);
     
     // Conector con el monitor
     const connectorGeometry = new THREE.BoxGeometry(0.2, 0.1, 0.05);
     const connector = new THREE.Mesh(connectorGeometry, standBaseMaterial);
     connector.position.y = 0.4;
+    setInteractiveProperties(connector); // MODIFICADO: Ahora es interactivo
     neck.add(connector);
     
     // Añadir monitor al conector
@@ -111,6 +129,7 @@ export function createComputer(scene, options = {}) {
       
       const caseGeometry = new THREE.BoxGeometry(caseWidth, caseHeight, caseDepth);
       const pcCase = new THREE.Mesh(caseGeometry, caseMaterial);
+      setInteractiveProperties(pcCase); // MODIFICADO: Ahora es interactivo
       
       // Panel frontal con detalles
       const frontPanelGeometry = new THREE.PlaneGeometry(caseWidth - 0.01, caseHeight - 0.01);
@@ -121,6 +140,7 @@ export function createComputer(scene, options = {}) {
       });
       const frontPanel = new THREE.Mesh(frontPanelGeometry, frontPanelMaterial);
       frontPanel.position.z = caseDepth/2 + 0.001;
+      setInteractiveProperties(frontPanel); // MODIFICADO: Ahora es interactivo
       pcCase.add(frontPanel);
       
       // Luces RGB (si están habilitadas)
@@ -138,6 +158,7 @@ export function createComputer(scene, options = {}) {
         const rgbStrip = new THREE.Mesh(rgbGeometry, rgbMaterial);
         rgbStrip.position.x = -(caseWidth/2) + 0.03;
         rgbStrip.position.z = caseDepth/2 + 0.002;
+        setInteractiveProperties(rgbStrip); // MODIFICADO: Ahora es interactivo
         pcCase.add(rgbStrip);
         
         // Ventiladores con luz
@@ -155,6 +176,7 @@ export function createComputer(scene, options = {}) {
           fan.position.z = caseDepth/2 + 0.002;
           fan.position.y = 0.1 - i * 0.25;
           fan.position.x = 0.05;
+          setInteractiveProperties(fan); // MODIFICADO: Ahora es interactivo
           
           // Aspas del ventilador (simplificadas)
           const fanCenter = new THREE.Mesh(
@@ -165,6 +187,7 @@ export function createComputer(scene, options = {}) {
             })
           );
           fanCenter.position.z = 0.001;
+          setInteractiveProperties(fanCenter); // MODIFICADO: Ahora es interactivo
           fan.add(fanCenter);
           
           // Luz RGB alrededor del ventilador
@@ -179,6 +202,7 @@ export function createComputer(scene, options = {}) {
           });
           const fanRim = new THREE.Mesh(fanRimGeometry, fanRimMaterial);
           fanRim.position.z = 0.002;
+          setInteractiveProperties(fanRim); // MODIFICADO: Ahora es interactivo
           fan.add(fanRim);
           
           pcCase.add(fan);
@@ -196,6 +220,7 @@ export function createComputer(scene, options = {}) {
       powerButton.position.z = caseDepth/2 + 0.002;
       powerButton.position.y = caseHeight/2 - 0.05;
       powerButton.position.x = caseWidth/2 - 0.05;
+      setInteractiveProperties(powerButton); // MODIFICADO: Ahora es interactivo
       pcCase.add(powerButton);
       
       pcGroup.add(pcCase);
@@ -207,6 +232,7 @@ export function createComputer(scene, options = {}) {
       
       const caseGeometry = new THREE.BoxGeometry(caseWidth, caseHeight, caseDepth);
       const pcCase = new THREE.Mesh(caseGeometry, caseMaterial);
+      setInteractiveProperties(pcCase); // MODIFICADO: Ahora es interactivo
       
       // Detalles frontales (ranura DVD, etc.)
       const dvdDriveGeometry = new THREE.BoxGeometry(caseWidth - 0.02, 0.02, 0.01);
@@ -217,6 +243,7 @@ export function createComputer(scene, options = {}) {
       const dvdDrive = new THREE.Mesh(dvdDriveGeometry, dvdDriveMaterial);
       dvdDrive.position.z = caseDepth/2 + 0.002;
       dvdDrive.position.y = caseHeight/2 - 0.05;
+      setInteractiveProperties(dvdDrive); // MODIFICADO: Ahora es interactivo
       pcCase.add(dvdDrive);
       
       // Botón de encendido
@@ -229,6 +256,7 @@ export function createComputer(scene, options = {}) {
       const powerButton = new THREE.Mesh(powerButtonGeometry, powerButtonMaterial);
       powerButton.position.z = caseDepth/2 + 0.002;
       powerButton.position.y = caseHeight/2 - 0.1;
+      setInteractiveProperties(powerButton); // MODIFICADO: Ahora es interactivo
       pcCase.add(powerButton);
       
       pcGroup.add(pcCase);
@@ -247,6 +275,7 @@ export function createComputer(scene, options = {}) {
       roughness: 0.4
     });
     const keyboard = new THREE.Mesh(keyboardGeometry, keyboardMaterial);
+    setInteractiveProperties(keyboard); // MODIFICADO: Ahora es interactivo
     
     // Teclas
     const keySize = 0.02;
@@ -268,6 +297,7 @@ export function createComputer(scene, options = {}) {
         key.position.x = (col - keysPerRow/2 + 0.5) * (keySize + keyGap);
         key.position.z = (row - keyRows/2 + 0.5) * (keySize + keyGap);
         key.position.y = keyboardHeight/2 + 0.002;
+        setInteractiveProperties(key); // MODIFICADO: Ahora es interactivo
         keyboard.add(key);
       }
     }
@@ -286,6 +316,7 @@ export function createComputer(scene, options = {}) {
     const mouseGeometry = new THREE.BoxGeometry(0.06, 0.03, 0.1);
     mouseGeometry.translate(0, 0.015, 0);
     const mouse = new THREE.Mesh(mouseGeometry, mouseMaterial);
+    setInteractiveProperties(mouse); // MODIFICADO: Ahora es interactivo
     
     // Rueda del ratón
     const wheelGeometry = new THREE.CylinderGeometry(0.006, 0.006, 0.02, 16);
@@ -297,6 +328,7 @@ export function createComputer(scene, options = {}) {
     wheel.rotation.x = Math.PI/2;
     wheel.position.y = 0.03;
     wheel.position.z = -0.01;
+    setInteractiveProperties(wheel); // MODIFICADO: Ahora es interactivo
     mouse.add(wheel);
     
     if (type === 'gaming' && hasRGB) {
@@ -314,6 +346,7 @@ export function createComputer(scene, options = {}) {
       mouseLight.position.y = 0.016;
       mouseLight.position.z = -0.04;
       mouseLight.rotation.x = -Math.PI/2;
+      setInteractiveProperties(mouseLight); // MODIFICADO: Ahora es interactivo
       mouse.add(mouseLight);
     }
     
@@ -333,6 +366,12 @@ export function createComputer(scene, options = {}) {
     mouseGroup.position.set(0.3, 0.01, 0.3);
     computerGroup.add(mouseGroup);
   }
+  
+  // NUEVO: Marcar el grupo como un grupo interactivo especial
+  computerGroup.userData = {
+    isInteractiveGroup: true,
+    type: 'computer'
+  };
   
   // Posicionamiento global y rotación
   computerGroup.position.set(position.x, position.y, position.z);
