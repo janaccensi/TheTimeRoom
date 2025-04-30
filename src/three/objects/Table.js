@@ -36,10 +36,7 @@ export function createTable(scene, roomConfig) {
   
   // Material para superficie en marrón más claro y tenue
   const tableSurfaceMaterial = tableWoodMaterial.clone();
-  tableSurfaceMaterial.color.set(0xc9b299); // Marrón más tenue y natural
-  tableSurfaceMaterial.roughness = 0.75;    // Más rugoso para aspecto natural
-  tableSurfaceMaterial.metalness = 0.05;    // Menos brillo
-  
+
   // Dimensiones de la mesa
   const tableDepth = 2; 
   const tableWidth = 1.2;

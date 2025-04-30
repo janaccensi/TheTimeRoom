@@ -77,9 +77,9 @@ export function getMaterials() {
     map: tableWoodTexture,
     normalMap: tableWoodNormalMap,
     roughnessMap: tableWoodRoughness,
-    roughness: 0.8,
-    metalness: 0.1,
-    color: 0xbb6633 // Tint taronja-marró per intensificar el color de la fusta
+    roughness: 0.75,
+    metalness: 0.05,
+    color: 0xc9b299 // Tint taronja-marró per intensificar el color de la fusta
   });
   // Material de paper per al calendari
   const paperTexture = textureLoader.load('/textures/paper/Paper001_1K-JPG_Color.jpg');
@@ -98,18 +98,21 @@ export function getMaterials() {
     metalness: 0.1
   });
 
-  // Material marrón para los cajones (reusa la madera de mesa)
-  const woodDrawerMaterial = tableWoodMaterial;
+ 
 
+  // Material marrón para los cajones (reusa la madera de mesa)
+  
+
+ 
+  
   return { 
     frontWallMaterial, 
     floorMaterial, 
     woodMaterial, 
     tableWoodMaterial, 
     paperMaterial, 
-    whitePlankMaterial, 
-    woodDrawerMaterial,
+    whitePlankMaterial,     
     sideWallMaterial,
-    carpetMaterial
+    carpetMaterial    
   };
 }
