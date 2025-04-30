@@ -4,37 +4,10 @@ import { createBooks } from './Books.js';
 
 export function createBookshelf(scene, roomConfig) {
   const { width, wallThickness } = roomConfig;
-  const { woodMaterial } = getMaterials();
+  const { tableWoodMaterial, whitePlankMaterial } = getMaterials();
   
   // Funció auxiliar per crear un material de fusta amb textura orientada correctament
-  function createOrientedWoodMaterial(isVertical = false, rotation = 0) {
-    // Clonem el material base per no afectar altres objectes
-    const material = woodMaterial.clone();
-    
-    // Ajustem l'orientació de la textura
-    if (material.map) {
-      material.map = material.map.clone();
-      material.map.rotation = rotation;
-      material.map.repeat.set(isVertical ? 1 : 2, isVertical ? 2 : 1);
-      material.map.needsUpdate = true;
-    }
-    
-    if (material.normalMap) {
-      material.normalMap = material.normalMap.clone();
-      material.normalMap.rotation = rotation;
-      material.normalMap.repeat.set(isVertical ? 1 : 2, isVertical ? 2 : 1);
-      material.normalMap.needsUpdate = true;
-    }
-    
-    if (material.roughnessMap) {
-      material.roughnessMap = material.roughnessMap.clone();
-      material.roughnessMap.rotation = rotation;
-      material.roughnessMap.repeat.set(isVertical ? 1 : 2, isVertical ? 2 : 1);
-      material.roughnessMap.needsUpdate = true;
-    }
-    
-    return material;
-  }
+
   
   // Dimensions de l'estanteria (orientació corregida paral·lela a leftWall)
   const shelfDepth = 1.6;      // Llarg en eix Z (paral·lel a leftWall)
@@ -48,31 +21,22 @@ export function createBookshelf(scene, roomConfig) {
   const posZ = -(width-wallThickness)/3 + 2.8; // Més proper a la paret frontal
   
   // Marc posterior (tocat a leftWall) - textura vertical
-  const backFrameGeom = new THREE.BoxGeometry(shelfThickness, shelfHeight, shelfDepth);
-  const backMaterial = createOrientedWoodMaterial(true);
-  const backFrame = new THREE.Mesh(backFrameGeom, backMaterial);
+  const backFrameGeom = new THREE.BoxGeometry(shelfThickness, shelfHeight, shelfDepth);  
+  const backFrame = new THREE.Mesh(backFrameGeom, tableWoodMaterial);
   backFrame.position.set(posX - shelfWidth/2 + shelfThickness/2, posY, posZ);
   scene.add(backFrame);
-  
-  // Lateral frontal - textura vertical
-  const frontFrameGeom = new THREE.BoxGeometry(shelfThickness, shelfHeight, shelfDepth);
-  const frontMaterial = createOrientedWoodMaterial(true);
-  const frontFrame = new THREE.Mesh(frontFrameGeom, frontMaterial);
-  frontFrame.position.set(posX - shelfThickness/2, posY, posZ);
-  scene.add(frontFrame);
-  
+   
   // Laterals als extrems nord i sud - textura vertical
   const endFrameGeom = new THREE.BoxGeometry(shelfWidth, shelfHeight, shelfThickness);
-  const northMaterial = createOrientedWoodMaterial(true, Math.PI/2);
   
   // Extrem nord
-  const northFrame = new THREE.Mesh(endFrameGeom, northMaterial);
+  const northFrame = new THREE.Mesh(endFrameGeom, tableWoodMaterial);
   northFrame.position.set(posX, posY, posZ + shelfDepth/2 - shelfThickness/2);
   scene.add(northFrame);
   
   // Extrem sud
-  const southMaterial = createOrientedWoodMaterial(true, Math.PI/2);
-  const southFrame = new THREE.Mesh(endFrameGeom, southMaterial);
+  
+  const southFrame = new THREE.Mesh(endFrameGeom, tableWoodMaterial);
   southFrame.position.set(posX, posY, posZ - shelfDepth/2 + shelfThickness/2);
   scene.add(southFrame);
   
@@ -85,17 +49,16 @@ export function createBookshelf(scene, roomConfig) {
   const shelfSpacing = shelfHeight / (numShelves + 1);
   
   // Primer afegim la tapa superior
-  const topShelfMaterial = createOrientedWoodMaterial(false, Math.PI/2);
-  const topShelf = new THREE.Mesh(shelfHorizGeom, topShelfMaterial);
+  
+  const topShelf = new THREE.Mesh(shelfHorizGeom, tableWoodMaterial);
   topShelf.position.set(posX, posY + shelfHeight/2 - shelfThickness/2, posZ);
   scene.add(topShelf);
   shelves.push(topShelf);
   
   // Ara afegim els prestatges interiors
   for (let i = 0; i < numShelves; i++) {
-    // Per cada prestatge, orientem la textura horitzontalment
-    const shelfMaterial = createOrientedWoodMaterial(false, Math.PI/2);
-    const shelf = new THREE.Mesh(shelfHorizGeom, shelfMaterial);
+    // Per cada prestatge, orientem la textura horitzontalment    
+    const shelf = new THREE.Mesh(shelfHorizGeom, tableWoodMaterial);
     
     // Posició vertical distribuïda uniformement sense base
     // Comencem des d'una posició més elevada per deixar espai a la part inferior
@@ -116,8 +79,7 @@ export function createBookshelf(scene, roomConfig) {
     });
   }
   
-  return { 
-    structure: { backFrame, frontFrame, northFrame, southFrame },
+  return {     
     shelves 
   };
 }

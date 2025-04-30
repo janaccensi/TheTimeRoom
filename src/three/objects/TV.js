@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export function createTV(scene, options = {}) {
   // Opciones por defecto
-  const {
+  let {
     position = { x: 0, y: 0, z: 0 },
     size = { width: 1.2, height: 0.7, depth: 0.025 }, // Pantalla fina
     screenColor = 0x000000,

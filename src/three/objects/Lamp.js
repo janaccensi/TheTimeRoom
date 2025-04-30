@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export function createLamp(scene, options = {}) {
-  const {
+  let {
     position = { x: 2, y: 0, z: 2 },
     color = 0xdddddd,
     height = 1.5,
