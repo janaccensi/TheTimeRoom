@@ -30,8 +30,8 @@ export function createTV(scene, options = {}) {
     clearcoat: 1.0,
     clearcoatRoughness: 0.03,
     reflectivity: 1.0,
-    emissive: isOn ? 0x444466 : 0x000000,
-    emissiveIntensity: isOn ? 0.3 : 0
+    emissive: isOn ? 0x222233 : 0x000000, // Color emisivo más oscuro
+    emissiveIntensity: isOn ? 0.15 : 0    // Intensidad reducida 0.3 -> 0.15
   });
   
   const standMaterial = new THREE.MeshPhysicalMaterial({
@@ -69,13 +69,29 @@ export function createTV(scene, options = {}) {
   };
   
   const frameGeometry = new THREE.ExtrudeGeometry(frameShape, extrudeSettings);
+  
+  // MODIFICADO: Nueva función para hacer que todas las partes sean interactivas
+  // y pertenezcan al mismo grupo lógico
+  function setInteractiveProperties(object) {
+    if (object.isMesh) {
+      // Hacer que cada mesh SÍ sea interactivo, con el mismo tipo
+      object.userData = {
+        type: 'tv',          // Todos los meshes tienen el mismo tipo
+        isInteractive: true, // Todos son interactivos
+        title: 'Televisió',
+        description: 'Una televisió moderna',
+        action: 'toggleTV'
+      };
+    }
+  }
+  
   const frame = new THREE.Mesh(frameGeometry, frameMaterial);
   
   // Centramos el marco
   frame.position.x = -frameWidth / 2;
   frame.position.y = -frameHeight / 2;
   frame.position.z = -frameDepth / 2;
-  
+  setInteractiveProperties(frame); // MODIFICADO: Ahora es interactivo
   tvGroup.add(frame);
   
   // Pantalla (con marco más pronunciado)
@@ -98,6 +114,8 @@ export function createTV(scene, options = {}) {
   const innerBorder = new THREE.Mesh(innerBorderGeometry, innerBorderMaterial);
   innerBorder.rotation.x = -Math.PI / 2;
   innerBorder.position.z = frameDepth / 2 + 0.001;
+  setInteractiveProperties(innerBorder); // MODIFICADO: Ahora es interactivo
+  tvGroup.add(innerBorder);
   
   // Geometría con ligera curvatura para la pantalla
   const screenSegments = 32;
@@ -114,8 +132,11 @@ export function createTV(scene, options = {}) {
   
   const screen = new THREE.Mesh(screenGeometry, screenMaterial);
   
+  // MODIFICADO: Usar la misma función de configuración
+  setInteractiveProperties(screen);
+  
   // Hundimos ligeramente la pantalla respecto al marco
-  screen.position.z = frameDepth / 2 - 0.002; // Pantalla ligeramente hundida
+  screen.position.z = frameDepth / 2 - 0.002;
   tvGroup.add(screen);
   
   // Añadir un sutil bisel interior para destacar el marco
@@ -131,6 +152,7 @@ export function createTV(scene, options = {}) {
   
   const innerFrame = new THREE.Mesh(innerFrameGeometry, innerFrameMaterial);
   innerFrame.position.z = frameDepth / 2 - 0.001; // Entre el marco y la pantalla
+  setInteractiveProperties(innerFrame); // MODIFICADO: Ahora es interactivo
   tvGroup.add(innerFrame);
   
   // Soporte moderno estilizado
@@ -144,6 +166,8 @@ export function createTV(scene, options = {}) {
   // Posición de la base
   base.position.y = -frameHeight / 2 - 0.08;
   base.position.z = frameDepth;
+  setInteractiveProperties(base); // MODIFICADO: Ahora es interactivo
+  tvGroup.add(base);
   
   // Soporte vertical estilizado
   const standHeight = 0.08;
@@ -155,8 +179,7 @@ export function createTV(scene, options = {}) {
   
   stand.position.y = -frameHeight / 2 - standHeight / 2;
   stand.position.z = -frameDepth / 2;
-  
-  tvGroup.add(base);
+  setInteractiveProperties(stand); // MODIFICADO: Ahora es interactivo
   tvGroup.add(stand);
   
   // Añadir detalle luminoso sutil en la parte frontal (como indicador de encendido)
@@ -169,7 +192,9 @@ export function createTV(scene, options = {}) {
   });
   
   const indicator = new THREE.Mesh(indicatorGeometry, indicatorMaterial);
-  indicator.position.set(0, -frameHeight / 2+0.004, frameDepth / 2+0.015);  tvGroup.add(indicator);
+  indicator.position.set(0, -frameHeight / 2+0.004, frameDepth / 2+0.015);
+  setInteractiveProperties(indicator); // MODIFICADO: Ahora es interactivo
+  tvGroup.add(indicator);
   
   // Añadir logo (sutil, en la parte inferior)
   const logoSize = 0.03;
@@ -182,13 +207,18 @@ export function createTV(scene, options = {}) {
   
   const logo = new THREE.Mesh(logoGeometry, logoMaterial);
   logo.position.set(0, -frameHeight / 2 + 0.03, frameDepth / 2+0.015);
+  setInteractiveProperties(logo); // MODIFICADO: Ahora es interactivo
   tvGroup.add(logo);
+  
+  // AÑADIDO: Marcar el grupo como un grupo interactivo especial para que 
+  // el InteractionManager pueda identificarlo correctamente
+  tvGroup.userData = {
+    isInteractiveGroup: true,
+    type: 'tv'
+  };
   
   // Posicionar el grupo completo
   tvGroup.position.set(position.x, position.y, position.z);
-  
-  // Añadir a la escena
-  scene.add(tvGroup);
   
   // Método para encender/apagar la TV con efecto mejorado
   const togglePower = () => {
@@ -199,9 +229,9 @@ export function createTV(scene, options = {}) {
       const initialEmissive = new THREE.Color(0x000011);
       screenMaterial.emissive = initialEmissive;
       
-      // Comenzar con una intensidad baja
+      // Intensidad reducida
       let intensity = 0;
-      const targetIntensity = 0.4;
+      const targetIntensity = 0.15;  // Reducido de 0.4 a 0.15
       const duration = 800;
       const startTime = Date.now();
       
@@ -219,7 +249,8 @@ export function createTV(scene, options = {}) {
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
-          screenMaterial.emissive.set(0x444466);
+          // Color emisivo final más suave
+          screenMaterial.emissive.set(0x222233);  // Cambiado de 0x444466 a 0x222233
         }
       };
       
@@ -234,6 +265,9 @@ export function createTV(scene, options = {}) {
       indicatorMaterial.opacity = 0.3;
     }
   };
+  
+  // Añadir a la escena
+  scene.add(tvGroup);
   
   return {
     tvGroup,

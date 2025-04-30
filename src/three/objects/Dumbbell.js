@@ -7,7 +7,8 @@ export function createDumbbell(scene, options = {}) {
     weight = 5, // kg - afecta el tamaño visual
     color = 0x333333, // color de las pesas
     barColor = 0xa8a8a8, // color de la barra (plateado)
-    isDetailed = true // si queremos añadir detalles como texturas o geometría adicional
+    isDetailed = true, // si queremos añadir detalles como texturas o geometría adicional
+    type = 'dumbbell' // Tipo específico para diferenciar las mancuernas
   } = options;
   
   // Grupo para contener todas las partes de la mancuerna
@@ -42,10 +43,25 @@ export function createDumbbell(scene, options = {}) {
     metalness: 0.1
   });
   
+  // NUEVO: Función para hacer que todas las partes sean interactivas
+  function setInteractiveProperties(object) {
+    if (object.isMesh) {
+      // Hacer que cada mesh SÍ sea interactivo, con el mismo tipo
+      object.userData = {
+        type: type,          // Todos los meshes tienen el mismo tipo (dumbbell1 o dumbbell2)
+        isInteractive: true, // Todos son interactivos
+        title: `Mancuerna ${weight}kg`,
+        description: `Una mancuerna de ${weight} kilogramos`,
+        action: 'examine'    // Acción por defecto
+      };
+    }
+  }
+  
   // Crear la barra central
   const barGeometry = new THREE.CylinderGeometry(barRadius, barRadius, barLength, 16);
   barGeometry.rotateX(Math.PI / 2); // Rotar para que esté horizontal (a lo largo del eje Z)
   const bar = new THREE.Mesh(barGeometry, barMaterial);
+  setInteractiveProperties(bar); // NUEVO: Hacer interactiva
   dumbbellGroup.add(bar);
   
   // Crear el agarre central
@@ -53,6 +69,7 @@ export function createDumbbell(scene, options = {}) {
     const gripGeometry = new THREE.CylinderGeometry(gripRadius, gripRadius, barLength * 0.4, 16);
     gripGeometry.rotateX(Math.PI / 2);
     const grip = new THREE.Mesh(gripGeometry, gripMaterial);
+    setInteractiveProperties(grip); // NUEVO: Hacer interactiva
     dumbbellGroup.add(grip);
   }
   
@@ -62,6 +79,7 @@ export function createDumbbell(scene, options = {}) {
   leftDiscGeometry.rotateX(Math.PI / 2);
   const leftDisc = new THREE.Mesh(leftDiscGeometry, discMaterial);
   leftDisc.position.z = -barLength / 2 + discThickness / 2;
+  setInteractiveProperties(leftDisc); // NUEVO: Hacer interactiva
   dumbbellGroup.add(leftDisc);
   
   // Disco derecho
@@ -69,6 +87,7 @@ export function createDumbbell(scene, options = {}) {
   rightDiscGeometry.rotateX(Math.PI / 2);
   const rightDisc = new THREE.Mesh(rightDiscGeometry, discMaterial);
   rightDisc.position.z = barLength / 2 - discThickness / 2;
+  setInteractiveProperties(rightDisc); // NUEVO: Hacer interactiva
   dumbbellGroup.add(rightDisc);
   
   // Añadir discos secundarios si es detallado
@@ -84,6 +103,7 @@ export function createDumbbell(scene, options = {}) {
     leftSmallDiscGeometry.rotateX(Math.PI / 2);
     const leftSmallDisc = new THREE.Mesh(leftSmallDiscGeometry, discMaterial);
     leftSmallDisc.position.z = -barLength / 2 + discThickness + smallerDiscThickness / 2;
+    setInteractiveProperties(leftSmallDisc); // NUEVO: Hacer interactiva
     dumbbellGroup.add(leftSmallDisc);
     
     // Disco secundario derecho
@@ -93,8 +113,15 @@ export function createDumbbell(scene, options = {}) {
     rightSmallDiscGeometry.rotateX(Math.PI / 2);
     const rightSmallDisc = new THREE.Mesh(rightSmallDiscGeometry, discMaterial);
     rightSmallDisc.position.z = barLength / 2 - discThickness - smallerDiscThickness / 2;
+    setInteractiveProperties(rightSmallDisc); // NUEVO: Hacer interactiva
     dumbbellGroup.add(rightSmallDisc);
   }
+  
+  // NUEVO: Marcar el grupo como un grupo interactivo especial
+  dumbbellGroup.userData = {
+    isInteractiveGroup: true,
+    type: type
+  };
   
   // Posicionar la mancuerna completa
   dumbbellGroup.position.set(position.x, position.y, position.z);
