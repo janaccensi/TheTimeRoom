@@ -9,13 +9,9 @@ export function createTVTable(scene, options = {}) {
     tableDepth = 0.8
   } = options;
 
-  const { whitePlankMaterial, woodDrawerMaterial } = getMaterials();
+  const { whitePlankMaterial, tableWoodMaterial } = getMaterials();
   
-  // Crear nuevo material para los cajones con tono más tenue
-  const cajonMaterial = woodDrawerMaterial.clone();
-  cajonMaterial.color.set(0xc9b299); // El mismo tono que la mesa principal
-  cajonMaterial.roughness = 0.75;
-  cajonMaterial.metalness = 0.05;
+
   
   const tableGroup = new THREE.Group();
 
@@ -41,7 +37,7 @@ export function createTVTable(scene, options = {}) {
 
   // ------------------------------
   // 2a) Cajón extra en el primer hueco (derecha)
-  const dr0 = new THREE.Mesh(drawerGeo, cajonMaterial); // Cambiado de woodDrawerMaterial
+  const dr0 = new THREE.Mesh(drawerGeo, tableWoodMaterial); 
   dr0.position.set(
     -tableWidth / 4,
     mid1.position.y + boardThickness / 2 + drawerH / 2 + 0.01,
@@ -51,7 +47,7 @@ export function createTVTable(scene, options = {}) {
   // ------------------------------
 
   // 2) Cajón primero en hueco derecho
-  const dr1 = new THREE.Mesh(drawerGeo, cajonMaterial); // Cambiado de woodDrawerMaterial
+  const dr1 = new THREE.Mesh(drawerGeo, tableWoodMaterial); 
   dr1.position.set(
     tableWidth / 4,
     mid1.position.y - drawerH / 2 - 0.01,
@@ -65,7 +61,7 @@ export function createTVTable(scene, options = {}) {
   tableGroup.add(mid2);
 
   // 4) Cajón segundo en hueco izquierdo
-  const dr2 = new THREE.Mesh(drawerGeo, cajonMaterial); // Cambiado de woodDrawerMaterial
+  const dr2 = new THREE.Mesh(drawerGeo, tableWoodMaterial); 
   dr2.position.set(-tableWidth / 4, mid2.position.y - drawerH / 2 - 0.01, 0);
   tableGroup.add(dr2);
 

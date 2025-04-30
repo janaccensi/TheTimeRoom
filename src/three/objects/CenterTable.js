@@ -10,20 +10,12 @@ export function createCenterTable(scene, options = {}) {
     tableDepth = 1.2
   } = options;
 
-  const { whitePlankMaterial, woodDrawerMaterial } = getMaterials();
+  const { whitePlankMaterial, tableWoodMaterial } = getMaterials();
   
-  // Material para las partes de madera
-  const woodMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0xA67C52,
-    roughness: 0.8,
-    metalness: 0.1
-  });
   
-  // Crear nuevo material para el cajón con tono más tenue (igual que en TVTable)
-  const cajonMaterial = woodDrawerMaterial.clone();
-  cajonMaterial.color.set(0xc9b299); // El mismo tono que en TVTable
-  cajonMaterial.roughness = 0.75;
-  cajonMaterial.metalness = 0.05;
+  
+  
+  
 
   const centerTableGroup = new THREE.Group();
   
@@ -72,7 +64,7 @@ export function createCenterTable(scene, options = {}) {
   // Cuerpo del cajón - Ahora usando cajonMaterial igual que en TVTable
   const drawerBody = new THREE.Mesh(
     new THREE.BoxGeometry(tableWidth - (sideWidth *2), drawerHeight, tableDepth - (sideWidth * 2)),
-    cajonMaterial // Cambiado de woodDrawerMaterial a cajonMaterial
+    tableWoodMaterial 
   );
   drawerBody.position.set(0, drawerHeight/2, 0);
   drawerGroup.add(drawerBody);
