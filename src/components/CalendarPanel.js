@@ -58,6 +58,18 @@ export class CalendarPanel {
         this.renderMonthDays();
       }
     });
+    document.addEventListener('cleaning-activity-added', (event) => {
+      console.log('Actividad de limpieza registrada:', event.detail.activity);
+  
+      // Actualizar el calendario si está visible
+      if (this.isVisible) {
+        if (this.currentView === 'month') {
+          this.renderMonthDays();
+        } else {
+          this.renderDayTasks();
+        }
+      }
+    });
   }
   
   updatePanelContent() {
@@ -627,6 +639,20 @@ export class CalendarPanel {
         sourceType: 'reading'
       };
     });
+
+    const cleaningActivities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
+    const formattedCleaningActivities = cleaningActivities.map(activity => {
+      return {
+        ...activity,
+        text: activity.type || "Limpieza",
+        category: "Limpieza",
+        date: activity.date,
+        timestamp: activity.timestamp,
+        duration: activity.hours,
+        completed: activity.completed || true,
+        sourceType: 'cleaning'
+      };
+    });
     
     // Convertir tareas del calendario para formato uniforme
     const calendarTasks = [];
@@ -649,7 +675,7 @@ export class CalendarPanel {
     });
     
     // Devolver ambos tipos de actividades
-    return [...formattedReadingActivities, ...calendarTasks];
+    return [...formattedReadingActivities, ...formattedCleaningActivities, ...calendarTasks];
   }
   
   getMonthActivitiesMap(year, month) {
@@ -701,6 +727,26 @@ export class CalendarPanel {
   }
 
   updateActivity(activity) {
+    // Si es actividad de limpieza, disparar evento específico
+    if (activity.sourceType === 'cleaning') {
+      const cleaningActivities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
+      const activityIndex = cleaningActivities.findIndex(act => 
+        act.timestamp === activity.timestamp
+      );
+      
+      if (activityIndex !== -1) {
+        // Actualizar en localStorage
+        cleaningActivities[activityIndex].completed = activity.completed;
+        localStorage.setItem('cleaningActivities', JSON.stringify(cleaningActivities));
+        
+        // Disparar evento para que CleaningModal se actualice
+        document.dispatchEvent(new CustomEvent('cleaning-activity-updated', { 
+          detail: { activity: cleaningActivities[activityIndex] }
+        }));
+      }
+      return;
+    }
+
     // Si es actividad de lectura, actualizar en localStorage
     if (activity.sourceType === 'reading' || activity.bookId) {
       const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
@@ -762,6 +808,23 @@ export class CalendarPanel {
 }
 
   deleteActivity(activity) {
+    // Si es una actividad de limpieza
+    if (activity.sourceType === 'cleaning') {
+      const cleaningActivities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
+      const filteredActivities = cleaningActivities.filter(act => 
+        act.timestamp !== activity.timestamp
+      );
+      
+      // Guardar las actividades actualizadas
+      localStorage.setItem('cleaningActivities', JSON.stringify(filteredActivities));
+      
+      // Disparar evento para actualizar CleaningModal
+      document.dispatchEvent(new CustomEvent('cleaning-activity-deleted', { 
+        detail: { activity: activity }
+      }));
+      
+      return;
+    }
     // Si es una actividad de lectura, eliminarla del localStorage
     if (activity.sourceType === 'reading' || activity.bookId) {
       const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
