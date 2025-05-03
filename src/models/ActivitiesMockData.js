@@ -334,6 +334,81 @@ export class ActivitiesMockData {
     ];
   }
   
+
+  /**
+   * Genera activitats simulades d'estudi (escola/universitat)
+   * @returns {Array} - Llista d'activitats d'estudi
+   */
+  static generateStudyActivities() {
+    return [
+      {
+        objectId: "study_0_0",
+        objectTitle: "Estudi d'Àlgebra",
+        type: "study",
+        category: "Matemàtiques",
+        date: "2025-04-04",
+        hours: 2.0,
+        notes: "Resolució d'equacions lineals i sistemes",
+        timestamp: "2025-04-04T16:00:00.000Z",
+        completed: true
+      },
+      {
+        objectId: "study_0_1",
+        objectTitle: "Pràctica d'Aritmètica",
+        type: "study",
+        category: "Matemàtiques",
+        date: "2025-04-09",
+        hours: 1.5,
+        notes: "Exercicis de càlcul mental i operacions",
+        timestamp: "2025-04-09T17:30:00.000Z",
+        completed: true
+      },
+      {
+        objectId: "study_0_2",
+        objectTitle: "Problemes de Geometria",
+        type: "study",
+        category: "Matemàtiques",
+        date: "2025-04-14",
+        hours: 2.5,
+        notes: "Teoremes i problemes sobre figures geomètriques",
+        timestamp: "2025-04-14T15:00:00.000Z",
+        completed: true
+      },
+      {
+        objectId: "study_1_0",
+        objectTitle: "Disseny de Software",
+        type: "study",
+        category: "Informàtica",
+        date: "2025-04-17",
+        hours: 3.0,
+        notes: "Patrons de disseny i arquitectura de software",
+        timestamp: "2025-04-17T10:00:00.000Z",
+        completed: true
+      },
+      {
+        objectId: "study_1_1",
+        objectTitle: "Estructura de Dades",
+        type: "study",
+        category: "Informàtica",
+        date: "2025-04-21",
+        hours: 2.75,
+        notes: "Implementació d'arbres binaris i llistes enllaçades",
+        timestamp: "2025-04-21T14:15:00.000Z",
+        completed: true
+      },
+      {
+        objectId: "study_1_2",
+        objectTitle: "Factors Humans",
+        type: "study",
+        category: "Disseny UX",
+        date: "2025-04-24",
+        hours: 2.25,
+        notes: "Estudi sobre interacció persona-ordinador i usabilitat",
+        timestamp: "2025-04-24T11:45:00.000Z",
+        completed: true
+      }
+    ];
+  }
   /**
    * Afegeix totes les activitats simulades al localStorage
    */
@@ -343,6 +418,7 @@ export class ActivitiesMockData {
     const sportActivities = this.generateSportActivities();
     const cleaningActivities = this.generateCleaningActivities();
     const leisureActivities = this.generateLeisureActivities();
+    const studyActivities = this.generateStudyActivities();
     
     // Guardem cada tipus d'activitat al seu propi espai
     localStorage.setItem('readingActivities', JSON.stringify(readingActivities));
@@ -350,6 +426,7 @@ export class ActivitiesMockData {
     localStorage.setItem('sportActivities', JSON.stringify(sportActivities));
     localStorage.setItem('cleaningActivities', JSON.stringify(cleaningActivities));
     localStorage.setItem('leisureActivities', JSON.stringify(leisureActivities));
+    localStorage.setItem('studyActivities', JSON.stringify(studyActivities));
     
     // També guardem totes les activitats juntes a userActivities per compatibilitat
     const allActivities = [
@@ -357,7 +434,8 @@ export class ActivitiesMockData {
       ...workActivities,
       ...sportActivities,
       ...cleaningActivities,
-      ...leisureActivities
+      ...leisureActivities,
+      ...studyActivities
     ];
     
     localStorage.setItem('userActivities', JSON.stringify(allActivities));
@@ -367,7 +445,9 @@ export class ActivitiesMockData {
       - ${workActivities.length} treball
       - ${sportActivities.length} esport
       - ${cleaningActivities.length} neteja
-      - ${leisureActivities.length} lleure`);
+      - ${leisureActivities.length} lleure
+      - ${studyActivities.length} estudi`
+    );
     
     return allActivities;
   }

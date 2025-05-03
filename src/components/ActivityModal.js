@@ -276,7 +276,7 @@ export class ActivityModal {
     
     // Actualitzem el títol segons l'objecte
     const objectTitle = this.modal.querySelector('#activity-title');
-    objectTitle.textContent = object.userData.activityType || 'Activitat';
+    objectTitle.textContent = this.getActivityTypeTitle(activityType) || 'Activitat';
      
     // Carreguem les estadístiques de l'objecte
     this.loadObjectStats(object.userData.id, activityType);
