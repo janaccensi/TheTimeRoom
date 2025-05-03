@@ -79,6 +79,7 @@ export function createTV(scene, options = {}) {
         type: 'tv',          // Todos los meshes tienen el mismo tipo
         isInteractive: true, // Todos son interactivos
         title: 'Televisió',
+        activityType: 'leisure',
         description: 'Una televisió moderna',
         action: 'toggleTV'
       };

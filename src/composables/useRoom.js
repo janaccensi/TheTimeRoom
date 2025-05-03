@@ -34,11 +34,13 @@ import { CleaningModal } from '../components/CleaningModal.js';
 
 
 
+
 export default function useRoom(canvas) {
   // Configuració bàsica
   const scene = new THREE.Scene();  
   scene.background = new THREE.Color(0x000000); // Color gris clar
   let broomObject;
+  
   
   // Mides de l'habitació
   const roomConfig = {
@@ -141,9 +143,11 @@ export default function useRoom(canvas) {
   const broom = createBroom(scene, {
     position: { x: -2.1, y: 1.1, z: 2.25 },  // Esquina de la habitación
     handleColor: 0xc4a484,  // Marrón claro
-    bristleColor: 0xd2b48c,  // Color paja natural
+    bristleColor: 0xd2b48c,  // Color paja natural        
     cleanliness: 0 // Limpieza inicial 
   });
+
+  broomObject = broom; // Guardar referencia
 
   broomObject = broom; // Guardar referencia
 
@@ -342,9 +346,15 @@ export default function useRoom(canvas) {
     // Crear el modal de neteja
     const cleaningModal = new CleaningModal();
     
+
+
     // Configurem el callback quan es clica un llibre
     interactionManager.setOnObjectClick(object => {
-      if (object.userData && object.userData.type === 'book') {
+
+      if(object.userData.onClick){
+        object.userData.onClick(object);
+      }
+      else if (object.userData && object.userData.type === 'book') {        
         activityModal.show(object);
       }
       // Detectar clic en calendario
@@ -368,7 +378,7 @@ export default function useRoom(canvas) {
         activityModal.show(object);
       }
       else if (object.userData && object.userData.type === 'broom') {
-        cleaningModal.show(object);
+        cleaningModal.show(object);        
       }
       
     });
@@ -428,6 +438,70 @@ export default function useRoom(canvas) {
     }, 500);
 
   }
+
+  function initBookshelfEvents() {
+    // Escoltarem l'esdeveniment de quan s'afegeix una nova activitat
+    document.addEventListener('bookshelf-update-needed', (event) => {
+      const { type } = event.detail;
+      
+      // Si tenim una funció de neteja d'objectes antics, l'usem
+      if (cleanupFunctions.bookshelf) {
+        cleanupFunctions.bookshelf();
+      }
+      
+      console.log(`Actualitzant estanteria després d'afegir activitat de tipus ${type}`);
+      
+      // Recreem l'estanteria
+      const bookshelf = createBookshelf(scene, roomConfig);
+      
+      // Actualitzem la funció de neteja
+      cleanupFunctions.bookshelf = () => {
+        // Eliminem els objectes existents de l'estanteria abans de recrear-la
+        if (bookshelf && bookshelf.shelves) {
+          bookshelf.shelves.forEach(shelf => {
+            scene.remove(shelf);
+            if (shelf.geometry) shelf.geometry.dispose();
+            if (shelf.material) shelf.material.dispose();
+          });
+        }
+      };
+    });
+
+    // Configurar la integración de actividades de limpieza con el calendario
+    document.addEventListener('cleaning-activity-added', (event) => {
+      const cleaningActivity = event.detail.activity;
+      console.log('Actividad de limpieza registrada:', cleaningActivity);
+      
+      // NO añadir al calendario - ya se carga automáticamente desde localStorage
+      // Solo actualizar la vista si el panel está visible
+      if (calendarPanel.isVisible) {
+        if (calendarPanel.currentView === 'month') {
+          calendarPanel.renderMonthDays();
+        } else {
+          calendarPanel.renderDayTasks();
+        }
+      }
+    });
+
+    // Escucha de eventos de cambio de nivel de limpieza
+    document.addEventListener('cleanliness-level-changed', (event) => {
+      const newLevel = event.detail.level;
+      console.log('Nivel de limpieza actualizado:', newLevel);
+      
+      // Si tenemos referencia a la escoba, actualizarla
+      if (broomObject && broomObject.updateCleanliness) {
+        broomObject = broomObject.updateCleanliness(newLevel);
+      }
+    });
+
+    // También podemos inicializar el nivel de limpieza al inicio
+    // Al final de la función initInteractions():
+    setTimeout(() => {
+      // Disparar un evento para actualizar la escoba con el nivel inicial desde localStorage
+      cleaningModal.calculateCleanlinessLevel();
+    }, 500);
+
+  }
   
   // Funció per desar activitats
   function saveActivity(activityData) {
@@ -438,6 +512,8 @@ export default function useRoom(canvas) {
   }
   
   // Inicialitzar l'escena i configurar tot
+  const cleanupFunctions = {};
+
   function init() {
     // Assegura't que tot es carrega abans d'inicialitzar les interaccions
     console.log("Iniciant postprocessing...");
@@ -447,6 +523,7 @@ export default function useRoom(canvas) {
     // Compte d'objects a l'escena
     console.log("Objectes a l'escena:", scene.children.length);
     initInteractions();
+    initBookshelfEvents(); // Afegim aquesta línia per inicialitzar els events de l'estanteria
   }
   
   // Cridem la funció d'inicialització després de crear tots els objectes
