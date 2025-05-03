@@ -31,6 +31,7 @@ import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectio
 
 import { createTVTable } from '@/three/objects/TVTable.js';
 import { CalendarPanel } from '@/components/CalendarPanel.js';
+import { CleaningModal } from '../components/CleaningModal.js';
 
 
 
@@ -38,6 +39,7 @@ export default function useRoom(canvas) {
   // Configuració bàsica
   const scene = new THREE.Scene();  
   scene.background = new THREE.Color(0x000000); // Color gris clar
+  let broomObject;
   
   // Mides de l'habitació
   const roomConfig = {
@@ -135,23 +137,16 @@ export default function useRoom(canvas) {
     type: 'sectional',
     cornerSide: 'right'
   });
-  
-
-  /*const broom = createBroom(scene, {
-    position: { x: -0.5, y: 0.2, z: -2 },
-    rotation: Math.PI / 4,
-    leaning: true,
-    leaningAngle: -0.3,
-    handleColor: 0xc19a6b,
-    bristlesColor: 0xdec683
-  });*/
 
   // Añadimos la escoba en una esquina
   const broom = createBroom(scene, {
     position: { x: -2.1, y: 1.1, z: 2.25 },  // Esquina de la habitación
     handleColor: 0xc4a484,  // Marrón claro
-    bristleColor: 0xd2b48c  // Color paja natural
+    bristleColor: 0xd2b48c,  // Color paja natural
+    cleanliness: 0 // Limpieza inicial 
   });
+
+  broomObject = broom; // Guardar referencia
 
   // Añadimos la mesa de TV
   const tvTable = createTVTable(scene, {
@@ -344,6 +339,9 @@ export default function useRoom(canvas) {
 
     // Crear el panel del calendario
     const calendarPanel = new CalendarPanel();
+
+    // Crear el modal de neteja
+    const cleaningModal = new CleaningModal();
     
     // Configurem el callback quan es clica un llibre
     interactionManager.setOnObjectClick(object => {
@@ -371,7 +369,7 @@ export default function useRoom(canvas) {
         activityModal.show(object);
       }
       else if (object.userData && object.userData.type === 'broom') {
-        activityModal.show(object);
+        cleaningModal.show(object);
       }
       
     });
@@ -395,6 +393,41 @@ export default function useRoom(canvas) {
     activityModal.setOnSave(activityData => {
       saveActivity(activityData);
     });
+
+    // Configurar la integración de actividades de limpieza con el calendario
+    document.addEventListener('cleaning-activity-added', (event) => {
+      const cleaningActivity = event.detail.activity;
+      console.log('Actividad de limpieza registrada:', cleaningActivity);
+      
+      // NO añadir al calendario - ya se carga automáticamente desde localStorage
+      // Solo actualizar la vista si el panel está visible
+      if (calendarPanel.isVisible) {
+        if (calendarPanel.currentView === 'month') {
+          calendarPanel.renderMonthDays();
+        } else {
+          calendarPanel.renderDayTasks();
+        }
+      }
+    });
+
+    // Escucha de eventos de cambio de nivel de limpieza
+    document.addEventListener('cleanliness-level-changed', (event) => {
+      const newLevel = event.detail.level;
+      console.log('Nivel de limpieza actualizado:', newLevel);
+      
+      // Si tenemos referencia a la escoba, actualizarla
+      if (broomObject && broomObject.updateCleanliness) {
+        broomObject = broomObject.updateCleanliness(newLevel);
+      }
+    });
+
+    // También podemos inicializar el nivel de limpieza al inicio
+    // Al final de la función initInteractions():
+    setTimeout(() => {
+      // Disparar un evento para actualizar la escoba con el nivel inicial desde localStorage
+      cleaningModal.calculateCleanlinessLevel();
+    }, 500);
+
   }
   
   // Funció per desar activitats

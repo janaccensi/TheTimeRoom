@@ -6,7 +6,9 @@ export const createBroom = (scene, config = {}) => {
         position = { x: 0, y: 0, z: 0 },
         handleColor = 0xc4a484,    // Marrón claro natural
         bristleColor = 0xd2b48c,   // Color paja/beige
-        ringColor = 0xff0000       // Color del anillo decorativo
+        ringColor = 0xff0000,      // Color del anillo decorativo
+        cleanliness = 0 
+
     } = config;
     
     // Grupo principal
@@ -41,6 +43,31 @@ export const createBroom = (scene, config = {}) => {
     // MODIFICADO: Aplicar propiedades interactivas
     setInteractiveProperties(handle);
     broomGroup.add(handle);
+
+    const getDirtyColor = (baseColor, cleanliness) => {
+        if (cleanliness < 10) {
+            // Escoba muy sucia: NEGRO intenso
+            return new THREE.Color(0x333333); // Color carbón (gris oscuro)
+        } else if (cleanliness < 50) {
+            // Transición gradual de negro a gris oscuro/marrón
+            const mixFactor = (cleanliness - 10) / 40;
+            const dirtyColor = new THREE.Color(0x333333); // Color carbón
+            const middleColor = new THREE.Color(0x443322); // Gris/marrón oscuro
+            return dirtyColor.lerp(middleColor, mixFactor);
+        } else if (cleanliness < 80) {
+            // Transición gradual de gris/marrón oscuro a marrón medio
+            const mixFactor = (cleanliness - 50) / 30;
+            const middleColor = new THREE.Color(0x443322); // Gris/marrón oscuro
+            const lightBrownColor = new THREE.Color(0x8e6b52); // Marrón medio
+            return middleColor.lerp(lightBrownColor, mixFactor);
+        } else {
+            // Transición final a beige claro (igual que el palo)
+            const mixFactor = (cleanliness - 80) / 20;
+            const lightBrownColor = new THREE.Color(0x8e6b52); // Marrón medio
+            const cleanColor = new THREE.Color(handleColor); // Beige claro igual al palo
+            return lightBrownColor.lerp(cleanColor, mixFactor);
+        }
+    };
     
     // === NÚCLEO DEL CEPILLO ===
     const coreMaterial = new THREE.MeshStandardMaterial({
@@ -57,9 +84,10 @@ export const createBroom = (scene, config = {}) => {
     broomGroup.add(brushCore);
     
     // === CEPILLO CÓNICO CON TEXTURA DE PAJA ===
+    const currentBristleColor = getDirtyColor(bristleColor, cleanliness);
     const bristleMaterial = new THREE.MeshStandardMaterial({
-        color: bristleColor,
-        roughness: 0.9,
+        color: currentBristleColor,
+        roughness: 0.9 - (cleanliness / 200),  // Menos rugoso al estar más limpio
         metalness: 0.0,
     });
     
@@ -71,7 +99,7 @@ export const createBroom = (scene, config = {}) => {
     broomGroup.add(bristle);
     
     // Añadir líneas verticales para simular fibras de paja
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x8b5a2b });
+    const lineMaterial = new THREE.LineBasicMaterial({ color: currentBristleColor.getHex() });
     const lineGroup = new THREE.Group();
     const lineCount = 128;
     const radiusTop = 0.05;
@@ -84,7 +112,8 @@ export const createBroom = (scene, config = {}) => {
         const zTop = Math.sin(angle) * radiusTop;
         const xBottom = Math.cos(angle) * radiusBottom;
         const zBottom = Math.sin(angle) * radiusBottom;
-
+        
+        // Líneas rectas simples sin manipulación
         const points = [
             new THREE.Vector3(xTop, height / 2, zTop),
             new THREE.Vector3(xBottom, -height / 2, zBottom),
@@ -95,23 +124,86 @@ export const createBroom = (scene, config = {}) => {
     }
     lineGroup.position.set(0, -handleLength / 2 - 0.2, 0);
     broomGroup.add(lineGroup);
-    
-    // Añadir ruido a las líneas para simular irregularidades
-    lineGroup.children.forEach((line, index) => {
-        const noiseFactor = 0.005; // Factor de ruido
-        line.geometry.attributes.position.array.forEach((value, idx) => {
-            if (idx % 3 !== 1) { // Solo afecta a X y Z
-                line.geometry.attributes.position.array[idx] += (Math.random() - 0.5) * noiseFactor;
-            }
+
+    // Modificar la sección de partículas para hacerlas más visibles
+    if (cleanliness < 10) {
+        // MOSQUITAS para estado muy sucio (nivel 0-10)
+        const mosquitoCount = 20 + Math.floor(Math.random() * 15); // Entre 20-35 mosquitas
+        const mosquitoGeometry = new THREE.SphereGeometry(0.01, 4, 4);
+        const mosquitoMaterial = new THREE.MeshBasicMaterial({
+            color: 0x000000, // Negras
+            transparent: true,
+            opacity: 0.95, // Mayor opacidad para mejor visibilidad
+            emissive: 0x222222, // Un ligero brillo para hacerlas más visibles
+            emissiveIntensity: 0.5
         });
-        line.geometry.attributes.position.needsUpdate = true;
-    });
+        
+        // Crear grupo para las mosquitas
+        const mosquitoGroup = new THREE.Group();
+        
+        for (let i = 0; i < mosquitoCount; i++) {
+            const mosquito = new THREE.Mesh(mosquitoGeometry, mosquitoMaterial);
+            
+            // Mayor dispersión para que se vean "volando" alrededor
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 0.1 + Math.random() * 0.3; // Más lejos del centro
+            const verticalPos = -0.1 + Math.random() * 0.7; // Distribuidas verticalmente
+            
+            // Posicionar alrededor
+            mosquito.position.set(
+                Math.cos(angle) * radius,
+                verticalPos,
+                Math.sin(angle) * radius
+            );
+            
+            // Tamaño variable para las mosquitas
+            mosquito.scale.multiplyScalar(0.6 + Math.random() * 0.5);
+            mosquitoGroup.add(mosquito);
+        }
+        
+        // Añadir el grupo de mosquitas a la posición de las cerdas
+        mosquitoGroup.position.set(0, -handleLength / 2 - 0.2, 0);
+        broomGroup.add(mosquitoGroup);
+        
+    } else if (cleanliness < 80) {
+        // Código existente para partículas normales cuando está parcialmente sucia
+        const particleCount = Math.floor(60 * (1 - cleanliness / 100));
+        if (particleCount > 0) {
+            // El resto del código de partículas se mantiene igual...
+            const particleGeometry = new THREE.SphereGeometry(0.015, 4, 4);
+            const particleMaterial = new THREE.MeshBasicMaterial({
+                color: 0x3a2116, // Color un poco más claro para mejor visibilidad
+                transparent: true,
+                opacity: 0.9
+            });
+            
+            for (let i = 0; i < particleCount; i++) {
+                // Código existente...
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 0.2 + 0.05;
+                const height = Math.random() * 0.5 - 0.25;
+                
+                particle.position.set(
+                    Math.cos(angle) * radius,
+                    height,
+                    Math.sin(angle) * radius
+                );
+                
+                particle.scale.multiplyScalar(0.4 + Math.random() * 0.8);
+                lineGroup.add(particle);
+            }
+        }
+    }
+    
     
     // === ANILLO DECORATIVO ===
     const ringMaterial = new THREE.MeshStandardMaterial({
         color: ringColor,
-        roughness: 0.5,
-        metalness: 0.3,
+        roughness: 0.3, 
+        metalness: 0.6, // Más metálico
+        emissive: new THREE.Color(0xff0000).multiplyScalar(0.3) // Brillo rojo constante
     });
     const ringGeometry = new THREE.TorusGeometry(0.09, 0.01, 16, 100);
     const ring = new THREE.Mesh(ringGeometry, ringMaterial);
@@ -134,8 +226,19 @@ export const createBroom = (scene, config = {}) => {
     
     return {
         group: broomGroup,
-        update: () => {
-            // Para futuras actualizaciones
-        }
+        updateCleanliness: (newCleanliness) => {
+            // Eliminar el grupo antiguo de la escena
+            scene.remove(broomGroup);
+            
+            // Crear una nueva escoba con el nivel de limpieza actualizado
+            const newConfig = {
+                ...config,
+                position: broomGroup.position,
+                cleanliness: newCleanliness
+            };
+            
+            return createBroom(scene, newConfig);
+        },
+        cleanliness
     };
 };
