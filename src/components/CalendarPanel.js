@@ -1,3 +1,5 @@
+import { ProgressAnimationService } from './ProgressAnimation.js';
+
 export class CalendarPanel {
   constructor() {
     this.panel = null;
@@ -240,7 +242,19 @@ export class CalendarPanel {
           
           // Truncar título si es demasiado largo
           const title = task.category || task.title || task.text;
-          taskElement.textContent = title.length > 15 ? title.substring(0, 13) + '...' : title;
+          
+          // Añadir indicador de urgencia al inicio si existe
+          if (task.urgency && task.urgency !== 'normal') {
+            const urgencyMarkers = {
+              'baja': '⚪ ',
+              'alta': '🟠 ',
+              'urgente': '🔴 '
+            };
+            const marker = urgencyMarkers[task.urgency] || '';
+            taskElement.textContent = marker + (title.length > 13 ? title.substring(0, 11) + '...' : title);
+          } else {
+            taskElement.textContent = title.length > 15 ? title.substring(0, 13) + '...' : title;
+          }
           
           tasksContainer.appendChild(taskElement);
         });
@@ -440,6 +454,51 @@ export class CalendarPanel {
         
         const detail = document.createElement('div');
         detail.className = 'task-detail';
+
+        if (activity.location || activity.url || activity.guests) {
+          // Crear contenedor para información adicional
+          const additionalInfo = document.createElement('div');
+          additionalInfo.className = 'task-additional-info';
+          
+          // Mostrar ubicación si existe
+          if (activity.location) {
+            const locationEl = document.createElement('div');
+            locationEl.className = 'task-location';
+            locationEl.innerHTML = `📍 ${activity.location}`;
+            additionalInfo.appendChild(locationEl);
+          }
+          
+          // Mostrar URL si existe
+          if (activity.url) {
+            const urlEl = document.createElement('div');
+            urlEl.className = 'task-url';
+            urlEl.innerHTML = `🔗 <a href="${activity.url}" target="_blank">Enlace</a>`;
+            additionalInfo.appendChild(urlEl);
+          }
+          
+          // Mostrar invitados si existen
+          if (activity.guests) {
+            const guestsEl = document.createElement('div');
+            guestsEl.className = 'task-guests';
+            guestsEl.innerHTML = `👥 ${activity.guests}`;
+            additionalInfo.appendChild(guestsEl);
+          }
+          
+          // Mostrar urgencia con un indicador visual
+          if (activity.urgency && activity.urgency !== 'normal') {
+            const urgencyEl = document.createElement('div');
+            urgencyEl.className = `task-urgency ${activity.urgency}`;
+            const urgencyLabels = {
+              'baja': '⚪ Baja', 
+              'alta': '🟠 Alta', 
+              'urgent': '🔴 Urgente'
+            };
+            urgencyEl.textContent = urgencyLabels[activity.urgency] || activity.urgency;
+            additionalInfo.appendChild(urgencyEl);
+          }
+          
+          taskElement.appendChild(additionalInfo);
+        }
         
         // Mostrar la duración o las horas si están disponibles
         if (activity.duration || activity.hours) {
@@ -511,41 +570,78 @@ export class CalendarPanel {
   
     taskForm.innerHTML = `
       <div class="task-form-container">
-        <h3>Nueva tarea para ${formattedDate}</h3>
-        <form id="add-task-form">
+      <h3>Nueva tarea para ${formattedDate}</h3>
+      <form id="add-task-form">
+        <div class="form-group">
+          <label for="task-activity-type">Tipus d'activitat:</label>
+          <select id="task-activity-type" required>
+            <option value="general">General</option>
+            <option value="reading">Estudi/Llibre</option>
+            <option value="cleaning">Escombra/Tasques de casa</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="task-category">Categoria:</label>
+          <select id="task-category">
+            <!-- Las opciones se generarán dinámicamente -->
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="task-text">Descripció:</label>
+          <input type="text" id="task-text" required autofocus>
+        </div>
+        
+        <div class="form-group">
+          <label for="task-hour">Hora d'inici:</label>
+          <select id="task-hour">
+            ${hourOptions}
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="task-duration">Duració:</label>
+          <select id="task-duration">
+            ${durationOptions}
+          </select>
+        </div>
+        
+        <!-- Botón para mostrar/ocultar campos adicionales -->
+        <button type="button" id="show-more-task-fields" class="secondary-button">Afegir més dades</button>
+        
+        <!-- Sección adicional inicialmente oculta -->
+        <div id="additional-task-fields" class="additional-fields" style="display: none;">
+          <hr>
           <div class="form-group">
-            <label for="task-text">Descripción:</label>
-            <input type="text" id="task-text" required autofocus>
+            <label for="task-location">Ubicació:</label>
+            <input type="text" id="task-location" placeholder="Direcció o ubicació">
           </div>
           <div class="form-group">
-            <label for="task-hour">Hora de inicio:</label>
-            <select id="task-hour">
-              ${hourOptions}
+            <label for="task-urgency">Nivell d'urgència:</label>
+            <select id="task-urgency">
+              <option value="baixa">Baixa</option>
+              <option value="normal" selected>Normal</option>
+              <option value="alta">Alta</option>
+              <option value="urgent">Urgent</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="task-duration">Duración:</label>
-            <select id="task-duration">
-              ${durationOptions}
-            </select>
+            <label for="task-url">URL relacionat:</label>
+            <input type="url" id="task-url" placeholder="https://...">
           </div>
           <div class="form-group">
-            <label for="task-category">Categoría:</label>
-            <select id="task-category">
-              <option value="Estudiar Factors Humans">Estudiar Factors Humans</option>
-              <option value="Estudiar Anàlisi Complexa">Estudiar Anàlisi Complexa</option>
-              <option value="Estudiar Programació">Estudiar Programació</option>
-              <option value="Llegir Fantasia">Llegir Fantasia</option>
-              <option value="Llegir Assaig">Llegir Assaig</option>
-              <option value="Otros">Otros</option>
-            </select>
+            <label for="task-guests">Convidats:</label>
+            <input type="text" id="task-guests" placeholder="Noms separats per comes">
           </div>
-          <div class="form-actions">
-            <button type="button" id="cancel-task">Cancelar</button>
-            <button type="submit">Guardar</button>
-          </div>
-        </form>
-      </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" id="cancel-task">Cancel·lar</button>
+          <button type="submit">Desar</button>
+        </div>
+      </form>
+    </div>
     `;
     
     document.body.appendChild(taskForm);
@@ -553,6 +649,69 @@ export class CalendarPanel {
     // IMPORTANTE: Primero añadir al DOM, luego acceder a los elementos
     const form = taskForm.querySelector('#add-task-form');
     const cancelBtn = taskForm.querySelector('#cancel-task');
+    const activityTypeSelect = form.querySelector('#task-activity-type');
+    const categorySelect = form.querySelector('#task-category');
+
+    const categoriesByType = {
+      general: [
+        { value: 'Reunió', text: 'Reunió' },
+        { value: 'Tasca', text: 'Tasca' },
+        { value: 'Esdeveniment', text: 'Esdeveniment' },
+        { value: 'Altres', text: 'Altres' }
+      ],
+      cleaning: [
+        { value: 'Escombrar', text: 'Escombrar' },
+        { value: 'Fregar el terra', text: 'Fregar el terra' },
+        { value: 'Treure la pols', text: 'Treure la pols' },
+        { value: 'Netejar vidres', text: 'Netejar vidres' },
+        { value: 'Neteja general', text: 'Neteja general' }
+      ],
+      reading: [
+        { value: 'Estudiar Factors Humans', text: 'Estudiar Factors Humans' },
+        { value: 'Estudiar Anàlisi Complexa', text: 'Estudiar Anàlisi Complexa' },
+        { value: 'Estudiar Programació', text: 'Estudiar Programació' },
+        { value: 'Llegir Fantasia', text: 'Llegir Fantasia' },
+        { value: 'Llegir Assaig', text: 'Llegir Assaig' },
+        { value: 'Altres', text: 'Altres' }
+      ]
+    };
+
+    // Función para actualizar las categorías según el tipo seleccionado
+    function updateCategories(activityType) {
+      // Vaciar opciones existentes
+      categorySelect.innerHTML = '';
+      
+      // Añadir nuevas opciones según el tipo seleccionado
+      const categories = categoriesByType[activityType] || categoriesByType.general;
+      categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.value;
+        option.textContent = category.text;
+        categorySelect.appendChild(option);
+      });
+    }
+
+    // Configurar el cambio de tipo de actividad
+    activityTypeSelect.addEventListener('change', () => {
+      updateCategories(activityTypeSelect.value);
+    });
+
+    // Inicializar con las categorías por defecto
+    updateCategories('general');
+
+    // Configurar el botón de mostrar/ocultar campos adicionales
+    const showMoreFieldsBtn = taskForm.querySelector('#show-more-task-fields');
+    const additionalFields = taskForm.querySelector('#additional-task-fields');
+    
+    showMoreFieldsBtn.addEventListener('click', () => {
+      if (additionalFields.style.display === 'none') {
+        additionalFields.style.display = 'block';
+        showMoreFieldsBtn.textContent = 'Mostrar menos datos';
+      } else {
+        additionalFields.style.display = 'none';
+        showMoreFieldsBtn.textContent = 'Añadir más datos';
+      }
+    });
     
     cancelBtn.addEventListener('click', () => {
       document.body.removeChild(taskForm);
@@ -561,10 +720,17 @@ export class CalendarPanel {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       
+      const activityType = form.querySelector('#task-activity-type').value;
       const text = form.querySelector('#task-text').value;
       const hour = form.querySelector('#task-hour').value;
-      const duration = form.querySelector('#task-duration').value; // Obtener duración
+      const duration = form.querySelector('#task-duration').value;
       const category = form.querySelector('#task-category').value;
+      
+      // Campos adicionales
+      const location = form.querySelector('#task-location').value;
+      const urgency = form.querySelector('#task-urgency').value;
+      const url = form.querySelector('#task-url').value;
+      const guests = form.querySelector('#task-guests').value;
       
       // Garantizar que usamos la fecha correcta
       const taskDate = new Date(
@@ -576,27 +742,130 @@ export class CalendarPanel {
         0
       );
       
+      const formattedDate = `${taskDate.getFullYear()}-${(taskDate.getMonth() + 1).toString().padStart(2, '0')}-${taskDate.getDate().toString().padStart(2, '0')}`;
+      const timestamp = taskDate.toISOString();
+    
+    // Dependiendo del tipo de actividad, procesar de manera diferente
+    if (activityType === 'cleaning') {
+      // Crear una actividad de limpieza
+      const cleaningActivity = {
+        type: category, // Usar la categoría seleccionada como tipo
+        date: formattedDate,
+        hours: parseFloat(duration),
+        notes: text,
+        timestamp: timestamp,
+        completed: true,
+        sourceType: 'cleaning',
+        location: location || null,
+        urgency: urgency || 'normal',
+        url: url || null,
+        guests: guests || null
+      };
+      
+      // Guardar en localStorage
+      const cleaningActivities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
+      cleaningActivities.push(cleaningActivity);
+      localStorage.setItem('cleaningActivities', JSON.stringify(cleaningActivities));
+      
+      // Disparar evento para que CleaningModal se actualice
+      document.dispatchEvent(new CustomEvent('cleaning-activity-added', { 
+        detail: { activity: cleaningActivity }
+      }));
+
+      ProgressAnimationService.showProgressAnimation(category, 'cleaning');
+    
+      // Renderizar después de la animación
+      setTimeout(() => {
+        this.renderDayTasks();
+      }, 2800);
+    } 
+    else if (activityType === 'reading') {
+      // Si es actividad de lectura/estudio
+      const readingActivity = {
+        bookTitle: text,
+        category: category,
+        date: formattedDate,
+        hours: parseFloat(duration),
+        notes: '',
+        timestamp: timestamp,
+        completed: true,
+        sourceType: 'reading',
+        location: location || null,
+        urgency: urgency || 'normal',
+        url: url || null,
+        guests: guests || null
+      };
+      
+      // Guardar en localStorage
+      const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+      readingActivities.push(readingActivity);
+      localStorage.setItem('readingActivities', JSON.stringify(readingActivities));
+      
+      // Disparar evento
+      document.dispatchEvent(new CustomEvent('reading-activity-added', { 
+        detail: { activity: readingActivity }
+      }));
+
+      ProgressAnimationService.showProgressAnimation(category, 'reading');
+    
+      // Renderizar después de la animación
+      setTimeout(() => {
+        this.renderDayTasks();
+      }, 2800);
+    }
+    else {
+      // Actividad general del calendario
       this.addNewActivity({
         text: text,
         category: category,
-        date: `${taskDate.getFullYear()}-${(taskDate.getMonth() + 1).toString().padStart(2, '0')}-${taskDate.getDate().toString().padStart(2, '0')}`,
-        timestamp: taskDate.toISOString(),
+        date: formattedDate,
+        timestamp: timestamp,
         completed: false,
-        duration: parseFloat(duration) // Añadir duración como número
+        duration: parseFloat(duration),
+        sourceType: 'calendar',
+        location: location || null,
+        urgency: urgency || 'normal',
+        url: url || null,
+        guests: guests || null
       });
+
+      taskForm.style.opacity = '0';
+      taskForm.style.pointerEvents = 'none';
+      
+      // 2. Mostrar la animación
+      ProgressAnimationService.showProgressAnimation(category, activityType);
+      
+      // 3. Cuando la animación termine, eliminar el formulario y actualizar la vista
+      setTimeout(() => {
+        document.body.removeChild(taskForm);
+        this.renderDayTasks();
+        
+        // Desplazar a la franja horaria correspondiente
+        setTimeout(() => {
+          const hourIndex = parseInt(hour) - 8;
+          const timeSlots = this.panel.querySelectorAll('.time-slot');
+          
+          if (hourIndex >= 0 && hourIndex < timeSlots.length) {
+            timeSlots[hourIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 200);
+      }, 2800);
+    }
         
       document.body.removeChild(taskForm);
       this.renderDayTasks();
+
+      
       
       // Desplazar a la franja horaria correspondiente
       setTimeout(() => {
-        const hourIndex = parseInt(hour) - 8; // Las franjas empiezan en 8:00
+        const hourIndex = parseInt(hour) - 8;
         const timeSlots = this.panel.querySelectorAll('.time-slot');
         
         if (hourIndex >= 0 && hourIndex < timeSlots.length) {
           timeSlots[hourIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 100);
+      }, 3000);
     });
   }
   
@@ -628,13 +897,20 @@ export class CalendarPanel {
     
     // Convertir actividades de lectura al formato de calendario sin alterar su estructura original
     const formattedReadingActivities = readingActivities.map(activity => {
+      const hour = activity.hour || 9;
       return {
         ...activity, // Mantener todos los campos originales
         // Solo añadir campos necesarios para la visualización si no existen
         text: activity.bookTitle || activity.notes || activity.category,
         category: activity.category || 'Lectura',
         date: activity.date,
+        hour: hour,
         timestamp: activity.timestamp || new Date().toISOString(),
+        // Campos adicionales - asegurar que se preservan
+        location: activity.location || null,
+        urgency: activity.urgency || 'normal',
+        url: activity.url || null,
+        guests: activity.guests || null,
         // Usar un ID para diferenciar el origen
         sourceType: 'reading'
       };
@@ -642,14 +918,22 @@ export class CalendarPanel {
 
     const cleaningActivities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
     const formattedCleaningActivities = cleaningActivities.map(activity => {
+      const hour = activity.hour || 9;
+
       return {
         ...activity,
         text: activity.type || "Limpieza",
         category: "Limpieza",
         date: activity.date,
+        hour: hour,
         timestamp: activity.timestamp,
         duration: activity.hours,
         completed: activity.completed || true,
+        // Campos adicionales - asegurar que se preservan
+        location: activity.location || null,
+        urgency: activity.urgency || 'normal',
+        url: activity.url || null,
+        guests: activity.guests || null,
         sourceType: 'cleaning'
       };
     });

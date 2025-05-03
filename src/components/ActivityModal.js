@@ -1,3 +1,5 @@
+import { ProgressAnimationService } from './ProgressAnimation.js';
+
 export class ActivityModal {
   constructor() {
     this.modal = null;
@@ -85,7 +87,7 @@ export class ActivityModal {
     this.formModal.setAttribute('aria-describedby', 'modal-description');
     
     this.formModal.innerHTML = `
-      <div class="modal-content">
+        <div class="modal-content">
         <span class="close-button" aria-label="Tancar">&times;</span>
         <h2 id="form-title">Registra activitat</h2>
         <p id="form-book-title" class="book-form-title"></p>
@@ -108,6 +110,22 @@ export class ActivityModal {
             <input type="date" id="activity-date" aria-required="true" aria-label="Data de lectura">
           </div>
           <div class="form-group">
+          <label for="activity-hour">Hora d'inici:</label>
+          <select id="activity-hour" aria-required="true" aria-label="Hora d'inici">
+            <option value="8">8:00</option>
+            <option value="9">9:00</option>
+            <option value="10">10:00</option>
+            <option value="11">11:00</option>
+            <option value="12">12:00</option>
+            <option value="13">13:00</option>
+            <option value="14">14:00</option>
+            <option value="15">15:00</option>
+            <option value="16">16:00</option>
+            <option value="17">17:00</option>
+            <option value="18">18:00</option>
+          </select>
+        </div>
+          <div class="form-group">
             <label for="activity-time">Hores d'activitat:</label>
             <input type="number" id="activity-time" min="0.25" max="24" step="0.25" value="1" aria-required="true" aria-label="Hores d'activitat">
           </div>
@@ -115,6 +133,36 @@ export class ActivityModal {
             <label for="activity-notes">Notes:</label>
             <textarea id="activity-notes" rows="3" aria-label="Notes sobre l'activitat"></textarea>
           </div>
+          
+          <!-- Botón para mostrar/ocultar campos adicionales -->
+          <button type="button" id="show-more-activity-fields" class="secondary-button">Afegir més dades</button>
+          
+          <!-- Sección adicional inicialmente oculta -->
+          <div id="additional-activity-fields" class="additional-fields" style="display: none;">
+            <hr>
+            <div class="form-group">
+              <label for="activity-location">Ubicació:</label>
+              <input type="text" id="activity-location" placeholder="Direcció o ubicació" aria-label="Ubicació de l'activitat">
+            </div>
+            <div class="form-group">
+              <label for="activity-urgency">Nivell d'urgència:</label>
+              <select id="activity-urgency" aria-label="Nivell d'urgència de l'activitat">
+                <option value="baixa">Baixa</option>
+                <option value="normal" selected>Normal</option>
+                <option value="alta">Alta</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="activity-url">URL relacionat:</label>
+              <input type="url" id="activity-url" placeholder="https://..." aria-label="URL relacionat amb l'activitat">
+            </div>
+            <div class="form-group">
+              <label for="activity-guests">Convidats:</label>
+              <input type="text" id="activity-guests" placeholder="Noms separats per comes" aria-label="Persones convidades a l'activitat">
+            </div>
+          </div>
+          
           <button id="save-activity" class="save-button">Desa activitat</button>
         </div>
       </div>
@@ -151,6 +199,19 @@ export class ActivityModal {
         } else if (!this.modal.classList.contains('hidden')) {
           this.hide();
         }
+      }
+    });
+
+    const showMoreFieldsBtn = this.formModal.querySelector('#show-more-activity-fields');
+    const additionalFields = this.formModal.querySelector('#additional-activity-fields');
+
+    showMoreFieldsBtn.addEventListener('click', () => {
+      if (additionalFields.style.display === 'none') {
+        additionalFields.style.display = 'block';
+        showMoreFieldsBtn.textContent = 'Mostrar menys dades';
+      } else {
+        additionalFields.style.display = 'none';
+        showMoreFieldsBtn.textContent = 'Afegir més dades';
       }
     });
     
@@ -392,8 +453,14 @@ export class ActivityModal {
   
     const categorySelect = this.formModal.querySelector('#activity-category');
     const dateInput = this.formModal.querySelector('#activity-date');
+    const hourSelect = this.formModal.querySelector('#activity-hour');
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
+
+    const locationInput = this.formModal.querySelector('#activity-location');
+    const urgencySelect = this.formModal.querySelector('#activity-urgency');
+    const urlInput = this.formModal.querySelector('#activity-url');
+    const guestsInput = this.formModal.querySelector('#activity-guests');
 
     const hours = parseFloat(timeInput.value);
     if (isNaN(hours)) {
@@ -401,17 +468,26 @@ export class ActivityModal {
       return;
     }
     
+    // Crear fecha con hora específica
+    const selectedDate = new Date(dateInput.value);
+    selectedDate.setHours(parseInt(hourSelect.value), 0, 0);
+    
     const activityData = {
       bookId: this.currentBook.userData.id,
       bookTitle: this.currentBook.userData.title,
       category: categorySelect.value,
       date: dateInput.value,
+      hour: parseInt(hourSelect.value), // Guardar la hora
       hours: hours,
       notes: notesInput.value,
-      timestamp: new Date().toISOString(),
+      timestamp: selectedDate.toISOString(), // Timestamp con hora correcta
       sourceType: 'reading',
-      completed: true, // Marcar automáticamente como completado
-      duration: hours // Añadir también la duración para consistencia
+      completed: true,
+      duration: hours,
+      location: locationInput.value || null,
+      urgency: urgencySelect.value || 'normal',
+      url: urlInput.value || null,
+      guests: guestsInput.value || null
     };
     
     // El resto del código permanece igual
@@ -423,13 +499,25 @@ export class ActivityModal {
     const event = new CustomEvent('reading-activity-added', { 
       detail: { activity: activityData }
     });
-    document.dispatchEvent(event);
+    document.dispatchEvent(new CustomEvent('reading-activity-added', { 
+      detail: { activity: activityData }
+    }));
     
-    // Actualizar estadísticas y cerrar el formulario
-    this.loadBookStats(this.currentBook.userData.id);
-    this.loadCategoryStats();
+    // Ocultar formulario
     this.formModal.classList.add('hidden');
-    this.modal.classList.remove('hidden');
+    
+    // Mostrar animación de progreso
+    ProgressAnimationService.showProgressAnimation(
+      activityData.category, 
+      'reading'
+    );
+    
+    // Volver a mostrar modal principal después de la animación
+    setTimeout(() => {
+      this.loadBookStats(this.currentBook.userData.id);
+      this.loadCategoryStats();
+      this.modal.classList.remove('hidden');
+    }, 2800);
   }
 
   // Afegim mètode per generar activitats de prova
