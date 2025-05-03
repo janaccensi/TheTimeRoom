@@ -34,11 +34,13 @@ import { CleaningModal } from '../components/CleaningModal.js';
 
 
 
+
 export default function useRoom(canvas) {
   // Configuració bàsica
   const scene = new THREE.Scene();  
   scene.background = new THREE.Color(0x000000); // Color gris clar
   let broomObject;
+  
   
   // Mides de l'habitació
   const roomConfig = {
@@ -58,6 +60,20 @@ export default function useRoom(canvas) {
   // Afegim l'estanteria
   const bookshelf = createBookshelf(scene, roomConfig); 
   
+  // Afegir llibres interactius a les prestatgeries
+  // Hem de fer això per cada prestatge de l'estanteria
+  for (const shelf of bookshelf.shelves) {
+    createBooks(scene, {
+      shelfX: shelf.position.x,
+      shelfY: shelf.position.y,
+      shelfZ: shelf.position.z,
+      shelfWidth: shelf.width,
+      shelfDepth: shelf.depth,
+      isParallelToWall: shelf.isParallelToWall || false
+    }, (book) => {
+      console.log(`Llibre clicat: ${book.userData.title} a l'estanteria ${shelf.userData.id}`);
+    });
+  }
   
   createCalendar(scene, roomConfig); // Afegim el calendari
   setupLighting(scene);
@@ -127,9 +143,11 @@ export default function useRoom(canvas) {
   const broom = createBroom(scene, {
     position: { x: -2.1, y: 1.1, z: 2.25 },  // Esquina de la habitación
     handleColor: 0xc4a484,  // Marrón claro
-    bristleColor: 0xd2b48c,  // Color paja natural
+    bristleColor: 0xd2b48c,  // Color paja natural        
     cleanliness: 0 // Limpieza inicial 
   });
+
+  broomObject = broom; // Guardar referencia
 
   broomObject = broom; // Guardar referencia
 
@@ -360,7 +378,7 @@ export default function useRoom(canvas) {
         activityModal.show(object);
       }
       else if (object.userData && object.userData.type === 'broom') {
-        cleaningModal.show(object);
+        cleaningModal.show(object);        
       }
       
     });
@@ -448,6 +466,41 @@ export default function useRoom(canvas) {
         }
       };
     });
+
+    // Configurar la integración de actividades de limpieza con el calendario
+    document.addEventListener('cleaning-activity-added', (event) => {
+      const cleaningActivity = event.detail.activity;
+      console.log('Actividad de limpieza registrada:', cleaningActivity);
+      
+      // NO añadir al calendario - ya se carga automáticamente desde localStorage
+      // Solo actualizar la vista si el panel está visible
+      if (calendarPanel.isVisible) {
+        if (calendarPanel.currentView === 'month') {
+          calendarPanel.renderMonthDays();
+        } else {
+          calendarPanel.renderDayTasks();
+        }
+      }
+    });
+
+    // Escucha de eventos de cambio de nivel de limpieza
+    document.addEventListener('cleanliness-level-changed', (event) => {
+      const newLevel = event.detail.level;
+      console.log('Nivel de limpieza actualizado:', newLevel);
+      
+      // Si tenemos referencia a la escoba, actualizarla
+      if (broomObject && broomObject.updateCleanliness) {
+        broomObject = broomObject.updateCleanliness(newLevel);
+      }
+    });
+
+    // También podemos inicializar el nivel de limpieza al inicio
+    // Al final de la función initInteractions():
+    setTimeout(() => {
+      // Disparar un evento para actualizar la escoba con el nivel inicial desde localStorage
+      cleaningModal.calculateCleanlinessLevel();
+    }, 500);
+
   }
   
   // Funció per desar activitats

@@ -69,7 +69,7 @@ export class ActivityModal {
     this.formModal.setAttribute('aria-describedby', 'modal-description');
     
     this.formModal.innerHTML = `
-      <div class="modal-content">
+        <div class="modal-content">
         <span class="close-button" aria-label="Tancar">&times;</span>
         <h2 id="form-title">Registra activitat</h2>
         
@@ -101,6 +101,35 @@ export class ActivityModal {
             <input type="date" id="activity-date" aria-required="true" aria-label="Data de l'activitat">
           </div>
           <div class="form-group">
+            <label for="activity-hour">Hora:</label>
+            <select id="activity-hour" aria-label="Hora de l'activitat">
+              <option value="0">00:00</option>
+              <option value="1">01:00</option>
+              <option value="2">02:00</option>
+              <option value="3">03:00</option>
+              <option value="4">04:00</option>
+              <option value="5">05:00</option>
+              <option value="6">06:00</option>
+              <option value="7">07:00</option>
+              <option value="8">08:00</option>
+              <option value="9">09:00</option>
+              <option value="10">10:00</option>
+              <option value="11">11:00</option>
+              <option value="12">12:00</option>
+              <option value="13">13:00</option>
+              <option value="14">14:00</option>
+              <option value="15">15:00</option>
+              <option value="16">16:00</option>
+              <option value="17">17:00</option>
+              <option value="18">18:00</option>
+              <option value="19">19:00</option>
+              <option value="20">20:00</option>
+              <option value="21">21:00</option>
+              <option value="22">22:00</option>              
+              <option value="23">23:00</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label for="activity-time">Hores d'activitat:</label>
             <input type="number" id="activity-time" min="0.25" max="24" step="0.25" value="1" aria-required="true" aria-label="Hores d'activitat">
           </div>
@@ -108,6 +137,35 @@ export class ActivityModal {
             <label for="activity-notes">Notes:</label>
             <textarea id="activity-notes" rows="3" aria-label="Notes sobre l'activitat"></textarea>
           </div>
+          
+          <!-- Botón para mostrar/ocultar campos adicionales -->
+          <button type="button" id="show-more-activity-fields" class="secondary-button">Afegir més dades</button>
+          
+          <!-- Sección adicional inicialmente oculta -->
+          <div id="additional-activity-fields" class="additional-fields" style="display: none;">
+            <div class="form-group">
+              <label for="activity-location">Ubicació:</label>
+              <input type="text" id="activity-location" placeholder="Direcció o ubicació" aria-label="Ubicació de l'activitat">
+            </div>
+            <div class="form-group">
+              <label for="activity-urgency">Nivell d'urgència:</label>
+              <select id="activity-urgency" aria-label="Nivell d'urgència de l'activitat">
+                <option value="baixa">Baixa</option>
+                <option value="normal" selected>Normal</option>
+                <option value="alta">Alta</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="activity-url">URL relacionat:</label>
+              <input type="url" id="activity-url" placeholder="https://..." aria-label="URL relacionat amb l'activitat">
+            </div>
+            <div class="form-group">
+              <label for="activity-guests">Convidats:</label>
+              <input type="text" id="activity-guests" placeholder="Noms separats per comes" aria-label="Persones convidades a l'activitat">
+            </div>
+          </div>
+          
           <button id="save-activity" class="save-button">Desa activitat</button>
         </div>
       </div>
@@ -144,6 +202,45 @@ export class ActivityModal {
         } else if (!this.modal.classList.contains('hidden')) {
           this.hide();
         }
+      }
+    });
+
+    const showMoreFieldsBtn = this.formModal.querySelector('#show-more-activity-fields');
+    const additionalFields = this.formModal.querySelector('#additional-activity-fields');
+
+    showMoreFieldsBtn.addEventListener('click', () => {
+      if (additionalFields.style.display === 'none') {
+        // Primer fem que l'element sigui visible però amb altura 0
+        additionalFields.style.display = 'block';
+        additionalFields.style.maxHeight = '0';
+        additionalFields.style.overflow = 'hidden';
+        additionalFields.style.transition = 'max-height 0.5s ease-in-out, opacity 0.4s ease-in-out';
+        additionalFields.style.opacity = '0';
+        
+        // Forcem un reflow abans d'aplicar la nova alçada
+        void additionalFields.offsetHeight;
+        
+        // Ara ajustem l'alçada i opacitat per fer l'animació
+        additionalFields.style.maxHeight = '800px'; // Valor prou gran
+        additionalFields.style.opacity = '1';
+        
+        showMoreFieldsBtn.textContent = 'Mostrar menys dades';
+        
+        // Fem scroll suaument cap a la secció
+        setTimeout(() => {
+          additionalFields.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+      } else {
+        // Animació per ocultar
+        additionalFields.style.maxHeight = '0';
+        additionalFields.style.opacity = '0';
+        
+        // Esperem que acabi l'animació abans d'ocultar-lo completament
+        setTimeout(() => {
+          additionalFields.style.display = 'none';
+        }, 400); // Temps lleugerament inferior a la transició per evitar salts
+        
+        showMoreFieldsBtn.textContent = 'Afegir més dades';
       }
     });
     
@@ -517,6 +614,11 @@ export class ActivityModal {
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
 
+    const locationInput = this.formModal.querySelector('#activity-location');
+    const urgencySelect = this.formModal.querySelector('#activity-urgency');
+    const urlInput = this.formModal.querySelector('#activity-url');
+    const guestsInput = this.formModal.querySelector('#activity-guests');
+
     const hours = parseFloat(timeInput.value);
     if (isNaN(hours)) {
       alert('Si us plau, introdueix un nombre vàlid d\'hores');
@@ -591,7 +693,19 @@ export class ActivityModal {
     this.loadObjectStats(this.currentObject.userData.id, activityType);
     this.loadCategoryStats(activityType);
     this.formModal.classList.add('hidden');
-    this.modal.classList.remove('hidden');
+    
+    // Mostrar animación de progreso
+    ProgressAnimationService.showProgressAnimation(
+      activityData.category, 
+      'reading'
+    );
+    
+    // Volver a mostrar modal principal después de la animación
+    setTimeout(() => {
+      this.loadBookStats(this.currentBook.userData.id);
+      this.loadCategoryStats();
+      this.modal.classList.remove('hidden');
+    }, 2800);
   }
 
   // Afegim mètode per generar activitats de prova
@@ -684,6 +798,42 @@ if (!document.getElementById('accessibility-styles')) {
       padding: 0.5em;
       border: 1px solid #ccc;
       border-radius: 4px;
+    }
+    
+    /* Estils per millorar l'espaiament de la secció "Afegir més dades" */
+    #show-more-activity-fields {
+      margin-top: 1em;
+      margin-bottom: 1.5em;
+      width: auto;
+      display: block;
+    }
+    
+    .additional-fields {
+      background-color: #f8f8f8;
+      border-radius: 8px;
+      padding: 1.2em;
+      margin-top: 1.2em;
+      margin-bottom: 1.5em;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .additional-fields .form-group {
+      margin-bottom: 1.8em;
+    }
+    
+    .additional-fields .form-group:last-child {
+      margin-bottom: 0.5em;
+    }
+    
+    /* Millora dels camps d'entrada */
+    .additional-fields input,
+    .additional-fields select,
+    .additional-fields textarea {
+      padding: 0.7em;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
     }
   `;
   document.head.appendChild(style);

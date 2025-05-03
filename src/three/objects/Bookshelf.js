@@ -115,7 +115,7 @@ export function createBookshelf(scene, roomConfig, clearExisting = false) {
     }
   }
   
-  return {         
-    shelves 
+  return {                  
+    shelves   
   };
 }
