@@ -1,5 +1,42 @@
+
+
+## ✍️ 1. Tipografia
+
+### Fonts Recomanades
+- **Primària:** `Inter` — clara i llegible.
+- **Secundària:** `Sora` o `DM Sans` — moderna i expressiva.
+
+### Assignació per Elements
+
+| Element                          | Font      | Pes           | Mida   | Interlineat |
+|----------------------------------|-----------|---------------|--------|-------------|
+| Títol Principal (`h1`)           | Sora      | Bold (700)    | 36px   | 120%        |
+| Subtítol (`h2`)                  | Sora      | Semibold (600)| 28px   | 120%        |
+| Encapçalaments secció (`h3`)     | Inter     | Medium (500)  | 22px   | 130%        |
+| Paràgraf                         | Inter     | Regular (400) | 16px   | 140%        |
+| Peu de pàgina / metainformació  | Inter     | Light (300)   | 14px   | 130%        |
+| Botons                           | Inter     | Semibold (600)| 16px   | 120%        |
+| Estadístiques / mètriques        | DM Sans   | Medium (500)  | 20px   | 130%        |
+
 ---
 
+## 🎨 2. Paleta de Colors
+
+### Colors Base
+
+| Nom                | Hex       | Ús principal                           |
+|--------------------|-----------|----------------------------------------|
+| Blau Primari       | `#3B82F6` | Gràfics 3D, elements actius            |
+| Blau Fosc          | `#1E3A8A` | Encapçalaments, navbar                 |
+| Gris Suau          | `#F3F4F6` | Fons de seccions                       |
+| Blanc              | `#FFFFFF` | Fons principal                         |
+| Negre Fosc         | `#111827` | Text principal                         |
+| Verd Productiu     | `#10B981` | Productivitat alta                     |
+| Taronja Mitjana    | `#F59E0B` | Avisos, productivitat mitjana          |
+| Vermell Clar       | `#EF4444` | Errors, productivitat baixa            |
+
+### Gradient Recomanat
+linear-gradient(135deg, #3B82F6, #10B981)
 ## 🧱 3. Retícula i Mides
 
 ### Retícula
@@ -81,8 +118,4 @@
 - Animacions amb suport per a `prefers-reduced-motion`
 - Navegació amb teclat i `aria-label` per a lector de pantalla
 
----
 
-## 🔧 Vols una versió Tailwind?
-
-Puc generar un `tailwind.config.js` amb aquesta configuració de colors, tipografies i espaiats. Només digues-ho i t’ho preparo.

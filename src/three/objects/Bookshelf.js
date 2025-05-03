@@ -49,7 +49,6 @@ export function createBookshelf(scene, roomConfig) {
   const shelfSpacing = shelfHeight / (numShelves + 1);
   
   // Primer afegim la tapa superior
-  
   const topShelf = new THREE.Mesh(shelfHorizGeom, tableWoodMaterial);
   topShelf.position.set(posX, posY + shelfHeight/2 - shelfThickness/2, posZ);
   scene.add(topShelf);
@@ -68,18 +67,19 @@ export function createBookshelf(scene, roomConfig) {
     scene.add(shelf);
     shelves.push(shelf);
     
-    // Afegir 5 llibres a cada prestatge intern
+    // Passem l'índex del prestatge per controlar quins objectes es creen
     createBooks(scene, {
       shelfX: posX,
       shelfY: shelfPosY + shelfThickness,
       shelfZ: posZ,
       shelfWidth: shelfWidth - 0.05,
       shelfDepth: shelfDepth - 2*shelfThickness - 0.05,
-      isParallelToWall: true
+      isParallelToWall: true,
+      shelfIndex: i  // Afegim l'índex del prestatge
     });
   }
   
-  return {     
+  return {         
     shelves 
   };
 }

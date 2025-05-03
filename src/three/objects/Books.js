@@ -1,228 +1,194 @@
 import * as THREE from 'three';
 
 export function createBooks(scene, shelfInfo, onBookClick) {
-  const { shelfX, shelfY, shelfZ, shelfWidth, shelfDepth, isParallelToWall = false } = shelfInfo;
+  const { shelfX, shelfY, shelfZ, shelfWidth, shelfDepth, isParallelToWall = false, shelfIndex = 0 } = shelfInfo;
   const books = [];
   
-  // Nombre aleatori de llibres per estanteria (entre 10 i 20)
-  const numBooks = Math.floor(Math.random() * 10) + 5;
+  // Determinem si aquest prestatge conté llibres o carpesans
+  const isBookshelf = shelfIndex <= 1; // Estanteries 1 i 2 (índexs 0 i 1)
+  const isFoldershelf = shelfIndex >= 2; // Estanteries 3 i 4 (índexs 2 i 3)
   
-  // Textures per als lloms dels llibres
-  const textureLoader = new THREE.TextureLoader();
+  // Nombres d'elements segons el tipus de prestatge
+  const numBooks = 20;
+  const numFolders = 10;
   
-  // Llista de textures només per als lloms dels llibres
-  const bookSpineTextures = [
-    textureLoader.load('/textures/books/spine1.png'),
-    textureLoader.load('/textures/books/spine2.png'),
-    textureLoader.load('/textures/books/spine3.png'),
-    textureLoader.load('/textures/books/spine4.png'),
-    textureLoader.load('/textures/books/spine5.png')
+  // Colors per als llibres
+  const bookColors = [
+    "#314823", "#a68d53", "#a63b15", "#2F4F6E", 
+    "#7B2D26", "#3A6F68", "#444444", "#F4F1E6"
   ];
   
-  // Configuració de textures
-  bookSpineTextures.forEach(texture => {
-    texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+  // Materials per als llibres (colors llisos)
+  const bookMaterials = bookColors.map(color => {
+    return new THREE.MeshStandardMaterial({
+      color: new THREE.Color(color),
+      roughness: 0.8,
+      metalness: 0.1
+    });
+  });
+  
+  // Material per als carpesans negres
+  const folderMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color("#111111"),    
+    roughness: 0.7,
+    metalness: 0.05
   });
   
   if (isParallelToWall) {
     // Llibres orientats al llarg de l'eix Z (paral·lels a la paret)
-    const totalDepth = shelfDepth * 0.9;
-    const bookSeparation = 0.02;
+    const totalDepth = shelfDepth * 0.99;
     
-    // Generem posicions aleatòries per als llibres
-    const positions = [];
-    for (let i = 0; i < numBooks; i++) {
-      // Posició aleatòria al llarg de l'estanteria, deixant marge als extrems
-      const margin = 0.1; // Marge als extrems (10% de l'espai)
-      const availableSpace = totalDepth * (1 - 2 * margin);
-      const randomPosition = (Math.random() * availableSpace) + (totalDepth * margin);
-      
-      // Comprovem que no estigui massa a prop dels altres llibres
-      // Reduïm la distància mínima per acomodar més llibres
-      let isValid = true;
-      for (let pos of positions) {
-        if (Math.abs(pos - randomPosition) < bookSeparation * 3) { // Reduït de 5 a 3
-          isValid = false;
-          break;
-        }
-      }
-      
-      // Si la posició és vàlida, l'afegim. Si no, provem més tard
-      if (isValid) {
-        positions.push(randomPosition);
-      } else {
-        i--; // Tornem a provar
-        // Limitem els intents per evitar bucles infinits
-        if (i < -20) break; // Augmentat el límit d'intents
+    // Nova estratègia: disposarem els elements de manera contigua
+    // Calculem l'espai total que ocuparan
+    let totalWidth = 0;
+    const elementDepths = [];
+    const elementHeights = [];
+    
+    // Només calculem mides per als elements que realment crearem
+    if (isBookshelf) {
+      for (let i = 0; i < numBooks; i++) {
+        const bookDepth = 0.04 + Math.random() * 0.03;
+        elementDepths.push(bookDepth);
+        totalWidth += bookDepth;
+        elementHeights.push(0.20 + Math.random() * 0.05);
       }
     }
     
-    // Ordenem les posicions per facilitar la col·locació
-    positions.sort((a, b) => a - b);
+    if (isFoldershelf) {
+      for (let i = 0; i < numFolders; i++) {
+        const folderDepth = 0.06;
+        elementDepths.push(folderDepth);
+        totalWidth += folderDepth;
+        elementHeights.push(0.40);
+      }
+    }
     
-    // Col·loquem els llibres a les posicions generades
-    for (let i = 0; i < positions.length; i++) {
-      // Dimensions del llibre amb gruix reduït
-      const bookDepth = 0.05 + Math.random() * 0.04; // Gruix més realista
-      const bookHeight = 0.17 + Math.random() * 0.12; // Altura variable
-      const bookWidth = shelfWidth * 0.75 * (0.7 + Math.random() * 0.5); // Amplada variable
-      
-      // Seleccionar textura aleatòria pel llom
-      const spineTexture = bookSpineTextures[Math.floor(Math.random() * bookSpineTextures.length)];
-      
-      // Material pel llibre utilitzant només la textura del llom
-      const bookMaterial = new THREE.MeshStandardMaterial({ 
-        map: spineTexture,
-        roughness: 0.8, 
-        metalness: 0.1 
-      });
-      
-      // Crear el llibre
-      const bookGeom = new THREE.BoxGeometry(bookWidth, bookHeight, bookDepth);
-      const book = new THREE.Mesh(bookGeom, bookMaterial);
-      
-      // Afegim propietats per a la interacció
-      book.userData = {
-        id: `book_parallel_${i}`,
-        type: 'book',
-        title: `Llibre`,
-        category: getRandomBookCategory()
+    // Escalem si fa falta
+    const scaleFactor = Math.min(1.0, totalDepth / totalWidth);
+    
+    // Posicionem els elements
+    let currentPos = 0;
+    
+    // Si són llibres, els distribuïm d'esquerra a dreta dins d'un grup
+    if (isBookshelf) {
+      // Creem un grup per tots els llibres de l'estanteria però SENSE la propietat isInteractiveGroup
+      const bookshelfGroup = new THREE.Group();
+      bookshelfGroup.userData = {
+        id: `bookshelf_${shelfIndex}`,
+        type: 'bookCollection',
+        title: `Col·lecció de llibres`
+        // Eliminem isInteractiveGroup per permetre selecció individual
       };
       
-      // Fem el llibre "clicable" (això serà utilitzat pel raycaster)
-      book.isInteractive = true;
+      // Posicionem el grup a la base de l'estanteria
+      bookshelfGroup.position.set(shelfX, shelfY, shelfZ);
       
-      // Posicionar el llibre (convertim la posició relativa a absoluta)
-      const bookPosZ = shelfZ - totalDepth/2 + positions[i];
-      
-      book.position.set(
-        shelfX + (shelfWidth - bookWidth) * (0.1 + Math.random() * 0.3),  // Variació en X
-        shelfY + bookHeight/2,
-        bookPosZ
-      );
-      
-      // Rotació lleugera per donar realisme (més varietat)
-      book.rotation.y = (Math.random() - 0.5) * 0.15;
-      book.rotation.x = (Math.random() - 0.5) * 0.05;
-      if (Math.random() > 0.8) {
-        // Ocasionalment un llibre lleugerament inclinat
-        book.rotation.z = (Math.random() - 0.5) * 0.08;
+      for (let i = 0; i < numBooks; i++) {
+        const bookDepth = elementDepths[i] * scaleFactor;
+        const bookHeight = elementHeights[i];
+        const bookWidth = shelfWidth * 0.75 * (0.7 + Math.random() * 0.3);
+        
+        const bookMaterial = bookMaterials[Math.floor(Math.random() * bookMaterials.length)];
+        const bookGeom = new THREE.BoxGeometry(bookWidth, bookHeight, bookDepth);
+        const book = new THREE.Mesh(bookGeom, bookMaterial);
+        
+        book.userData = {
+          id: `book_${shelfIndex}_${i}`,
+          type: 'book',
+          title: `Llibre`,
+          category: getRandomBookCategory()
+        };
+        
+        // Assegurem que cada llibre és interactiu individualment
+        book.isInteractive = true;
+        
+        // Les posicions ara són relatives al grup, no a l'escena
+        const bookPosZ = -totalDepth/2 + currentPos + bookDepth/2;
+        
+        book.position.set(
+          (shelfWidth - bookWidth) * (0.1 + Math.random() * 0.3),
+          bookHeight/2,
+          bookPosZ
+        );
+        
+        book.rotation.y = (Math.random() - 0.5) * 0.08;
+        book.rotation.x = (Math.random() - 0.5) * 0.03;
+        
+        bookshelfGroup.add(book);
+        books.push(book);
+        
+        currentPos += bookDepth + 0.005; // Petit espai entre llibres
       }
       
-      scene.add(book);
-      books.push(book);
+      // Afegim tot el grup a l'escena
+      scene.add(bookshelfGroup);
     }
     
-    // Ocasionalment, afegir un llibre completament inclinat
-    if (Math.random() > 0.65) {
-      const bookHeight = 0.18 + Math.random() * 0.1;
-      const bookWidth = shelfWidth * 0.75;
-      const bookDepth = 0.04 + Math.random() * 0.03; // Gruix reduït pel llibre inclinat
-      
-      const spineTexture = bookSpineTextures[Math.floor(Math.random() * bookSpineTextures.length)];
-      const bookMaterial = new THREE.MeshStandardMaterial({ 
-        map: spineTexture,
-        roughness: 0.8, 
-        metalness: 0.1 
-      });
-      
-      const bookGeom = new THREE.BoxGeometry(bookWidth, bookHeight, bookDepth);
-      const book = new THREE.Mesh(bookGeom, bookMaterial);
-      
-      // Posició aleatòria per al llibre inclinat
-      const inclinedBookPos = shelfZ - totalDepth/2 + Math.random() * totalDepth;
-      
-      // Posicionar el llibre inclinat
-      book.position.set(
-        shelfX + (shelfWidth - bookWidth) * 0.2,
-        shelfY + bookHeight/2 - 0.05,
-        inclinedBookPos
-      );
-      
-      // Rotació que simula un llibre inclinat o caigut
-      book.rotation.z = Math.PI * 0.1;
-      book.rotation.y = Math.PI * (0.1 + Math.random() * 0.1);
-      
-      scene.add(book);
-      books.push(book);
-    }
-  } else {
-    // Per llibres perpendiculars a la paret
-    const totalWidth = shelfWidth * 0.9;
-    
-    // Generem posicions aleatòries per als llibres
-    const positions = [];
-    for (let i = 0; i < numBooks; i++) {
-      // Posició aleatòria al llarg de l'estanteria
-      const margin = 0.1; // Marge als extrems
-      const availableSpace = totalWidth * (1 - 2 * margin);
-      const randomPosition = (Math.random() * availableSpace) + (totalWidth * margin);
-      
-      // Comprovem que no estigui massa a prop dels altres llibres
-      let isValid = true;
-      for (let pos of positions) {
-        if (Math.abs(pos - randomPosition) < 0.07) {
-          isValid = false;
-          break;
-        }
+    // Si són carpesans, mantenim el grup per l'etiqueta però són interactuables individualment
+    if (isFoldershelf) {
+      for (let i = 0; i < numFolders; i++) {
+        const folderDepth = elementDepths[i] * scaleFactor;
+        const folderHeight = elementHeights[i];
+        const folderWidth = shelfWidth * 0.675;
+        
+        // Crear un grup per al carpesà i l'etiqueta (sense isInteractiveGroup)
+        const folder = new THREE.Group();
+              
+        // Crear el carpesà principal
+        const folderGeom = new THREE.BoxGeometry(folderWidth, folderHeight, folderDepth);
+        const folderMesh = new THREE.Mesh(folderGeom, folderMaterial);
+        folderMesh.isInteractive = true; // Aquest mesh és interactiu individualment
+        
+        // Important: afegim la informació d'usuari al mesh principal 
+        // perquè el raycaster interactuï amb aquest element
+        folderMesh.userData = {
+          id: `folder_${shelfIndex}_${i}`,
+          type: 'folder',
+          title: `Carpesà de documents`,
+          category: 'Documents'
+        };
+        
+        folder.add(folderMesh);
+        
+        // Crear l'etiqueta blanca
+        const labelMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0xFFFFFF, 
+          roughness: 0.6 
+        });
+        const labelWidth = folderWidth * 0.2;
+        const labelHeight = folderHeight * 0.5;
+        const labelDepth = 0.005;
+        
+        const labelGeom = new THREE.BoxGeometry(labelWidth, labelHeight, labelDepth);
+        const label = new THREE.Mesh(labelGeom, labelMaterial);
+        
+        label.position.set(folderWidth/2, folderHeight/8, 0);    
+        label.rotation.y = Math.PI/2;
+        
+        folder.add(label);
+        
+        // Metadades del grup (però sense ser interactiu com a grup)
+        folder.userData = {
+          id: `folder_group_${shelfIndex}_${i}`,
+          type: 'folderWithLabel',
+          isInteractiveGroup: true
+        };
+        
+        const folderPosZ = shelfZ - totalDepth/2 + currentPos + folderDepth/2;
+        
+        folder.position.set(
+          shelfX + (shelfWidth - folderWidth) * 0.2,
+          shelfY + folderHeight/2,
+          folderPosZ
+        );
+        
+        folder.rotation.y = (Math.random() - 0.5) * 0.05;
+        
+        scene.add(folder);
+        books.push(folder);
+        
+        currentPos += folderDepth + 0.01; // Espai una mica més gran entre carpesans
       }
-      
-      // Si la posició és vàlida, l'afegim
-      if (isValid) {
-        positions.push(randomPosition);
-      } else {
-        i--; // Tornem a provar
-        if (i < -10) break;
-      }
-    }
-    
-    // Ordenem les posicions
-    positions.sort((a, b) => a - b);
-    
-    // Col·loquem els llibres
-    for (let i = 0; i < positions.length; i++) {
-      // Dimensions variables del llibre amb gruix reduït
-      const bookWidth = 0.08 + Math.random() * 0.06;
-      const bookHeight = 0.17 + Math.random() * 0.12;
-      const bookDepth = shelfDepth * (0.25 + Math.random() * 0.2); // Reduït del 90% al 45% màxim
-      
-      // Seleccionar textura aleatòria pel llom
-      const spineTexture = bookSpineTextures[Math.floor(Math.random() * bookSpineTextures.length)];
-      
-      const bookMaterial = new THREE.MeshStandardMaterial({
-        map: spineTexture,
-        roughness: 0.7,
-        metalness: 0.2
-      });
-      
-      const bookGeom = new THREE.BoxGeometry(bookWidth, bookHeight, bookDepth);
-      const book = new THREE.Mesh(bookGeom, bookMaterial);
-      
-      // Afegim propietats per a la interacció
-      book.userData = {
-        id: `book_perpendicular_${i}`,
-        type: 'book',
-        title: `Llibre`,
-        category: getRandomBookCategory()
-      };
-      
-      // Fem el llibre "clicable"
-      book.isInteractive = true;
-      
-      // Convertim la posició relativa a absoluta
-      const bookPosX = shelfX - totalWidth/2 + positions[i];
-      
-      book.position.set(
-        bookPosX,
-        shelfY + bookHeight/2,
-        shelfZ - (shelfDepth - bookDepth)/2
-      );
-      
-      // Rotació lleugera
-      book.rotation.y = (Math.random() - 0.5) * 0.2;
-      
-      scene.add(book);
-      books.push(book);
     }
   }
   
