@@ -1,3 +1,5 @@
+import { ProgressAnimationService } from './ProgressAnimation.js';
+
 export class CleaningModal {
     constructor() {
       this.modal = null;
@@ -154,6 +156,22 @@ export class CleaningModal {
               <input type="date" id="cleaning-date" aria-required="true">
             </div>
             <div class="form-group">
+            <label for="cleaning-hour">Hora d'inici:</label>
+            <select id="cleaning-hour" aria-required="true">
+              <option value="8">8:00</option>
+              <option value="9">9:00</option>
+              <option value="10">10:00</option>
+              <option value="11">11:00</option>
+              <option value="12">12:00</option>
+              <option value="13">13:00</option>
+              <option value="14">14:00</option>
+              <option value="15">15:00</option>
+              <option value="16">16:00</option>
+              <option value="17">17:00</option>
+              <option value="18">18:00</option>
+            </select>
+          </div>
+            <div class="form-group">
               <label for="cleaning-time">Duració (hores):</label>
               <input type="number" id="cleaning-time" min="0.25" max="24" step="0.25" value="1" aria-required="true">
             </div>
@@ -161,6 +179,36 @@ export class CleaningModal {
               <label for="cleaning-notes">Notes:</label>
               <textarea id="cleaning-notes" rows="3"></textarea>
             </div>
+
+            <!-- Botón para mostrar/ocultar campos adicionales -->
+            <button type="button" id="show-more-fields" class="secondary-button">Afegir més dades</button>
+            
+            <!-- Sección adicional inicialmente oculta -->
+            <div id="additional-fields" class="additional-fields" style="display: none;">
+              <hr>
+              <div class="form-group">
+                <label for="cleaning-location">Ubicació:</label>
+                <input type="text" id="cleaning-location" placeholder="Direcció o ubicació">
+              </div>
+              <div class="form-group">
+                <label for="cleaning-urgency">Nivell d'urgència:</label>
+                <select id="cleaning-urgency">
+                  <option value="baixa">Baixa</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="alta">Alta</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="cleaning-url">URL relacionat:</label>
+                <input type="url" id="cleaning-url" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label for="cleaning-guests">Convidats:</label>
+                <input type="text" id="cleaning-guests" placeholder="Noms separats per comes">
+              </div>
+            </div>
+            
             <button id="save-cleaning" class="save-button">Desa activitat</button>
           </div>
         </div>
@@ -186,6 +234,19 @@ export class CleaningModal {
       
       const saveBtn = this.formModal.querySelector('#save-cleaning');
       saveBtn.addEventListener('click', () => this.saveCleaningActivity());
+
+      const showMoreFieldsBtn = this.formModal.querySelector('#show-more-fields');
+      const additionalFields = this.formModal.querySelector('#additional-fields');
+
+      showMoreFieldsBtn.addEventListener('click', () => {
+        if (additionalFields.style.display === 'none') {
+          additionalFields.style.display = 'block';
+          showMoreFieldsBtn.textContent = 'Mostrar menys dades';
+        } else {
+          additionalFields.style.display = 'none';
+          showMoreFieldsBtn.textContent = 'Afegir més dades';
+        }
+      });
       
       // Inicializar fecha a hoy
       const dateInput = this.formModal.querySelector('#cleaning-date');
@@ -421,8 +482,14 @@ export class CleaningModal {
     saveCleaningActivity() {
       const typeSelect = this.formModal.querySelector('#cleaning-type');
       const dateInput = this.formModal.querySelector('#cleaning-date');
+      const hourSelect = this.formModal.querySelector('#cleaning-hour');
       const timeInput = this.formModal.querySelector('#cleaning-time');
       const notesInput = this.formModal.querySelector('#cleaning-notes');
+
+      const locationInput = this.formModal.querySelector('#cleaning-location');
+      const urgencySelect = this.formModal.querySelector('#cleaning-urgency');
+      const urlInput = this.formModal.querySelector('#cleaning-url');
+      const guestsInput = this.formModal.querySelector('#cleaning-guests');
       
       const hours = parseFloat(timeInput.value);
       if (isNaN(hours)) {
@@ -430,15 +497,25 @@ export class CleaningModal {
         return;
       }
       
+      // Crear fecha con hora específica
+      const selectedDate = new Date(dateInput.value);
+      selectedDate.setHours(parseInt(hourSelect.value), 0, 0);
+      
       const activityData = {
         type: typeSelect.value,
         date: dateInput.value,
+        hour: parseInt(hourSelect.value), // Guardar la hora
         hours: hours,
         notes: notesInput.value,
-        timestamp: new Date().toISOString(),
+        timestamp: selectedDate.toISOString(), // Timestamp con hora correcta
         completed: true,
-        sourceType: 'cleaning'  // Asegurarse de que tenga este identificador
+        sourceType: 'cleaning',
+        location: locationInput.value || null,
+        urgency: urgencySelect.value || 'normal',
+        url: urlInput.value || null,
+        guests: guestsInput.value || null
       };
+  
       
       // Guardar actividad
       const activities = this.getCleaningActivities();
@@ -451,10 +528,20 @@ export class CleaningModal {
       });
       document.dispatchEvent(event);
       
-      // Actualizar estadísticas y cerrar formulario
-      this.loadCleaningStats();
+      // Ocultar formulario y mostrar animación
       this.formModal.classList.add('hidden');
-      this.modal.classList.remove('hidden');
+      
+      // Mostrar animación de progreso
+      ProgressAnimationService.showProgressAnimation(
+        activityData.type, 
+        'cleaning'
+      );
+      
+      // Volver a mostrar modal principal después de la animación
+      setTimeout(() => {
+        this.loadCleaningStats();
+        this.modal.classList.remove('hidden');
+      }, 2800);
     }
     
     setOnSave(callback) {
