@@ -23,7 +23,6 @@ export class InteractionManager {
     this.onObjectClick = callback;
   }
 
-  // Add this new method
   setOnObjectHover(callback) {
     this.onHoverCallback = callback;
   }
@@ -38,16 +37,10 @@ export class InteractionManager {
     // Busquem interseccions amb objectes interactius
     const intersects = this.raycaster.intersectObjects(this.scene.children, true)
       .filter(intersection => 
+        // Principi Open/Closed: Només comprovem la propietat isInteractive
+        // o si existeix la propietat userData.type (qualsevol tipus)
         intersection.object.isInteractive || 
-        (intersection.object.userData && (
-          intersection.object.userData.type === 'book' ||
-          intersection.object.userData.type === 'calendar'|| 
-          intersection.object.userData.type === 'tv' ||
-          intersection.object.userData.type === 'broom' ||
-          intersection.object.userData.type === 'dumbbell' ||
-          intersection.object.userData.type === 'microphone' ||
-          intersection.object.userData.type === 'computer'
-        ))      
+        (intersection.object.userData && intersection.object.userData.type)
       );
     
     if (intersects.length > 0) {
@@ -66,21 +59,12 @@ export class InteractionManager {
     
     const intersects = this.raycaster.intersectObjects(this.scene.children, true)
       .filter(intersection => {
-        // Log per veure quins objectes troba
-        console.log('Objecte trobat:', intersection.object);
+        // Principi Open/Closed: Només comprovem la propietat isInteractive
+        // o si existeix la propietat userData.type (qualsevol tipus)
         return intersection.object.isInteractive || 
-        (intersection.object.userData && (
-          intersection.object.userData.type === 'book' ||
-          intersection.object.userData.type === 'calendar' ||
-          intersection.object.userData.type === 'tv' ||
-          intersection.object.userData.type === 'broom' ||
-          intersection.object.userData.type === 'dumbbell' ||
-          intersection.object.userData.type === 'microphone' ||
-          intersection.object.userData.type === 'computer'
-        ));
+               (intersection.object.userData && intersection.object.userData.type);
       });
     
-    console.log('Interseccions:', intersects.length);
     // Canviem el cursor segons si estem sobre un objecte interactiu o no
     if (intersects.length > 0) {
       this.domElement.style.cursor = 'pointer';
@@ -110,52 +94,19 @@ export class InteractionManager {
     // Comprovem si l'usuari prefereix moviment reduït
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
-    // Tratar los libros de forma especial - SIEMPRE como objetos individuales
-    if (object.userData && (object.userData.type === 'book' || 
-        object.userData.type === 'calendar')) {
-      // Para los libros, siempre aplicar resaltado individual
-      this.highlightSingleObject(object, highlight, prefersReducedMotion);
-      return; // Importante: salimos de la función aquí
-    }
-    
-    // PARA EL RESTO DE OBJETOS - continuar con el código existente
-    // NUEVA FUNCIÓN: Determinar si debemos resaltar todo un grupo
-    const isPartOfInteractiveGroup = (obj) => {
-      // Excluir libros explícitamente
-      if (obj.userData && obj.userData.type === 'book') {
-        return null;
-      }
-      
-      // Buscar hacia arriba en la jerarquía hasta encontrar un grupo interactivo
+    // NOVA FUNCIÓ: Determinació si cal ressaltar tot un grup
+    const isPartOfInteractiveGroup = (obj) => {            
+      // Busquem cap amunt en la jerarquia fins a trobar un grup interactiu
       let current = obj;
-      let maxDepth = 10; // Limitar la profundidad para evitar bucles infinitos
+      let maxDepth = 10; // Limitem la profunditat per evitar bucles infinits
       
       while (current && current.parent && maxDepth > 0) {
-        // Verificar si el objeto actual es parte de un grupo interactivo
-        if (current.parent.userData && 
-            (current.parent.userData.isInteractiveGroup || 
-             current.parent.userData.type === 'tv' || 
-             current.parent.userData.type === 'broom' ||
-             current.parent.userData.type === 'microphone' ||
-             current.parent.userData.type === 'dumbbell')) {
+        // Verifiquem si l'objecte actual és part d'un grup interactiu
+        if (current.parent.userData && current.parent.userData.isInteractiveGroup) {
           return current.parent;
         }
         
-        // También verificar si hay hermanos interactivos que indiquen un grupo
-        if (current.parent.children) {
-          const hasInteractiveSibling = current.parent.children.some(child => 
-            child.userData && child.userData.type && child.userData.type !== 'book' && 
-            (child.userData.type === 'tv' || 
-            child.userData.type === 'broom' ||
-            child.userData.type === 'microphone' ||
-            child.userData.type === 'dumbbell'));
-            
-          if (hasInteractiveSibling) {
-            return current.parent;
-          }
-        }
-        
-        // Subir un nivel en la jerarquía
+        // Pugem un nivell en la jerarquia
         current = current.parent;
         maxDepth--;
       }
@@ -163,21 +114,21 @@ export class InteractionManager {
       return null;
     };
     
-    // Determinar si debemos resaltar un grupo o solo el objeto individual
+    // Determinem si hem de ressaltar un grup o només l'objecte individual
     const group = isPartOfInteractiveGroup(object);
     
     if (group) {
-      // RESALTADO DE GRUPO: Aplicar a todos los meshes del grupo
+      // RESSALTAR GRUP: Apliquem a tots els meshes del grup
       this.highlightGroup(group, highlight, prefersReducedMotion);
     } else {
-      // RESALTADO INDIVIDUAL: Aplicar solo a este objeto
+      // RESSALTAR INDIVIDUAL: Apliquem només a aquest objecte
       this.highlightSingleObject(object, highlight, prefersReducedMotion);
     }
   }
   
-  // NUEVO MÉTODO: Resaltar todo un grupo de forma uniforme
+  // Ressaltar tot un grup de forma uniforme
   highlightGroup(group, highlight, prefersReducedMotion) {
-    // Guardar posición y rotación original del grupo si no existe
+    // Guardem posició i rotació original del grup si no existeix
     if (highlight && !group.userData._originalGroupData) {
       group.userData._originalGroupData = {
         position: group.position.clone(),
@@ -185,7 +136,7 @@ export class InteractionManager {
         scale: group.scale.clone()
       };
       
-      // Guardar también las propiedades originales de cada mesh hijo
+      // Guardem també les propietats originals de cada mesh fill
       group.traverse(child => {
         if (child.isMesh) {
           child.userData._originalData = {
@@ -198,9 +149,9 @@ export class InteractionManager {
     }
     
     if (highlight) {
-      // RESALTAR: Aplicar efectos a todo el grupo
+      // RESSALTAR: Apliquem efectes a tot el grup
       
-      // 1. Cambiar la emisión de todos los meshes
+      // 1. Canviar l'emissió de tots els meshes
       group.traverse(child => {
         if (child.isMesh && child.material) {
           if (child.material.emissive) {
@@ -210,9 +161,9 @@ export class InteractionManager {
         }
       });
       
-      // 2. Aplicar transformaciones al grupo completo
+      // 2. Apliquem transformacions al grup complet
       if (!prefersReducedMotion) {
-        // Escalar todo el grupo uniformemente
+        // Escalar tot el grup uniformement
         const scaleUp = 1.03;
         group.scale.set(
           group.userData._originalGroupData.scale.x * scaleUp,
@@ -220,16 +171,16 @@ export class InteractionManager {
           group.userData._originalGroupData.scale.z * scaleUp
         );
         
-        // Levantar ligeramente todo el grupo
+        // Aixecar lleugerament tot el grup
         group.position.y = group.userData._originalGroupData.position.y + 0.03;
         
-        // Rotar ligeramente el grupo
+        // Rotar lleugerament el grup
         group.rotation.y = group.userData._originalGroupData.rotation.y + THREE.MathUtils.degToRad(3);
       }
     } else {
-      // RESTAURAR: Devolver el grupo a su estado original
+      // RESTAURAR: Retornem el grup al seu estat original
       
-      // 1. Restaurar la emisión de todos los meshes
+      // 1. Restaurem l'emissió de tots els meshes
       group.traverse(child => {
         if (child.isMesh && child.material && child.userData._originalData) {
           if (child.material.emissive) {
@@ -239,7 +190,7 @@ export class InteractionManager {
         }
       });
       
-      // 2. Restaurar transformaciones del grupo
+      // 2. Restaurem transformacions del grup
       if (!prefersReducedMotion && group.userData._originalGroupData) {
         group.position.copy(group.userData._originalGroupData.position);
         group.scale.copy(group.userData._originalGroupData.scale);
@@ -248,15 +199,15 @@ export class InteractionManager {
     }
   }
   
-  // MÉTODO RENOMBRADO: Resaltar un único objeto (el comportamiento original)
+  // Ressaltar un únic objecte (el comportament original)
   highlightSingleObject(object, highlight, prefersReducedMotion) {
     if (highlight) {
       // Ressaltem l'objecte quan el ratolí passa per sobre
       
       // Augmentem la intensitat emissiva
       if (object.material && object.material.emissive) {
-        object.material.emissive = new THREE.Color(0x000000);
-        object.material.emissiveIntensity = 0.5;
+        object.material.emissive = new THREE.Color(0x222222);
+        object.material.emissiveIntensity = 0.3;
       }
       
       // Desem les propietats originals a l'objecte si no existeixen
@@ -268,24 +219,20 @@ export class InteractionManager {
       
       // Si l'usuari no ha configurat moviment reduït, afegim més efectes
       if (!prefersReducedMotion) {
-        // Efecte d'escala segons la guia d'estil (scale(1.03))
+        // Efecte d'escala
         object.scale.set(
           object.userData._originalScale.x * 1.03,
           object.userData._originalScale.y * 1.03,
           object.userData._originalScale.z * 1.03
         );
         
-        // Efecte de rotació segons la guia d'estil (rotateY(3deg))
+        // Efecte de rotació
         object.rotation.y += THREE.MathUtils.degToRad(3);
         
         // Efecte d'elevació lleugera
         object.position.y = object.userData._originalPosition.y + 0.03;
       }
       
-      // Afegim un outline més visible (opcional, si estàs utilitzant OutlinePass)
-      if (this.outlinePass) {
-        this.outlinePass.selectedObjects = [object];
-      }
     } else {
       // Restaurem l'aspecte original quan el ratolí surt
       if (object.material && object.material.emissive) {
@@ -303,16 +250,10 @@ export class InteractionManager {
           object.rotation.copy(object.userData._originalRotation);
         }
       }
-      
-      // Eliminem l'outline
-      if (this.outlinePass) {
-        this.outlinePass.selectedObjects = [];
-      }
     }
   }
   
   updateMousePosition(event) {
-    // Calcula la posició normalitzada del ratolí (-1 a 1)
     const rect = this.domElement.getBoundingClientRect();
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;

@@ -8,7 +8,6 @@ import { setupLighting } from '../three/systems/Lighting.js';
 import { createCalendar } from '@/three/objects/Calendar.js';
 import { createDumbbell } from '@/three/objects/Dumbbell.js'; 
 import { createTV } from '../three/objects/TV.js'; 
-import { setupPostProcessing } from '@/three/systems/PostProcessing.js';
 import { createLamp } from '@/three/objects/Lamp.js';
 import { createPlant } from '@/three/objects/Plant.js';
 import { createComputer } from '@/three/objects/Computer.js';
@@ -70,7 +69,7 @@ export default function useRoom(canvas) {
       shelfDepth: shelf.depth,
       isParallelToWall: shelf.isParallelToWall || false
     }, (book) => {
-      console.log(`Llibre clicat: ${book.userData.title}`);
+      console.log(`Llibre clicat: ${book.userData.title} a l'estanteria ${shelf.userData.id}`);
     });
   }
   
