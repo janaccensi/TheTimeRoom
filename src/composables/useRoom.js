@@ -58,20 +58,6 @@ export default function useRoom(canvas) {
   // Afegim l'estanteria
   const bookshelf = createBookshelf(scene, roomConfig); 
   
-  // Afegir llibres interactius a les prestatgeries
-  // Hem de fer això per cada prestatge de l'estanteria
-  for (const shelf of bookshelf.shelves) {
-    createBooks(scene, {
-      shelfX: shelf.position.x,
-      shelfY: shelf.position.y,
-      shelfZ: shelf.position.z,
-      shelfWidth: shelf.width,
-      shelfDepth: shelf.depth,
-      isParallelToWall: shelf.isParallelToWall || false
-    }, (book) => {
-      console.log(`Llibre clicat: ${book.userData.title} a l'estanteria ${shelf.userData.id}`);
-    });
-  }
   
   createCalendar(scene, roomConfig); // Afegim el calendari
   setupLighting(scene);
@@ -342,9 +328,15 @@ export default function useRoom(canvas) {
     // Crear el modal de neteja
     const cleaningModal = new CleaningModal();
     
+
+
     // Configurem el callback quan es clica un llibre
     interactionManager.setOnObjectClick(object => {
-      if (object.userData && object.userData.type === 'book') {
+
+      if(object.userData.onClick){
+        object.userData.onClick(object);
+      }
+      else if (object.userData && object.userData.type === 'book') {        
         activityModal.show(object);
       }
       // Detectar clic en calendario
@@ -428,6 +420,35 @@ export default function useRoom(canvas) {
     }, 500);
 
   }
+
+  function initBookshelfEvents() {
+    // Escoltarem l'esdeveniment de quan s'afegeix una nova activitat
+    document.addEventListener('bookshelf-update-needed', (event) => {
+      const { type } = event.detail;
+      
+      // Si tenim una funció de neteja d'objectes antics, l'usem
+      if (cleanupFunctions.bookshelf) {
+        cleanupFunctions.bookshelf();
+      }
+      
+      console.log(`Actualitzant estanteria després d'afegir activitat de tipus ${type}`);
+      
+      // Recreem l'estanteria
+      const bookshelf = createBookshelf(scene, roomConfig);
+      
+      // Actualitzem la funció de neteja
+      cleanupFunctions.bookshelf = () => {
+        // Eliminem els objectes existents de l'estanteria abans de recrear-la
+        if (bookshelf && bookshelf.shelves) {
+          bookshelf.shelves.forEach(shelf => {
+            scene.remove(shelf);
+            if (shelf.geometry) shelf.geometry.dispose();
+            if (shelf.material) shelf.material.dispose();
+          });
+        }
+      };
+    });
+  }
   
   // Funció per desar activitats
   function saveActivity(activityData) {
@@ -438,6 +459,8 @@ export default function useRoom(canvas) {
   }
   
   // Inicialitzar l'escena i configurar tot
+  const cleanupFunctions = {};
+
   function init() {
     // Assegura't que tot es carrega abans d'inicialitzar les interaccions
     console.log("Iniciant postprocessing...");
@@ -447,6 +470,7 @@ export default function useRoom(canvas) {
     // Compte d'objects a l'escena
     console.log("Objectes a l'escena:", scene.children.length);
     initInteractions();
+    initBookshelfEvents(); // Afegim aquesta línia per inicialitzar els events de l'estanteria
   }
   
   // Cridem la funció d'inicialització després de crear tots els objectes
