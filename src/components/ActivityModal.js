@@ -1,5 +1,6 @@
 import { ActivitiesMockData } from "../models/ActivitiesMockData";
 
+
 export class ActivityModal {
   constructor() {
     this.modal = null;
@@ -273,6 +274,7 @@ export class ActivityModal {
     this.currentObject = object;
     const objectType = object.userData.type || 'item';
     const activityType = object.userData.activityType || 'general';
+    console.log(`Mostrant modal per ${objectType} (${activityType})`);
     
     // Actualitzem el títol segons l'objecte
     const objectTitle = this.modal.querySelector('#activity-title');
@@ -308,27 +310,68 @@ export class ActivityModal {
   }
   
   /**
-   * Obté les categories disponibles per un tipus d'activitat
+   * Obté les categories disponibles per un tipus d'activitat, basades en activitats existents
    * @param {string} activityType - El tipus d'activitat
    * @returns {Array} - Array amb les categories
    */
   getCategoriesForActivityType(activityType) {
-    const categories = {
-      'reading': ['Literatura Fantàstica', 'Ciència Ficció', 'Novel·la Contemporània', 
-                 'Literatura Clàssica', 'Divulgació Científica', 'Literatura Infantil', 'Assaig', 'Altres'],
-      'work': ['Desenvolupament', 'Reunions', 'Documentació', 'Planificació', 
-               'Investigació', 'Avaluació', 'Gestió de Projectes', 'Altres'],
-      'sport': ['Gimnàs', 'Entrenament funcional', 'Esports d\'equip', 'Flexibilitat', 
-               'Resistència', 'Córrer', 'Natació', 'Ciclisme', 'Altres'],
-      'cleaning': ['Manteniment llar', 'Organització', 'Espai de treball', 'Cuina', 
-                  'Roba', 'Neteja profunda', 'Altres'],
-      'leisure': ['Sèries', 'Pel·lícules', 'Música', 'Videojocs', 'Documentals', 
-                 'Cinema', 'Lectura per plaer', 'Altres'],
-      'study': ['Factors Humans', 'Anàlisi Complexa', 'Programació', 'Idiomes', 
-               'Història', 'Ciències', 'Matemàtiques', 'Altres']
+    // Obtenim les activitats del tipus especificat
+    const storageKey = `${activityType}Activities`;
+    const activities = JSON.parse(localStorage.getItem(storageKey)) || [];
+    
+    // Obtenim les tasques del calendari relacionades amb aquest tipus d'activitat
+    const calendarTasksRaw = JSON.parse(localStorage.getItem('calendar-tasks')) || {};
+    const relatedTasks = [];
+    
+    // Busquem tasques que coincideixin amb el tipus d'activitat
+    Object.values(calendarTasksRaw).forEach(tasks => {
+      tasks.forEach(task => {
+        if (task.activityType === activityType && task.category) {
+          relatedTasks.push(task.category);
+        }
+      });
+    });
+    
+    // Categories per defecte que sempre seran disponibles per a cada tipus d'activitat
+    const defaultCategories = {
+      'reading': ['Literatura Fantàstica', 'Ciència Ficció'],
+      'work': ['Desenvolupament', 'Reunions'],
+      'sport': ['Gimnàs', 'Córrer'],
+      'cleaning': ['Manteniment llar', 'Organització'],
+      'leisure': ['Sèries', 'Pel·lícules'],
+      'study': ['Programació', 'Idiomes']
     };
     
-    return categories[activityType] || ['General', 'Altres'];
+    // Crear un Set per eliminar duplicats
+    const uniqueCategories = new Set();
+    
+    // Afegir les categories de les activitats registrades
+    activities.forEach(activity => {
+      if (activity.category) uniqueCategories.add(activity.category);
+    });
+    
+    // Afegir categories de tasques del calendari
+    relatedTasks.forEach(category => uniqueCategories.add(category));
+    
+    // Afegir les categories per defecte si no hi ha activitats registrades
+    if (uniqueCategories.size === 0 && defaultCategories[activityType]) {
+      defaultCategories[activityType].forEach(cat => uniqueCategories.add(cat));
+    }
+    
+    // Convertir el Set a array i ordenar alfabèticament
+    const categoriesArray = Array.from(uniqueCategories).sort();
+    
+    // Assegurem que "Altres" sempre és present i al final
+    if (!categoriesArray.includes('Altres')) {
+      categoriesArray.push('Altres');
+    } else {
+      // Si ja existeix, l'eliminem i el tornem a afegir al final
+      const index = categoriesArray.indexOf('Altres');
+      categoriesArray.splice(index, 1);
+      categoriesArray.push('Altres');
+    }
+    
+    return categoriesArray.length > 0 ? categoriesArray : ['General', 'Altres'];
   }
   
   hide() {
@@ -607,14 +650,21 @@ export class ActivityModal {
   saveActivity() {
     if (!this.currentObject) return;
 
-    const activityType = this.currentObject.userData.activityType || 'reading';
+    const activityType = this.currentObject.userData.activityType || 'reading';    
     const categorySelect = this.formModal.querySelector('#activity-category');
     const customCategoryInput = this.formModal.querySelector('#custom-category');
     const dateInput = this.formModal.querySelector('#activity-date');
+    // Afegeixo aquesta línia per obtenir l'hora seleccionada
+    const hourSelect = this.formModal.querySelector('#activity-hour');
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
-    const hourSelect = this.formModal.querySelector('#activity-hour');
 
+    // Comprovem que existeixi el selector d'hora
+    if (!hourSelect) {
+      console.error("El selector d'hora no s'ha trobat");
+      return;
+    }
+    
     const locationInput = this.formModal.querySelector('#activity-location');
     const urgencySelect = this.formModal.querySelector('#activity-urgency');
     const urlInput = this.formModal.querySelector('#activity-url');
@@ -624,6 +674,49 @@ export class ActivityModal {
     if (isNaN(hours)) {
       alert('Si us plau, introdueix un nombre vàlid d\'hores');
       return;
+    }
+
+    if(this.currentObject.userData.type === 'broom') {
+      
+      const activities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
+
+      console.log(activities.length);
+      
+        // Si no hay actividades, escoba completamente sucia (nivel 0)
+        if (activities.length == 0) {          
+          this.cleanlinessLevel = 0;
+          console.log("Nivel de limpieza: 0 (sin actividades)");
+          document.dispatchEvent(new CustomEvent('cleanliness-level-changed', { 
+              detail: { level: 0 }
+          }));
+          return 0;
+        }
+        
+          
+        // Calcular horas totales de la semana
+        const weeklyHours = activities.reduce((sum, act) => {
+        return sum + parseFloat(act.hours || 0);
+        }, 0);
+                
+        // Objetivo: 17 horas semanales = 100% limpia
+        const targetHours = 17;
+        
+        // Calcular nivel de limpieza (0-100) basado en horas semanales
+        let cleanlinessPercentage = Math.min(100, (weeklyHours / targetHours) * 100);
+        
+        // Garantizar que el nivel no sea menor a 10% si hay alguna actividad reciente
+        if (cleanlinessPercentage < 10) {
+        cleanlinessPercentage = 10;
+        }
+        
+        this.cleanlinessLevel = Math.round(cleanlinessPercentage);
+        
+        console.log(`Nivel de limpieza: ${this.cleanlinessLevel}% (${weeklyHours.toFixed(1)} horas semanales)`);
+        
+        // Disparar evento para actualizar la escoba
+        document.dispatchEvent(new CustomEvent('cleanliness-level-changed', { 
+        detail: { level: this.cleanlinessLevel }
+        }));                      
     }
     
     // Determinem la categoria final, usant el valor personalitzat si s'ha seleccionat "Altres"
@@ -639,21 +732,22 @@ export class ActivityModal {
       type: activityType,
       category: finalCategory,
       date: dateInput.value,
-      hour: parseInt(hourSelect.value, 10),
+      // Afegim l'hora a les dades de l'activitat
+      hour: parseInt(hourSelect.value, 10),  // Important: assegurar-se que es converteix a enter
       hours: hours,
       notes: notesInput.value,
-      timestamp: new Date().toISOString(),
+      timestamp: dateInput.value,
       completed: true,
       duration: hours
     };
     
-    // Afegim camps específics segons el tipus d'activitat
-    if (activityType === 'reading') {
-      activityData.bookId = this.currentObject.userData.id;
-      activityData.bookTitle = this.currentObject.userData.title;
-    } else if (activityType === 'work') {
-      activityData.folderId = this.currentObject.userData.id;
-      activityData.folderTitle = this.currentObject.userData.title;
+    // Afegim els camps dels camps addicionals si estan visibles
+    const additionalFields = this.formModal.querySelector('#additional-activity-fields');
+    if (additionalFields && additionalFields.style.display !== 'none') {
+      if (locationInput) activityData.location = locationInput.value;
+      if (urgencySelect) activityData.urgency = urgencySelect.value;
+      if (urlInput) activityData.url = urlInput.value;
+      if (guestsInput) activityData.guests = guestsInput.value;
     }
     
     // Obtenim les activitats existents del tipus corresponent i afegim la nova
@@ -701,6 +795,8 @@ export class ActivityModal {
       activityData.category, 
       'reading'
     );
+
+    
     
     // Volver a mostrar modal principal después de la animación
     setTimeout(() => {
