@@ -1,4 +1,5 @@
 import { ActivitiesMockData } from "../models/ActivitiesMockData";
+import {ProgressAnimationService} from "../components/ProgressAnimation";
 
 
 export class ActivityModal {
@@ -790,11 +791,11 @@ export class ActivityModal {
     this.loadCategoryStats(activityType);
     this.formModal.classList.add('hidden');
     
+
+    
     // Mostrar animación de progreso
-    ProgressAnimationService.showProgressAnimation(
-      activityData.category, 
-      'reading'
-    );
+    ProgressAnimationService.showProgressAnimation(activityData.category, activityType);
+    
 
     
     

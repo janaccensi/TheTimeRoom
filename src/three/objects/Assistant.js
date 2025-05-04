@@ -597,7 +597,7 @@ export const createAssistant = (scene, config = {}) => {
           cameraPosition.y = currentBubble.position.y;
           currentBubble.lookAt(cameraPosition);
         } catch (e) {
-          console.error("Error al orientar el bocadillo:", e);
+          //console.error("Error al orientar el bocadillo:", e);
         }
         
         requestAnimationFrame(updateBubbleOrientation);
