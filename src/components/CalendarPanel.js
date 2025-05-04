@@ -69,6 +69,25 @@ export class CalendarPanel {
         }
       }
     });
+
+    document.addEventListener('sport-activity-added', (event) => {
+      // Actualizar la vista si estamos mostrando el día relacionado con la actividad añadida
+      const addedDate = new Date(event.detail.activity.date);
+      const currentViewDate = this.selectedDate;
+      
+      if (addedDate.getDate() === currentViewDate.getDate() &&
+          addedDate.getMonth() === currentViewDate.getMonth() &&
+          addedDate.getFullYear() === currentViewDate.getFullYear()) {
+        this.renderDayTasks();
+      }
+      
+      // Si estamos en vista mensual y es este mes, actualizar los días
+      if (this.currentView === 'month' && 
+          addedDate.getMonth() === this.currentDate.getMonth() &&
+          addedDate.getFullYear() === this.currentDate.getFullYear()) {
+        this.renderMonthDays();
+      }
+    });
   }
   
   updatePanelContent() {
@@ -363,7 +382,7 @@ export class CalendarPanel {
     timeline.innerHTML = '';
     
     // Crear las horas del día
-    for (let hour = 8; hour <= 18; hour++) {
+    for (let hour = 0; hour <= 23; hour++) {
       const timeSlot = document.createElement('div');
       timeSlot.className = 'time-slot';
       
@@ -415,12 +434,12 @@ export class CalendarPanel {
     // Colocar actividades/tareas en sus franjas horarias
     dayActivities.forEach(activity => {
       // Determinar hora (simplificado, asumimos actividades de 1 hora)
-      let hour = new Date(activity.timestamp || activity.date).getHours();
-      // Ajustar al rango visible (8-18)
-      if (hour < 8) hour = 8;
-      if (hour > 18) hour = 18;
+      let hour = activity.hour;
+      if (hour<0) hour = 0;
+      if (hour > 23) hour = 23;
+      const timeSlot = this.panel.querySelector(`.time-slot:nth-child(${hour + 1})`);
       
-      const index = hour - 8; // Índice 0 = 8:00
+      const index = hour; // Índice 0 = 8:00
       if (index >= 0 && index < timeContents.length) {
         const taskElement = document.createElement('div');
         taskElement.className = 'day-task-item';
@@ -581,8 +600,10 @@ export class CalendarPanel {
           <label for="task-activity-type">Tipus d'activitat:</label>
           <select id="task-activity-type" required>
             <option value="general">General</option>
-            <option value="reading">Estudi/Llibre</option>
+            <option value="reading">Llibre/Lectura</option>
             <option value="cleaning">Escombra/Tasques de casa</option>
+            <option value="sport">Manuella/Esport</option>
+
           </select>
         </div>
 
@@ -677,6 +698,17 @@ export class CalendarPanel {
         { value: 'Estudiar Programació', text: 'Estudiar Programació' },
         { value: 'Llegir Fantasia', text: 'Llegir Fantasia' },
         { value: 'Llegir Assaig', text: 'Llegir Assaig' },
+        { value: 'Altres', text: 'Altres' }
+      ],
+      sport: [
+        { value: 'Gimnàs', text: 'Gimnàs' },
+        { value: 'Entrenament funcional', text: 'Entrenament funcional' },
+        { value: 'Esports d\'equip', text: 'Esports d\'equip' },
+        { value: 'Flexibilitat', text: 'Flexibilitat' },
+        { value: 'Resistència', text: 'Resistència' },
+        { value: 'Córrer', text: 'Córrer' },
+        { value: 'Natació', text: 'Natació' },
+        { value: 'Ciclisme', text: 'Ciclisme' },
         { value: 'Altres', text: 'Altres' }
       ]
     };
@@ -818,6 +850,38 @@ export class CalendarPanel {
         this.renderDayTasks();
       }, 2800);
     }
+    else if (activityType === 'sport') {
+      // Si es actividad deportiva
+      const sportActivity = {
+        text: text,
+        category: category,
+        date: formattedDate,
+        hours: parseFloat(duration),
+        notes: '',
+        timestamp: timestamp,
+        completed: false,
+        sourceType: 'sport',
+        location: location || null,
+        urgency: urgency || 'normal',
+        url: url || null,
+        guests: guests || null
+      };
+      // Guardar en localStorage
+      const sportActivities = JSON.parse(localStorage.getItem('sportActivities')) || [];
+      sportActivities.push(sportActivity);
+      localStorage.setItem('sportActivities', JSON.stringify(sportActivities));
+      // Disparar evento
+      document.dispatchEvent(new CustomEvent('sport-activity-added', {
+        detail: { activity: sportActivity }
+      }));
+      ProgressAnimationService.showProgressAnimation(category, 'sport');
+      // Renderizar después de la animación
+      setTimeout(() => {
+        this.renderDayTasks();
+      }
+      , 2800);
+    }
+
     else {
       // Actividad general del calendario
       this.addNewActivity({
@@ -941,6 +1005,27 @@ export class CalendarPanel {
         sourceType: 'cleaning'
       };
     });
+    // Obtener actividades de deporte
+    const sportActivities = JSON.parse(localStorage.getItem('sportActivities')) || [];
+    const formattedSportActivities = sportActivities.map(activity => {
+      const hour = activity.hour || 9;
+      return {
+        ...activity,
+        text: activity.text || "Activitat esportiva",
+        category: activity.category || "Esport",
+        date: activity.date,
+        hour: hour,
+        timestamp: activity.timestamp,
+        duration: activity.duration || 1,
+        completed: activity.completed || false,
+        // Campos adicionales - asegurar que se preservan
+        location: activity.location || null,
+        urgency: activity.urgency || 'normal',
+        url: activity.url || null,
+        guests: activity.guests || null,
+        sourceType: 'sport'
+      };
+    });
     
     // NO incluir las actividades deportivas directamente, ya están en el calendario
     // Las actividades deportivas ya se añaden como tareas de calendario en el evento sport-activity-added
@@ -965,7 +1050,7 @@ export class CalendarPanel {
     });
     
     // Devolver ambos tipos de actividades
-    return [...formattedReadingActivities, ...formattedCleaningActivities, ...calendarTasks];
+    return [...formattedReadingActivities, ...formattedCleaningActivities, ...formattedSportActivities ,...calendarTasks];
   }
   
   getMonthActivitiesMap(year, month) {
@@ -998,7 +1083,7 @@ export class CalendarPanel {
     
     // Detectar si es una categoría deportiva si no se especificó directamente
     if (!activity.sourceType) {
-      const sportCategories = ["Gimnasio", "Correr", "Baloncesto", "Fútbol", "Natación", "Ciclismo", "Yoga"];
+      const sportCategories = ["Gimnàs", "Entrenament funcional", "Esports d'equip", "Flexibilitat", "Resistència", "Córrer", "Natació", "Ciclisme", "Altres"];
       activity.sourceType = sportCategories.includes(activity.category) ? 'sport' : 'calendar';
     }
     
@@ -1093,6 +1178,24 @@ export class CalendarPanel {
       }
       return;
     }
+    // Si es una actividad de deporte, actualizar en localStorage
+    if (activity.sourceType === 'sport') {
+      const sportActivities = JSON.parse(localStorage.getItem('sportActivities')) || [];
+      const activityIndex = sportActivities.findIndex(act => 
+        act.timestamp === activity.timestamp
+      );
+      
+      if (activityIndex !== -1) {
+        sportActivities[activityIndex].completed = activity.completed;
+        localStorage.setItem('sportActivities', JSON.stringify(sportActivities));
+        
+        // Disparar evento para actualizar otras vistas
+        document.dispatchEvent(new CustomEvent('sport-activity-updated', { 
+          detail: { activity: sportActivities[activityIndex] }
+        }));
+      }
+      return;
+    }
   
   // Para tareas de calendario
   if (activity.sourceType === 'calendar' && activity.taskId) {
@@ -1170,6 +1273,23 @@ export class CalendarPanel {
       
       return;
     }
+    // Si es una actividad deportiva, eliminarla del localStorage
+    if (activity.sourceType === 'sport') {
+      const sportActivities = JSON.parse(localStorage.getItem('sportActivities')) || [];
+      const filteredActivities = sportActivities.filter(act => 
+        act.timestamp !== activity.timestamp
+      );
+      
+      // Guardar las actividades actualizadas
+      localStorage.setItem('sportActivities', JSON.stringify(filteredActivities));
+      
+      // Disparar evento para actualizar otras vistas
+      document.dispatchEvent(new CustomEvent('sport-activity-deleted', { 
+        detail: { activity: activity }
+      }));
+      
+      return;
+    }
     
     // Para tareas del calendario continuar con el código existente
     if (activity.sourceType === 'calendar' || activity.taskId) {
@@ -1200,14 +1320,16 @@ export class CalendarPanel {
       'Llegir Assaig': '#e74c3c',
       'Calendario': '#1abc9c',
       'Otros': '#95a5a6',
-      'Gimnasio': '#d35400',
-      'Correr': '#16a085',
-      'Baloncesto': '#8e44ad',
-      'Fútbol': '#27ae60',
-      'Natación': '#3498db',
-      'Ciclismo': '#c0392b',
-      'Yoga': '#2980b9',
-      'Deporte': '#95a5a6'
+      // Categorías deportivas en catalán
+      'Gimnàs': '#d35400',
+      'Córrer': '#16a085',
+      'Esports d\'equip': '#8e44ad',
+      'Flexibilitat': '#2980b9',
+      'Resistència': '#27ae60',
+      'Natació': '#3498db',
+      'Ciclisme': '#c0392b',
+      'Entrenament funcional': '#e74c3c',
+      'Altres': '#95a5a6'
     };
     
     return colorMap[category] || '#95a5a6';

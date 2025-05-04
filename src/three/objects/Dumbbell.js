@@ -14,12 +14,12 @@ export function createDumbbell(scene, options = {}) {
   // Grupo para contener todas las partes de la mancuerna
   const dumbbellGroup = new THREE.Group();
   
-  // Dimensiones basadas en el peso - REDUCIDAS al 70% del tamaño original
-  const globalScale = 0.7; // Factor de reducción general
-  const weightScale = Math.min(0.8, weight / 15); // Factor de escala para visualizar diferentes pesos (reducido)
+  // Dimensiones basadas en el peso - Aumento significativo del tamaño
+  const globalScale = 1.3; // Factor de escala general aumentado (antes 1.0)
+  const weightScale = Math.min(0.8, weight / 15); // Factor de escala para visualizar diferentes pesos
   const discRadius = 0.08 * (1 + weightScale * 0.4) * globalScale;
   const discThickness = 0.025 * (1 + weightScale * 0.2) * globalScale;
-  const barLength = 0.4 * globalScale; // Barra más corta
+  const barLength = 0.4 * globalScale; // Barra proporcionalmente más larga
   const barRadius = 0.015 * globalScale;
   const gripRadius = 0.02 * globalScale;
   
