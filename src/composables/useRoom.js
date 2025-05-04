@@ -96,10 +96,31 @@ export default function useRoom(canvas) {
 
   // En una función de configuración Three.js
   const dumbbell = createDumbbell(scene, {
-    position: { x: 1.05, y: 0.177, z: 1.8 }, 
+    position: { x: 1.85, y: 0.135, z: 1.8 }, 
     weight: 8,
-    color: 0x222222
+    color: 0x222222,
+    userData: {
+      id: "dumbbell_0",
+      title: "Esport",
+      type: 'dumbbell'
+    }
   });
+
+  // Inicializar la posición X de la primera mancuerna si no existe
+
+  localStorage.setItem('lastDumbbellPosX', '1.85'); // Posición X de la mancuerna inicial
+
+
+  // Inicializar el contador de mancuernas creadas 
+  localStorage.setItem('dumbbellsCreated', '1');
+  
+
+  // Verificar si deberíamos tener más mancuernas basado en las horas acumuladas
+  setTimeout(() => {
+    // Simular el evento check-dumbbells
+    document.dispatchEvent(new Event('check-dumbbells'));
+  }, 1000);
+
   // Afegim la TV
   
   const tv = createTV(scene, {
@@ -122,13 +143,6 @@ export default function useRoom(canvas) {
     baseColor: 0x111111,
     accentColor: 0xff0000,
     isOn: true
-  });
-
-  // También puedes crear varias con diferentes pesos
-  const lightDumbbell = createDumbbell(scene, {
-    position: { x: 1.7, y: 0.15, z: 1.8 },
-    weight: 3,
-    color: 0x444444
   });
 
   const sofa = createSofa(scene, {
@@ -372,7 +386,91 @@ export default function useRoom(canvas) {
     activityModal.setOnSave(activityData => {
       saveActivity(activityData);
     });
+
+    // Listener para crear nuevas mancuernas al acumular horas
+    document.addEventListener('create-new-dumbbells', (event) => {
+      const { count, totalCount } = event.detail;
+      console.log(`Creando ${count} nuevas mancuernas. Total: ${totalCount}`);
+      
+      // Posición base de la primera mancuerna
+      const basePosition = {
+        x: 1.85, 
+        y: 0.14, 
+        z: 1.8
+      };
+      
+      // Obtener la última posición X guardada o usar la posición base si no existe
+      let lastPosX = parseFloat(localStorage.getItem('lastDumbbellPosX')) || basePosition.x;
+      
+      // Aumentamos la separación para que sean más visibles
+      const spacing = 0.3; // Aumentamos el espaciado para mejor visibilidad
+      
+      // Empezamos a crear desde la siguiente a la última
+      for (let i = 0; i < count; i++) {
+        const currentIndex = (totalCount - count) + i;
         
+        // Calculamos un factor de peso basado en el índice
+        const weight = 8
+        
+        // Calculamos la nueva posición X basada en la última posición conocida
+        // Para la primera mancuerna nueva, restamos el espaciado de la última posición conocida
+        // Para las siguientes, seguimos restando espaciado de la última calculada
+        if (currentIndex === 0) {
+          lastPosX = basePosition.x - spacing;
+        } else {
+          lastPosX = lastPosX - spacing;
+        }
+        
+        // Creamos la nueva mancuerna con peso personalizado
+        createDumbbell(scene, {
+          position: { 
+            x: lastPosX, 
+            y: basePosition.y, 
+            z: basePosition.z 
+          },
+          weight: weight, 
+          color: 0x222222,
+          userData: {
+            id: `dumbbell_${currentIndex}`,
+            title: `Esport`, 
+            type: 'dumbbell'
+          }
+        });
+        
+        console.log(`Mancuerna ${currentIndex + 1} creada con peso ${weight}kg en posición X: ${lastPosX}`);
+        
+        // Guardamos la última posición X calculada
+        localStorage.setItem('lastDumbbellPosX', lastPosX.toString());
+      }
+    });
+
+    // Configurar la integración de actividades de limpieza con el calendario
+    document.addEventListener('cleaning-activity-added', (event) => {
+      const cleaningActivity = event.detail.activity;
+      console.log('Actividad de limpieza registrada:', cleaningActivity);
+      
+      // NO añadir al calendario - ya se carga automáticamente desde localStorage
+      // Solo actualizar la vista si el panel está visible
+      if (calendarPanel.isVisible) {
+        if (calendarPanel.currentView === 'month') {
+          calendarPanel.renderMonthDays();
+        } else {
+          calendarPanel.renderDayTasks();
+        }
+      }
+    });
+
+    // Escucha de eventos de cambio de nivel de limpieza
+    document.addEventListener('cleanliness-level-changed', (event) => {
+      const newLevel = event.detail.level;
+      console.log('Nivel de limpieza actualizado:', newLevel);
+      
+      // Si tenemos referencia a la escoba, actualizarla
+      if (broomObject && broomObject.updateCleanliness) {
+        broomObject = broomObject.updateCleanliness(newLevel);
+      }
+    });
+
     // También podemos inicializar el nivel de limpieza al inicio
     // Al final de la función initInteractions():
     setTimeout(() => {
@@ -382,6 +480,55 @@ export default function useRoom(canvas) {
     }, 500);
 
   }
+
+  function checkSportHoursAndAddDumbbells() {
+    // Obtener todas las actividades deportivas
+    const sportActivities = JSON.parse(localStorage.getItem('sportActivities')) || [];
+    
+    // Calcular el total de horas acumuladas
+    const totalHours = sportActivities.reduce((sum, activity) => {
+      // Asegurar que sumamos correctamente las horas
+      return sum + (parseFloat(activity.hours) || 0);
+    }, 0);
+    
+    console.log('Total horas de ejercicio acumuladas:', totalHours);
+    
+    // Calcular cuántas mancuernas deberían existir (1 cada 5 horas, partiendo de 1 base)
+    const requiredDumbbells = 1 + Math.floor(totalHours / 5);
+    const currentDumbbells = parseInt(localStorage.getItem('dumbbellsCreated')) || 1;
+    // Depuración para ver qué está pasando
+    console.log(`Mancuernas: necesarias=${requiredDumbbells}, actuales=${currentDumbbells}, horas=${totalHours}`);
+    
+    // Restablecer el contador en localStorage para sincronizar con la realidad
+    localStorage.setItem('dumbbellsCreated', currentDumbbells.toString());
+    
+    // Si necesitamos más mancuernas, las creamos
+    if (requiredDumbbells > currentDumbbells) {
+      const newDumbbells = requiredDumbbells - currentDumbbells;
+      
+      console.log(`Creando ${newDumbbells} mancuernas nuevas`);
+      
+      // Disparar el evento para crear nuevas mancuernas
+      document.dispatchEvent(new CustomEvent('create-new-dumbbells', {
+        detail: {
+          count: newDumbbells,
+          totalCount: requiredDumbbells
+        }
+      }));
+      
+      // Actualizar el contador
+      localStorage.setItem('dumbbellsCreated', requiredDumbbells.toString());
+    }
+  }
+  
+  // Añadir escucha para actividades deportivas
+  document.addEventListener('sport-activity-added', (event) => {
+    const sportActivity = event.detail.activity;
+    console.log('Actividad deportiva registrada:', sportActivity);
+    
+    // Verificar si tenemos que añadir nuevas mancuernas
+    setTimeout(() => checkSportHoursAndAddDumbbells(), 500);
+  });
 
   function initBookshelfEvents() {
     // Escoltarem l'esdeveniment de quan s'afegeix una nova activitat
@@ -463,6 +610,10 @@ export default function useRoom(canvas) {
     // Compte d'objects a l'escena
     console.log("Objectes a l'escena:", scene.children.length);
     initInteractions();
+    
+    // Comprobar si necesitamos añadir nuevas mancuernas al inicio
+    checkSportHoursAndAddDumbbells();
+    
     initBookshelfEvents(); // Afegim aquesta línia per inicialitzar els events de l'estanteria
   }
   
