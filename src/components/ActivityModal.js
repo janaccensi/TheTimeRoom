@@ -17,7 +17,7 @@ export class ActivityModal {
     document.addEventListener('calendar-task-completed', () => {
       // Actualitzem estadístiques quan es completa una tasca del calendari
       if (this.currentObject) {
-        this.loadObjectStats(this.currentObject.userData.id, this.currentObject.userData.activityType || 'reading');
+        this.loadObjectStats(this.currentObject.userData.activityType || 'reading');
       }
       this.loadCategoryStats();
     });
@@ -25,7 +25,7 @@ export class ActivityModal {
     document.addEventListener('calendar-task-uncompleted', () => {
       // Actualitzem estadístiques quan una tasca canvia a no completada
       if (this.currentObject) {
-        this.loadObjectStats(this.currentObject.userData.id, this.currentObject.userData.activityType || 'reading');
+        this.loadObjectStats(this.currentObject.userData.activityType || 'reading');
       }
       this.loadCategoryStats();
     });
@@ -43,6 +43,25 @@ export class ActivityModal {
       <div class="modal-content stats-modal">
         <span class="close-button" aria-label="Tancar">&times;</span>
         <h2 id="activity-title">Activitat</h2>
+        
+        <!-- Secció d'activitat recent -->
+        <div class="activity-stats">
+          <h3>Activitat recent</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="total-hours">0</div>
+              <div class="stat-label">Hores totals</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="last-session">-</div>
+              <div class="stat-label">Última sessió</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="sessions-count">0</div>
+              <div class="stat-label">Sessions</div>
+            </div>
+          </div>
+        </div>
         
         <!-- Secció per mostrar les categories i el progrés -->
         <div class="category-stats">
@@ -282,7 +301,7 @@ export class ActivityModal {
     objectTitle.textContent = this.getActivityTypeTitle(activityType) || 'Activitat';
      
     // Carreguem les estadístiques de l'objecte
-    this.loadObjectStats(object.userData.id, activityType);
+    this.loadObjectStats(activityType);
     
     // Carreguem les estadístiques de categories
     this.loadCategoryStats(activityType);
@@ -482,45 +501,60 @@ export class ActivityModal {
     }
   }
   
-  loadObjectStats(objectId, activityType) {
-    if (!objectId) return;
-
-    // Obtenir activitats relacionades amb aquest objecte
-    const activitats = this.getActivitiesByActivityType(activityType);
+  /**
+   * Carrega les estadístiques d'activitats d'un tipus específic
+   * @param {string} objectId - L'ID de l'objecte (ja no s'utilitza)
+   * @param {string} activityType - El tipus d'activitat
+   */
+  loadObjectStats(activityType) {
+    // Obtenim la data d'avui per filtrar
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Resetegem l'hora a 00:00:00
     
-    // Obtenir tasques del calendari que coincideixen amb les categories d'aquest objecte
-    const calendarTasksRaw = JSON.parse(localStorage.getItem('calendar-tasks')) || {};
-    const calendarActivities = [];
+    // Només obtenim les activitats directes i anteriors a avui
+    const totes_activitats = this.getActivitiesByActivityType(activityType);
+    const activitats = totes_activitats.filter(act => {
+      const actDate = new Date(act.date || act.timestamp);
+      actDate.setHours(0, 0, 0, 0); // Resetegem l'hora per comparar només dates
+      return actDate < today; // Només activitats anteriors a avui
+    });
     
-    // Busquem les categories utilitzades per aquest objecte
-    const objectCategories = new Set(activitats.map(act => act.category));
+    // Actualitzem els elements d'estadística si existeixen
+    const totalHoursElement = this.modal.querySelector('#total-hours');
+    const lastSessionElement = this.modal.querySelector('#last-session');
+    const sessionsCountElement = this.modal.querySelector('#sessions-count');
     
-    // Si hi ha categories, busquem tasques del calendari relacionades
-    if (objectCategories.size > 0) {
-      Object.entries(calendarTasksRaw).forEach(([dateKey, tasks]) => {
-        tasks.forEach(task => {
-          // Si la tasca està completada i la seva categoria coincideix
-          if (task.completed && objectCategories.has(task.category)) {
-            calendarActivities.push({
-              category: task.category,
-              hours: task.duration || 1,
-              timestamp: task.createdAt || new Date().toISOString()
-            });
-          }
-        });
-      });
-    }
-    
-    // Combinar totes les fonts de dades
-    const allActivities = [...activitats, ...calendarActivities];
-    
-    // En comptes d'actualitzar elements del DOM que no existeixen,
-    // guardem les dades per si les necessitem més endavant
-    this._objectActivities = allActivities;
-    this._totalActivitiesHours = allActivities.reduce((sum, act) => {
-      const hours = parseFloat(act.hours || act.duration || 0);
+    // Calculem les estadístiques només de les activitats anteriors a avui
+    const totalHores = activitats.reduce((sum, act) => {
+      const hours = parseFloat(act.hours || 0);
       return sum + (isNaN(hours) ? 0 : hours);
     }, 0);
+    
+    // Actualitzem els elements del DOM si existeixen
+    if (totalHoursElement) totalHoursElement.textContent = totalHores.toFixed(1);
+    if (sessionsCountElement) sessionsCountElement.textContent = activitats.length;
+    
+    // Última sessió (ordenem per data descendent i agafem la primera)
+    if (lastSessionElement && activitats.length > 0) {
+      const sortedActivities = [...activitats].sort((a, b) => {
+        // Ordenem per data més recent
+        return new Date(b.date || b.timestamp) - new Date(a.date || a.timestamp);
+      });
+      
+      const lastAct = sortedActivities[0];
+      const lastDate = new Date(lastAct.date || lastAct.timestamp).toLocaleDateString('ca-ES', {
+        day: 'numeric',
+        month: 'short'
+      });
+      
+      lastSessionElement.textContent = lastDate;
+    } else if (lastSessionElement) {
+      lastSessionElement.textContent = '-';
+    }
+    
+    // Guardem les dades per si les necessitem més endavant
+    this._objectActivities = activitats;
+    this._totalActivitiesHours = totalHores;
     this._activitiesSessions = activitats.length;
   }
   
@@ -777,13 +811,13 @@ export class ActivityModal {
     document.dispatchEvent(bookshelfEvent);
     
     // Actualitzem estadístiques i tanquem el formulari
-    this.loadObjectStats(this.currentObject.userData.id, activityType);
+    this.loadObjectStats(activityType);
     this.loadCategoryStats(activityType);
     this.formModal.classList.add('hidden');
     
 
     
-    // Mostrar animación de progreso
+    // Mostrar animació de progrés
     ProgressAnimationService.showProgressAnimation(activityData.category, activityType);
     
 
