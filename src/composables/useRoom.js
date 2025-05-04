@@ -19,7 +19,7 @@ import { createBroom } from '@/three/objects/Broom.js'; // Importar la función 
 import { createCenterTable } from '@/three/objects/CenterTable.js'; // Importar la función de mesa central
 import { createSofa } from '@/three/objects/Sofa.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
-
+import { createAssistant } from '../three/objects/Assistant.js'; // Importar la función de asistente
 import { InteractionManager } from '../three/interactions/InteractionManager';
 import { ActivityModal } from '../components/ActivityModal';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -30,7 +30,7 @@ import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectio
 
 import { createTVTable } from '@/three/objects/TVTable.js';
 import { CalendarPanel } from '@/components/CalendarPanel.js';
-import { CleaningModal } from '../components/CleaningModal.js';
+
 
 
 
@@ -162,9 +162,7 @@ export default function useRoom(canvas) {
   });
 
   broomObject = broom; // Guardar referencia
-
-  broomObject = broom; // Guardar referencia
-
+  
   // Añadimos la mesa de TV
   const tvTable = createTVTable(scene, {
     position: { x: 0.5, y: 0.3, z: -2.15 }, // Coordenadas de la mesa
@@ -188,45 +186,6 @@ export default function useRoom(canvas) {
     height: window.innerHeight
   };
 
-
-  /*
-  // Función para dibujar código simulado
-  function drawCodeScreen() {
-    context.fillStyle = 'rgba(40, 44, 52, 1)'; // Fondo oscuro tipo editor
-    context.fillRect(0, 0, codeCanvas.width, codeCanvas.height);
-    
-    // Configurar fuente para código
-    context.font = '12px Courier New';
-    
-    // Diferentes colores para simular sintaxis highlighting
-    const colors = ['#61afef', '#98c379', '#e06c75', '#d19a66', '#c678dd', '#56b6c2'];
-    
-    // Dibujar líneas de código
-    for (let i = 0; i < 18; i++) {
-      // Variar longitud de líneas y colores
-      const lineLength = 5 + Math.floor(Math.random() * 20);
-      context.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-      
-      // Diferentes indentaciones
-      const indent = Math.floor(Math.random() * 4) * 8;
-      
-      // Generar texto de código pseudo-aleatorio
-      let text = ' '.repeat(indent / 8);
-      for (let j = 0; j < lineLength; j++) {
-        text += String.fromCharCode(97 + Math.floor(Math.random() * 26));
-      }
-      
-      // Dibujar la línea
-      context.fillText(text, 10, 20 + i * 14);
-    }
-    
-    // Marcar la textura como necesaria de actualizar
-    codeTexture.needsUpdate = true;
-  }
-
-  // Dibujar código inicial
-  drawCodeScreen();*/
-
   // Añadir ordenador
   const computer = createComputer(scene, {
     position: { x: -2, y: 0.78, z: -0.8 },
@@ -236,6 +195,11 @@ export default function useRoom(canvas) {
     screenColor: 0x000000,  // Color naranja como en la imagen
     hasRGB: true
     //screenTexture: codeTexture // Añadir la textura del código
+  });
+
+
+  const assistant = createAssistant(scene, {
+    position: { x: 2.1, y: 0.4, z: -1.3 }
   });
 
   const chair = createChair(scene, {
@@ -358,12 +322,18 @@ export default function useRoom(canvas) {
     const calendarPanel = new CalendarPanel();
 
     // Crear el modal de neteja
-    const cleaningModal = new CleaningModal();
+    
     
 
 
     // Configurem el callback quan es clica un llibre
     interactionManager.setOnObjectClick(object => {
+
+      if (object.userData && object.userData.type === 'assistant') {
+        if (object.userData.onClick) {
+          object.userData.onClick(object);
+        }
+      }
 
       if(object.userData.onClick){
         object.userData.onClick(object);
@@ -392,7 +362,7 @@ export default function useRoom(canvas) {
         activityModal.show(object);
       }
       else if (object.userData && object.userData.type === 'broom') {
-        cleaningModal.show(object);        
+        activityModal.show(object);        
       }
       
     });
@@ -505,7 +475,8 @@ export default function useRoom(canvas) {
     // Al final de la función initInteractions():
     setTimeout(() => {
       // Disparar un evento para actualizar la escoba con el nivel inicial desde localStorage
-      cleaningModal.calculateCleanlinessLevel();
+     JSON.parse(localStorage.getItem('cleaningActivities')) || [];
+
     }, 500);
 
   }
@@ -591,7 +562,7 @@ export default function useRoom(canvas) {
     document.addEventListener('cleaning-activity-added', (event) => {
       const cleaningActivity = event.detail.activity;
       console.log('Actividad de limpieza registrada:', cleaningActivity);
-      
+            
       // NO añadir al calendario - ya se carga automáticamente desde localStorage
       // Solo actualizar la vista si el panel está visible
       if (calendarPanel.isVisible) {
@@ -614,12 +585,7 @@ export default function useRoom(canvas) {
       }
     });
 
-    // También podemos inicializar el nivel de limpieza al inicio
-    // Al final de la función initInteractions():
-    setTimeout(() => {
-      // Disparar un evento para actualizar la escoba con el nivel inicial desde localStorage
-      cleaningModal.calculateCleanlinessLevel();
-    }, 500);
+   
 
   }
   
@@ -628,7 +594,8 @@ export default function useRoom(canvas) {
     const existingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
     existingActivities.push(activityData);
     localStorage.setItem('readingActivities', JSON.stringify(existingActivities));
-    console.log('Activitat desada:', activityData);
+    console.log('Activitat reading desada:', activityData);
+    
   }
   
   // Inicialitzar l'escena i configurar tot

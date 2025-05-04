@@ -254,7 +254,17 @@ export class CalendarPanel {
         visibleTasks.forEach(task => {
           const taskElement = document.createElement('div');
           taskElement.className = 'task-item';
-          taskElement.style.backgroundColor = this.getCategoryColor(task.category);
+          
+          // Usar el sistema pseudo-aleatorio para asignar un color
+          const taskId = task.taskId || task.timestamp || '';
+          const categoryNumber = this.getCategoryNumber(task.category, taskId);
+          
+          // Si está completada, usar la versión de categoría completada
+          if (task.completed) {
+            taskElement.classList.add(`categoria-${categoryNumber}-completed`);
+          } else {
+            taskElement.classList.add(`categoria-${categoryNumber}`);
+          }
           
           // Truncar título si es demasiado largo
           const title = task.category || task.title || task.text;
@@ -381,10 +391,17 @@ export class CalendarPanel {
     
     timeline.innerHTML = '';
     
-    // Crear las horas del día
+    // Variables para el arrastre
+    let isDragging = false;
+    let startHour = null;
+    let currentHour = null;
+    let dragPreview = null;
+    
+    // Crear las horas del día (24 horas)
     for (let hour = 0; hour <= 23; hour++) {
       const timeSlot = document.createElement('div');
       timeSlot.className = 'time-slot';
+      timeSlot.dataset.hour = hour;
       
       const timeLabel = document.createElement('div');
       timeLabel.className = 'time-label';
@@ -398,14 +415,122 @@ export class CalendarPanel {
         this.showAddTaskForm(hour); // Pasar la hora como parámetro
       });
       
+      // Eventos para arrastrar y seleccionar un rango de tiempo
+      timeSlot.addEventListener('mousedown', (e) => {
+        // Solo iniciar si el clic fue en el área de contenido, no en tareas existentes
+        if (e.target === timeContent || e.target === timeSlot) {
+          isDragging = true;
+          startHour = hour;
+          currentHour = hour;
+          
+          // Crear elemento visual para la vista previa
+          dragPreview = document.createElement('div');
+          dragPreview.className = 'drag-time-preview';
+          dragPreview.innerHTML = `<span>${hour}:00 - ${hour+1}:00</span>`;
+          timeContent.appendChild(dragPreview);
+          
+          // Prevenir selección de texto durante el arrastre
+          e.preventDefault();
+        }
+      });
+      
       timeSlot.appendChild(timeLabel);
       timeSlot.appendChild(timeContent);
       
       timeline.appendChild(timeSlot);
     }
     
+    // Evento de movimiento del mouse (para actualizar la vista previa mientras arrastra)
+    timeline.addEventListener('mousemove', (e) => {
+      if (!isDragging || !startHour) return;
+      
+      // Determinar sobre qué franja horaria está el cursor
+      const timeSlotUnder = document.elementFromPoint(e.clientX, e.clientY);
+      const hourSlot = timeSlotUnder?.closest('.time-slot');
+      
+      if (hourSlot && hourSlot.dataset.hour) {
+        const targetHour = parseInt(hourSlot.dataset.hour);
+        
+        // Si cambió la hora, actualizar la vista previa
+        if (targetHour !== currentHour) {
+          currentHour = targetHour;
+          
+          // Actualizar todos los elementos visuales de arrastre
+          this.updateDragPreview(timeline, startHour, currentHour);
+        }
+      }
+    });
+    
+    // Evento cuando se suelta el botón del mouse
+    document.addEventListener('mouseup', (e) => {
+      if (isDragging) {
+        // Limpiar la vista previa
+        const previewElements = timeline.querySelectorAll('.drag-time-preview');
+        previewElements.forEach(el => el.remove());
+        
+        // Si realmente arrastró (hay diferencia entre inicio y fin)
+        if (startHour !== null && currentHour !== null) {
+          // Ordenar las horas (para permitir arrastrar hacia arriba también)
+          const minHour = Math.min(startHour, currentHour);
+          const maxHour = Math.max(startHour, currentHour);
+          
+          // Calcular duración en horas
+          const duration = maxHour - minHour + 1;
+          
+          // Abrir el formulario con la hora de inicio y duración
+          this.showAddTaskForm(minHour, duration);
+        }
+        
+        // Resetear variables
+        isDragging = false;
+        startHour = null;
+        currentHour = null;
+        dragPreview = null;
+      }
+    });
+    
     // Añadir las tareas del día
     this.renderDayTasks();
+  }
+  
+  // Método para actualizar la vista previa durante el arrastre
+  updateDragPreview(timeline, startHour, endHour) {
+    // Limpiar previews anteriores
+    const previewElements = timeline.querySelectorAll('.drag-time-preview');
+    previewElements.forEach(el => el.remove());
+    
+    // Ordenar las horas (para permitir arrastrar hacia arriba también)
+    const minHour = Math.min(startHour, endHour);
+    const maxHour = Math.max(startHour, endHour);
+    
+    // Añadir elementos de vista previa en todas las celdas incluidas en el rango
+    for (let hour = minHour; hour <= maxHour; hour++) {
+      const timeSlot = timeline.querySelector(`.time-slot[data-hour="${hour}"]`);
+      if (timeSlot) {
+        const timeContent = timeSlot.querySelector('.time-content');
+        const preview = document.createElement('div');
+        preview.className = 'drag-time-preview';
+        
+        // Si es la primera o última hora, mostrar texto informativo
+        if (hour === minHour) {
+          preview.innerHTML = `<span>Inicio: ${minHour}:00</span>`;
+        } else if (hour === maxHour) {
+          preview.innerHTML = `<span>Fin: ${maxHour+1}:00</span>`;
+        }
+        
+        timeContent.appendChild(preview);
+      }
+    }
+    
+    // Mostrar duración total en la primera franja
+    const firstSlot = timeline.querySelector(`.time-slot[data-hour="${minHour}"]`);
+    if (firstSlot) {
+      const duration = maxHour - minHour + 1;
+      const firstPreview = firstSlot.querySelector('.drag-time-preview');
+      if (firstPreview) {
+        firstPreview.innerHTML += `<div class="duration-indicator">Duración: ${duration} ${duration === 1 ? 'hora' : 'horas'}</div>`;
+      }
+    }
   }
   
   renderDayTasks() {
@@ -422,9 +547,6 @@ export class CalendarPanel {
     
     // Contenedores por hora
     const timeContents = this.panel.querySelectorAll('.time-content');
-    timeContents.forEach(container => {
-      container.innerHTML = '';
-    });
     
     // Limpiar contenidos anteriores
     timeContents.forEach(container => {
@@ -433,145 +555,216 @@ export class CalendarPanel {
     
     // Colocar actividades/tareas en sus franjas horarias
     dayActivities.forEach(activity => {
-      // Determinar hora (simplificado, asumimos actividades de 1 hora)
-      let hour = activity.hour;
-      if (hour<0) hour = 0;
-      if (hour > 23) hour = 23;
-      const timeSlot = this.panel.querySelector(`.time-slot:nth-child(${hour + 1})`);
+      // Determinar hora de inicio
+      const activityDate = new Date(activity.timestamp || activity.date);
+      let startHour = activity.hour || activityDate.getHours();
       
-      const index = hour; // Índice 0 = 8:00
-      if (index >= 0 && index < timeContents.length) {
-        const taskElement = document.createElement('div');
-        taskElement.className = 'day-task-item';
+      // Determinar duración (por defecto 1 hora si no se especifica)
+      const duration = parseFloat(activity.duration || activity.hours || 1);
+      
+      // Crear elemento de tarea
+      const taskElement = document.createElement('div');
+      taskElement.className = 'day-task-item';
 
-        // Añadir una clase específica según el origen
-        if (activity.sourceType === 'reading') {
-          taskElement.classList.add('reading-activity');
+      // Añadir una clase específica según el origen
+      if (activity.sourceType === 'reading') {
+        taskElement.classList.add('reading-activity');
+      } else if (activity.sourceType === 'cleaning') {
+        taskElement.classList.add('cleaning-activity');
         } else if (activity.sourceType === 'sport') {
           taskElement.classList.add('sport-activity');
-        } else {
-          taskElement.classList.add('calendar-task');
-        }
+      } else {
+        taskElement.classList.add('calendar-task');
+      }
 
-        taskElement.style.backgroundColor = this.getCategoryColor(activity.category);
-        
-        const title = document.createElement('div');
-        title.className = 'task-title';
-        if (activity.sourceType === 'reading') {
-          title.textContent = activity.bookTitle || 'Lectura';
-          
-          // Agregar un icono o indicador de que es actividad de lectura
-          const indicator = document.createElement('span');
-          indicator.className = 'activity-type-icon';
-          indicator.textContent = '📚'; // Icono de libro
-          title.prepend(indicator);
-        } else if (activity.sourceType === 'sport') {
-          title.textContent = activity.text || 'Deporte';
-          
-          // Agregar un icono o indicador de que es actividad deportiva
-          const indicator = document.createElement('span');
-          indicator.className = 'activity-type-icon';
-          indicator.textContent = '💪'; // Icono de deporte
-          title.prepend(indicator);
-        } else {
-          title.textContent = activity.text || 'Tarea';
-        }
-        
-        const detail = document.createElement('div');
-        detail.className = 'task-detail';
+      // Obtener el ID único de la tarea para usarlo en todo el método
+      let taskId = activity.taskId || activity.timestamp || '';
+      
+      // Asignar un color pseudo-aleatorio usando el ID para consistencia
+      const categoryNumber = this.getCategoryNumber(activity.category, taskId);
+      taskElement.classList.add(`categoria-${categoryNumber}`);
 
-        if (activity.location || activity.url || activity.guests) {
-          // Crear contenedor para información adicional
-          const additionalInfo = document.createElement('div');
-          additionalInfo.className = 'task-additional-info';
-          
-          // Mostrar ubicación si existe
-          if (activity.location) {
-            const locationEl = document.createElement('div');
-            locationEl.className = 'task-location';
-            locationEl.innerHTML = `📍 ${activity.location}`;
-            additionalInfo.appendChild(locationEl);
-          }
-          
-          // Mostrar URL si existe
-          if (activity.url) {
-            const urlEl = document.createElement('div');
-            urlEl.className = 'task-url';
-            urlEl.innerHTML = `🔗 <a href="${activity.url}" target="_blank">Enlace</a>`;
-            additionalInfo.appendChild(urlEl);
-          }
-          
-          // Mostrar invitados si existen
-          if (activity.guests) {
-            const guestsEl = document.createElement('div');
-            guestsEl.className = 'task-guests';
-            guestsEl.innerHTML = `👥 ${activity.guests}`;
-            additionalInfo.appendChild(guestsEl);
-          }
-          
-          // Mostrar urgencia con un indicador visual
-          if (activity.urgency && activity.urgency !== 'normal') {
-            const urgencyEl = document.createElement('div');
-            urgencyEl.className = `task-urgency ${activity.urgency}`;
-            const urgencyLabels = {
-              'baja': '⚪ Baja', 
-              'alta': '🟠 Alta', 
-              'urgent': '🔴 Urgente'
-            };
-            urgencyEl.textContent = urgencyLabels[activity.urgency] || activity.urgency;
-            additionalInfo.appendChild(urgencyEl);
-          }
-          
-          taskElement.appendChild(additionalInfo);
-        }
-        
-        // Mostrar la duración o las horas si están disponibles
-        if (activity.duration || activity.hours) {
-          const durationValue = activity.duration || activity.hours;
-          detail.textContent = `${activity.notes ? activity.notes + ' - ' : ''}${durationValue} hora${durationValue !== 1 ? 's' : ''}`;
-        } else {
-          detail.textContent = activity.notes || activity.text || '';
-        }
-        
-        taskElement.appendChild(title);
-        taskElement.appendChild(detail);
-        
-        // Añadir acciones
-        const actions = document.createElement('div');
-        actions.className = 'task-actions';
-        actions.innerHTML = `
-          <label><input type="checkbox" class="task-done" ${activity.completed ? 'checked' : ''}> Completado</label>
-          <button class="delete-task">Eliminar</button>
-        `;
-        
-        // Eventos de las acciones
-        const checkbox = actions.querySelector('.task-done');
-        const deleteBtn = actions.querySelector('.delete-task');
+      // Agregar clase 'multi-hour' para tareas que ocupan múltiples horas
+      if (duration > 1) {
+        taskElement.classList.add('multi-hour-task');
+        // Establecer la altura según la duración
+        taskElement.style.height = `calc(${Math.min(duration, 24 - startHour)} * 100% - 8px)`;
+      }
 
+      // Crear título
+      const title = document.createElement('div');
+      title.className = 'task-title';
+      if (activity.sourceType === 'reading') {
+        title.textContent = activity.bookTitle || 'Lectura';
         
-        checkbox.addEventListener('change', () => {
-          activity.completed = checkbox.checked;
-          this.updateActivity(activity);
-          
-          if (checkbox.checked) {
-            taskElement.classList.add('task-completed');
-          } else {
-            taskElement.classList.remove('task-completed');
-          }
-        });
+        // Agregar un icono o indicador de que es actividad de lectura
+        const indicator = document.createElement('span');
+        indicator.className = 'activity-type-icon';
+        indicator.textContent = '📚'; // Icono de libro
+        title.prepend(indicator);
+      } else if (activity.sourceType === 'cleaning') {
+        title.textContent = activity.type || 'Limpieza';
         
-        deleteBtn.addEventListener('click', () => {
-          this.deleteActivity(activity);
+        const indicator = document.createElement('span');
+        indicator.className = 'activity-type-icon';
+        indicator.textContent = '🧹'; // Icono de escoba
+        title.prepend(indicator);
+      } 
+      else if (activity.sourceType === 'sport') {
+        title.textContent = activity.type || 'Deporte';
+        
+        const indicator = document.createElement('span');
+        indicator.className = 'activity-type-icon';
+        indicator.textContent = '🏋️'; // Icono de mancuerna
+        title.prepend(indicator);
+      }
+      else {
+        title.textContent = activity.text || 'Tarea';
+      }
+      
+      // Crear detalle
+      const detail = document.createElement('div');
+      detail.className = 'task-detail';
+
+      // Añadir información de duración
+      if (duration) {
+        const durationText = document.createElement('div');
+        durationText.className = 'task-duration';
+        durationText.textContent = `⏱️ ${duration} hora${duration !== 1 ? 's' : ''}`;
+        
+        // Añadir hora de fin si la actividad dura más de 1 hora
+        if (duration > 1) {
+          const endHour = startHour + Math.floor(duration);
+          durationText.textContent += ` (${startHour}:00 - ${endHour}:00)`;
+        }
+        
+        detail.appendChild(durationText);
+      }
+      
+      if (activity.location || activity.url || activity.guests) {
+        // Crear contenedor para información adicional
+        const additionalInfo = document.createElement('div');
+        additionalInfo.className = 'task-additional-info';
+        
+        // Mostrar ubicación si existe
+        if (activity.location) {
+          const locationEl = document.createElement('div');
+          locationEl.className = 'task-location';
+          locationEl.innerHTML = `📍 ${activity.location}`;
+          additionalInfo.appendChild(locationEl);
+        }
+        
+        // Mostrar URL si existe
+        if (activity.url) {
+          const urlEl = document.createElement('div');
+          urlEl.className = 'task-url';
+          urlEl.innerHTML = `🔗 <a href="${activity.url}" target="_blank">Enlace</a>`;
+          additionalInfo.appendChild(urlEl);
+        }
+        
+        // Mostrar invitados si existen
+        if (activity.guests) {
+          const guestsEl = document.createElement('div');
+          guestsEl.className = 'task-guests';
+          guestsEl.innerHTML = `👥 ${activity.guests}`;
+          additionalInfo.appendChild(guestsEl);
+        }
+        
+        // Mostrar urgencia con un indicador visual
+        if (activity.urgency && activity.urgency !== 'normal') {
+          const urgencyEl = document.createElement('div');
+          urgencyEl.className = `task-urgency ${activity.urgency}`;
+          const urgencyLabels = {
+            'baja': '⚪ Baja', 
+            'alta': '🟠 Alta', 
+            'urgent': '🔴 Urgente'
+          };
+          urgencyEl.textContent = urgencyLabels[activity.urgency] || activity.urgency;
+          additionalInfo.appendChild(urgencyEl);
+        }
+        
+        detail.appendChild(additionalInfo);
+      }
+      
+      // Añadir notas si existen
+      if (activity.notes) {
+        detail.appendChild(document.createTextNode(activity.notes));
+      }
+      
+      taskElement.appendChild(title);
+      taskElement.appendChild(detail);
+      
+      // Añadir acciones
+      const actions = document.createElement('div');
+      actions.className = 'task-actions';
+      actions.innerHTML = `
+        <label><input type="checkbox" class="task-done" ${activity.completed ? 'checked' : ''}> Completado</label>
+        <button class="delete-task">Eliminar</button>
+      `;
+      
+      // Eventos de las acciones
+      const checkbox = actions.querySelector('.task-done');
+      const deleteBtn = actions.querySelector('.delete-task');
+      
+      checkbox.addEventListener('change', () => {
+        activity.completed = checkbox.checked;
+        this.updateActivity(activity);
+        
+        if (checkbox.checked) {
+          taskElement.classList.add('task-completed');
+        } else {
+          taskElement.classList.remove('task-completed');
+        }
+      });
+      
+      deleteBtn.addEventListener('click', () => {
+        this.deleteActivity(activity);
+        
+        // Si es una tarea multi-hora, eliminar todas las instancias
+        if (taskElement.classList.contains('multi-hour-task')) {
+          const allInstances = document.querySelectorAll(`[data-task-id="${taskId}"]`);
+          allInstances.forEach(instance => instance.remove());
+        } else {
           taskElement.remove();
-        });
+        }
+      });
+      
+      taskElement.appendChild(actions);
+      
+      // Añadir un identificador único para poder eliminar todas las instancias
+      taskElement.dataset.taskId = taskId;
+      
+      // Agregar elemento a la franja horaria inicial
+      if (startHour >= 0 && startHour < timeContents.length) {
+        timeContents[startHour].appendChild(taskElement);
         
-        taskElement.appendChild(actions);
-        timeContents[index].appendChild(taskElement);
+        // Si la tarea tiene una duración de más de una hora, ocupar también las siguientes franjas
+        if (duration > 1) {
+          // Calcular cuántas franjas horarias adicionales se necesitan (sin exceder las 24 horas)
+          const additionalSlots = Math.min(Math.floor(duration) - 1, 23 - startHour);
+          
+          // Para cada franja adicional, crear un marcador de "ocupado"
+          for (let i = 1; i <= additionalSlots; i++) {
+            const nextHour = startHour + i;
+            if (nextHour < timeContents.length) {
+              const occupiedMarker = document.createElement('div');
+              occupiedMarker.className = 'hour-occupied-marker';
+              occupiedMarker.dataset.taskId = taskId;
+              occupiedMarker.dataset.parentHour = startHour;
+              timeContents[nextHour].appendChild(occupiedMarker);
+            }
+          }
+        }
+      }
+      
+      // Si estaba completada, añadir clase correspondiente
+      if (activity.completed) {
+        taskElement.classList.add('task-completed');
       }
     });
   }
   
-  showAddTaskForm(preselectedHour = null) {
+  showAddTaskForm(preselectedHour = null, preselectedDuration = 1) {
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const formattedDate = this.selectedDate.toLocaleDateString('es-ES', dateOptions);
     
@@ -579,7 +772,7 @@ export class CalendarPanel {
     const taskForm = document.createElement('div');
     taskForm.className = 'task-form-overlay';
   
-    // Generar opciones de horas
+    // Generar opciones de horas (ahora mostrando las 24 horas)
     let hourOptions = '';
     for (let h = 0; h <= 23; h++) {
       const selected = (h === preselectedHour) ? 'selected' : '';
@@ -589,7 +782,8 @@ export class CalendarPanel {
     // Generar opciones de duración
     let durationOptions = '';
     for (let d = 0.5; d <= 8; d += 0.5) {
-      durationOptions += `<option value="${d}">${d} hora${d !== 1 ? 's' : ''}</option>`;
+      const selected = (d === preselectedDuration) ? 'selected' : '';
+      durationOptions += `<option value="${d}" ${selected}>${d} hora${d !== 1 ? 's' : ''}</option>`;
     }
   
     taskForm.innerHTML = `
@@ -1318,8 +1512,16 @@ export class CalendarPanel {
       'Estudiar Programació': '#2ecc71',
       'Llegir Fantasia': '#9b59b6',
       'Llegir Assaig': '#e74c3c',
-      'Calendario': '#1abc9c',
-      'Otros': '#95a5a6',
+      'Reunió': '#1abc9c',
+      'Tasca': '#3498db',
+      'Esdeveniment': '#FF9800',
+      'Neteja general': '#27ae60',
+      'Escombrar': '#8e44ad',
+      'Fregar el terra': '#2980b9',
+      'Treure la pols': '#c0392b',
+      'Netejar vidres': '#16a085',
+      'Limpieza': '#27ae60',
+      'Altres': '#95a5a6',
       // Categorías deportivas en catalán
       'Gimnàs': '#d35400',
       'Córrer': '#16a085',
@@ -1333,6 +1535,51 @@ export class CalendarPanel {
     };
     
     return colorMap[category] || '#95a5a6';
+  }
+
+  getCategoryClass(category) {
+    const classMap = {
+      'Estudiar Factors Humans': 'category-factors-humans',
+      'Estudiar Anàlisi Complexa': 'category-analysis-complex',
+      'Estudiar Programació': 'category-programming',
+      'Llegir Fantasia': 'category-fantasy',
+      'Llegir Assaig': 'category-essay',
+      'Reunió': 'category-meeting',
+      'Tasca': 'category-task',
+      'Esdeveniment': 'category-event',
+      'Neteja general': 'category-general-cleaning',
+      'Escombrar': 'category-sweeping',
+      'Fregar el terra': 'category-mopping',
+      'Treure la pols': 'category-dusting',
+      'Netejar vidres': 'category-window-cleaning',
+      'Limpieza': 'category-cleaning',
+      'Altres': 'category-others'
+    };
+    
+    return classMap[category] || null;
+  }
+
+  getCategoryNumber(category, taskId = '') {
+    // Creamos un número pseudo-aleatorio basado en el ID de la tarea o el nombre de la categoría
+    // para garantizar que la misma tarea siempre tenga el mismo color
+    let seed = 0;
+    
+    // Si tenemos un ID de tarea, lo usamos como semilla
+    if (taskId) {
+      for (let i = 0; i < taskId.length; i++) {
+        seed += taskId.charCodeAt(i);
+      }
+    } else {
+      // Si no hay ID, usamos la categoría como semilla
+      for (let i = 0; i < category.length; i++) {
+        seed += category.charCodeAt(i);
+      }
+    }
+    
+    // Generamos un número del 1 al 6 basado en la semilla
+    const colorNumber = (seed % 6) + 1;
+    
+    return colorNumber;
   }
   
   loadSavedData() {

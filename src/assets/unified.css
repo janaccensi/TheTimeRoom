@@ -744,6 +744,116 @@ input:focus {
   cursor: pointer;
 }
 
+/* Colores específicos por categoría de tarea */
+.task-item.categoria-1 {
+  background-color: #FF6633; /* Naranja principal */
+  color: white;
+}
+
+.task-item.categoria-2 {
+  background-color: #4CAF50; /* Verde */
+  color: white;
+}
+
+.task-item.categoria-3 {
+  background-color: #2196F3; /* Azul */
+  color: white;
+}
+
+.task-item.categoria-4 {
+  background-color: #9C27B0; /* Púrpura */
+  color: white;
+}
+
+.task-item.categoria-5 {
+  background-color: #FF9800; /* Naranja secundario */
+  color: white;
+}
+
+.task-item.categoria-6 {
+  background-color: #E91E63; /* Rosa */
+  color: white;
+}
+
+/* Versiones más oscuras para tareas completadas */
+.task-item.categoria-1-completed {
+  background-color: #CC4D26; /* Naranja principal oscurecido */
+  color: white;
+  opacity: 0.5;
+  position: relative;
+}
+
+.task-item.categoria-2-completed {
+  background-color: #3D8C40; /* Verde oscurecido */
+  color: white;
+  opacity: 0.5;
+  position: relative;
+}
+
+.task-item.categoria-3-completed {
+  background-color: #1976D2; /* Azul oscurecido */
+  color: white;
+  opacity: 0.5;
+  position: relative;
+}
+
+.task-item.categoria-4-completed {
+  background-color: #7B1FA2; /* Púrpura oscurecido */
+  color: white;
+  opacity: 0.5;
+  position: relative;
+}
+
+.task-item.categoria-5-completed {
+  background-color: #FB8C00; /* Naranja secundario oscurecido */
+  color: white;
+  opacity: 0.5;
+  position: relative;
+}
+
+.task-item.categoria-6-completed {
+  background-color: #C2185B; /* Rosa oscurecido */
+  color: white;
+  opacity: 0.5;
+  position: relative;
+}
+
+/* Añadir el tic blanco a las tareas completadas */
+.task-item[class*="-completed"]::after {
+  content: "✓";
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  color: white;
+  font-weight: bold;
+}
+
+.day-tasks .task-item.task-completed {
+  position: relative;
+}
+
+/* Mantener exactamente los colores originales */
+.day-tasks .task-item.task-completed.categoria-1,
+.day-tasks .task-item.task-completed.categoria-2,
+.day-tasks .task-item.task-completed.categoria-3,
+.day-tasks .task-item.task-completed.categoria-4,
+.day-tasks .task-item.task-completed.categoria-5,
+.day-tasks .task-item.task-completed.categoria-6 {
+  /* No cambiar nada del color */
+}
+
+/* Agregar indicador de tarea completada en lugar de cambiar color */
+.day-tasks .task-item.task-completed::after {
+  content: "✓";
+  position: absolute;
+  right: 4px;
+  top: 0;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
 .more-tasks {
   font-size: 0.7rem;
   color: #666;
@@ -807,6 +917,7 @@ input:focus {
   cursor: pointer;
 }
 
+/* Mejorar la estructura base del timeline */
 .day-timeline {
   flex: 1;
   overflow-y: auto;
@@ -821,35 +932,104 @@ input:focus {
 }
 
 .time-label {
-  width: 60px;
-  padding: 10px;
-  text-align: center;
-  font-weight: bold;
+  min-width: 55px;
+  padding: 5px;
+  text-align: right;
+  font-weight: 500;
   color: #666;
+  font-size: 0.85rem;
   border-right: 1px solid #e0e0e0;
 }
 
 .time-content {
+  position: relative;
   flex: 1;
-  padding: 5px;
+  min-height: 60px;
+  padding: 3px;
 }
 
+/* Estilos para las tareas */
 .day-task-item {
-  margin-bottom: 5px;
+  margin: 2px;
   border-radius: 4px;
   padding: 8px;
-  background-color: #e0e0e0;
+  background-color: rgba(224, 224, 224, 0.8);
   font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  position: relative;
+  z-index: 5;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
+/* Colores específicos por categoría de tarea */
+.day-task-item.categoria-1 {
+  background-color: rgba(255, 102, 51, 0.8); /* Naranja principal */
+  border-left: 4px solid #FF6633;
+}
+
+.day-task-item.categoria-2 {
+  background-color: rgba(76, 175, 80, 0.8); /* Verde */
+  border-left: 4px solid #4CAF50;
+}
+
+.day-task-item.categoria-3 {
+  background-color: rgba(33, 150, 243, 0.8); /* Azul */
+  border-left: 4px solid #2196F3;
+}
+
+.day-task-item.categoria-4 {
+  background-color: rgba(156, 39, 176, 0.8); /* Púrpura */
+  border-left: 4px solid #9C27B0;
+}
+
+.day-task-item.categoria-5 {
+  background-color: rgba(255, 152, 0, 0.8); /* Naranja secundario */
+  border-left: 4px solid #FF9800;
+}
+
+.day-task-item.categoria-6 {
+  background-color: rgba(233, 30, 99, 0.8); /* Rosa */
+  border-left: 4px solid #E91E63;
+}
+
+/* Corregir los estilos para tareas multi-hora */
+.multi-hour-task {
+  position: absolute !important;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  width: calc(100% - 4px) !important;
+  z-index: 10;
+  max-height: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Marcador que indica que una franja horaria está ocupada por una tarea de otra hora */
+.hour-occupied-marker {
+  background-color: rgba(200, 200, 200, 0.3);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  border-top: 1px dashed #ccc;
+  z-index: 1;
+}
+
+/* Mejorar visualización de tareas */
 .task-title {
   font-weight: bold;
-  margin-bottom: 3px;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+  line-height: 1.2;
 }
 
 .task-detail {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #555;
+  line-height: 1.3;
 }
 
 .task-actions {
@@ -857,10 +1037,14 @@ input:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 0.85rem;
 }
 
 .task-completed {
-  opacity: 0.6;
+  opacity: 0.7;
+  background-color: rgba(224, 224, 224, 0.5) !important;
 }
 
 .task-completed .task-title,
@@ -876,6 +1060,24 @@ input:focus {
   border-radius: 3px;
   cursor: pointer;
   font-size: 0.8rem;
+}
+
+.day-timeline {
+  flex: 1;
+  overflow-y: auto;
+  border-top: 1px solid #e0e0e0;
+}
+
+.time-slot {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  min-height: 60px;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+.time-content {
+  position: relative;
+  height: 60px;
 }
 
 .day-footer {
@@ -1027,4 +1229,134 @@ input:focus {
   .modal-content {
     width: 95%;
   }
+}
+
+/* Estilos para la vista previa de arrastre en el calendario */
+.drag-time-preview {
+  background-color: rgba(255, 102, 51, 0.3);
+  border: 2px dashed var(--color-accent, #FF6633);
+  border-radius: 4px;
+  height: calc(100% - 4px);
+  width: calc(100% - 8px);
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--color-accent-dark, #CC5522);
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.duration-indicator {
+  margin-top: 5px;
+  font-size: 0.9em;
+  padding: 2px 6px;
+  background-color: var(--color-accent, #FF6633);
+  color: white;
+  border-radius: 10px;
+}
+
+/* Estilos para tareas multi-hora y ocupación de franjas horarias */
+.multi-hour-task {
+  position: absolute !important;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  width: calc(100% - 4px) !important;
+  z-index: 10;
+  max-height: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Marcador que indica que una franja horaria está ocupada por una tarea de otra hora */
+.hour-occupied-marker {
+  background-color: rgba(200, 200, 200, 0.3);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  border-top: 1px dashed #ccc;
+  z-index: 1;
+}
+
+.time-content {
+  position: relative;
+  height: 60px;
+}
+
+/* Estilos para diferenciar visualmente los tipos de actividades */
+.reading-activity {
+  border-left: 4px solid #9b59b6;
+}
+
+.cleaning-activity {
+  border-left: 4px solid #2ecc71;
+}
+
+.calendar-task {
+  border-left: 4px solid #3498db;
+}
+
+/* Iconos de tipo de actividad */
+.activity-type-icon {
+  margin-right: 5px;
+}
+
+/* Información adicional de tarea */
+.task-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.task-detail {
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.3;
+}
+
+.task-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 0.85rem;
+}
+
+.task-completed {
+  opacity: 0.7;
+  background-color: rgba(224, 224, 224, 0.5) !important;
+}
+
+.task-completed .task-title,
+.task-completed .task-detail {
+  text-decoration: line-through;
+}
+
+.delete-task {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+/* Urgencias */
+.task-urgency.alta {
+  color: #f39c12;
+}
+
+.task-urgency.urgent {
+  color: #e74c3c;
 }

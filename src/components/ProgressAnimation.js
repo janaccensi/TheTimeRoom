@@ -1,5 +1,5 @@
 export class ProgressAnimationService {
-    static showProgressAnimation(category, activityType) {
+    static showProgressAnimation(category, activityType, message = null) {
       // Crear el contenedor modal para la animación
       const animContainer = document.createElement('div');
       animContainer.className = 'progress-animation-container';
@@ -8,12 +8,20 @@ export class ProgressAnimationService {
       const hue = this.getHueFromString(category);
       const color = `hsl(${hue}, 70%, 50%)`;
       
-      // Contenido de la animación
+      // Mensaje predeterminado según el tipo de actividad si no se proporciona uno personalizado
+      const defaultMessage = activityType === 'cleaning' ? 
+        'Neteja registrada correctament' : 
+        (activityType === 'reading' ? 'Lectura registrada correctament' : 'Tasca registrada correctament');
+      
+      // Usar el mensaje personalizado si se proporciona
+      const displayMessage = message || defaultMessage;
+      
+      // Contenido de la animación con la misma tipografía que ActivityModal
       animContainer.innerHTML = `
         <div class="progress-animation-content">
           <div class="progress-animation-header">
             <h3>Activitat afegida!</h3>
-            <p>${activityType === 'cleaning' ? 'Neteja' : (activityType === 'reading' ? 'Lectura' : 'Tasca')} registrada correctament</p>
+            <p>${displayMessage}</p>
           </div>
           
           <div class="progress-item">
@@ -93,6 +101,7 @@ export class ProgressAnimationService {
         transform: scale(0.9);
         transition: opacity 0.3s, transform 0.3s;
         pointer-events: none;
+        font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
       
       .progress-animation-container.active {
@@ -103,7 +112,7 @@ export class ProgressAnimationService {
       
       .progress-animation-content {
         background-color: white;
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 24px;
         width: 400px;
         max-width: 90%;
@@ -119,11 +128,13 @@ export class ProgressAnimationService {
         margin: 0 0 8px;
         font-size: 1.5rem;
         color: #2c3e50;
+        font-weight: 600;
       }
       
       .progress-animation-header p {
         margin: 0;
         color: #7f8c8d;
+        font-size: 1rem;
       }
       
       .progress-item {
@@ -135,6 +146,16 @@ export class ProgressAnimationService {
         justify-content: space-between;
         margin-bottom: 8px;
         font-weight: 500;
+      }
+      
+      .progress-category {
+        font-weight: 600;
+        color: #2c3e50;
+      }
+      
+      .progress-percentage {
+        color: #3498db;
+        font-weight: 600;
       }
       
       .progress-bar-container {
