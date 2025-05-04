@@ -314,7 +314,7 @@ export default function useRoom(canvas) {
     outlinePass.edgeGlow = 0.7;
     outlinePass.edgeThickness = 1.0;
     outlinePass.pulsePeriod = 0;
-    outlinePass.visibleEdgeColor.set('#3498db');
+    outlinePass.visibleEdgeColor.set('#FF6633');
     outlinePass.hiddenEdgeColor.set('#256ea5');
     outlinePass.overlayMaterial.blending = THREE.NormalBlending; // Ajusta la barreja
     

@@ -28,8 +28,6 @@ export class CleaningModal {
         this.loadCleaningStats();
         this.calculateCleanlinessLevel();
       });
-
-      
     }
 
     updateAllStats() {
@@ -253,72 +251,6 @@ export class CleaningModal {
       const today = new Date();
       const dateStr = today.toISOString().split('T')[0];
       dateInput.value = dateStr;
-      
-      // Añadir estilos específicos para la modal de limpieza
-      this.addStyles();
-    }
-    
-    addStyles() {
-      if (!document.getElementById('cleaning-modal-styles')) {
-        const style = document.createElement('style');
-        style.id = 'cleaning-modal-styles';
-        style.textContent = `
-          .cleaning-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-          }
-          
-          .cleaning-modal.hidden {
-            display: none;
-          }
-          
-          .cleaning-modal .modal-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-          }
-          
-          .cleaning-container {
-            margin-top: 1rem;
-          }
-          
-          .cleaning-type-item {
-            margin-bottom: 0.8rem;
-          }
-          
-          .cleaning-type-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.3rem;
-          }
-          
-          .cleaning-progress-container {
-            height: 12px;
-            background-color: #e0e0e0;
-            border-radius: 6px;
-            overflow: hidden;
-          }
-          
-          .cleaning-progress-bar {
-            height: 100%;
-            border-radius: 6px;
-            background-color: #4caf50;
-          }
-        `;
-        document.head.appendChild(style);
-      }
     }
     
     show(item) {
