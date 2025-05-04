@@ -516,7 +516,7 @@ export class ActivityModal {
     const activitats = totes_activitats.filter(act => {
       const actDate = new Date(act.date || act.timestamp);
       actDate.setHours(0, 0, 0, 0); // Resetegem l'hora per comparar només dates
-      return actDate < today; // Només activitats anteriors a avui
+      return actDate <= today; // Només activitats anteriors a avui
     });
     
     // Actualitzem els elements d'estadística si existeixen
