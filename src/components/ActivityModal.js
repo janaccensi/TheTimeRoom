@@ -231,23 +231,34 @@ export class ActivityModal {
     const calendarTasksRaw = JSON.parse(localStorage.getItem('calendar-tasks')) || {};
     const calendarActivities = [];
     
-    // Buscar tareas del calendario que coincidan con las categorías de este libro
-    // Para esto, necesitamos saber qué categorías usa este libro
-    const bookCategories = new Set(actividades.map(act => act.category));
+    // Lista de categorías de lectura/estudio
+    const readingCategories = [
+      "Estudiar Factors Humans", "Estudiar Anàlisi Complexa", 
+      "Estudiar Programació", "Llegir Fantasia", "Llegir Assaig"
+    ];
     
     Object.entries(calendarTasksRaw).forEach(([dateKey, tasks]) => {
       tasks.forEach(task => {
-        // Si la tarea está completada y su categoría coincide con alguna usada en este libro
-        if (task.completed && bookCategories.has(task.category)) {
-          calendarActivities.push({
-            category: task.category,
-            hours: task.duration || 1,
-            timestamp: task.createdAt || new Date().toISOString()
-          });
+        // Solo incluir tareas completadas, de tipo lectura o con categorías de lectura
+        // y excluir explícitamente tareas de tipo deporte
+        if (task.completed && 
+            (readingCategories.includes(task.category) || task.sourceType === 'reading') && 
+            task.sourceType !== 'sport') {
+          
+          // Si la tarea tiene sourceId de libro y coincide con este libro,
+          // o si no tiene sourceId pero es de una categoría usada por este libro
+          if ((task.sourceId === bookId) || 
+              (bookId === this.currentBook?.userData?.id && !task.sourceId)) {
+            calendarActivities.push({
+              category: task.category,
+              hours: task.duration || 1,
+              timestamp: task.createdAt || new Date().toISOString()
+            });
+          }
         }
       });
     });
-  
+
     // Combinar ambas fuentes de datos
     const allActivities = [...actividades, ...calendarActivities];
     

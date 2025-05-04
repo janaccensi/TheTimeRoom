@@ -1,0 +1,35 @@
+<div class="modal-content">
+  <span class="close-button" aria-label="Cerrar">&times;</span>
+  <h2 id="form-title">Registra actividad deportiva</h2>
+  <p id="form-dumbbell-title" class="book-form-title"></p>
+  <div id="modal-description" class="visually-hidden">Formulario para registrar actividades deportivas</div>
+  
+  <div class="activity-form">
+    <div class="form-group">
+      <label for="activity-category">Categoría:</label>
+      <select id="activity-category" aria-required="true" aria-label="Categoría de la actividad">
+        <option value="Gimnasio">Gimnasio</option>
+        <option value="Correr">Correr</option>
+        <option value="Baloncesto">Baloncesto</option>
+        <option value="Fútbol">Fútbol</option>
+        <option value="Natación">Natación</option>
+        <option value="Ciclismo">Ciclismo</option>
+        <option value="Yoga">Yoga</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="activity-date">Fecha:</label>
+      <input type="date" id="activity-date" aria-required="true" aria-label="Fecha de la actividad">
+    </div>
+    <div class="form-group">
+      <label for="activity-time">Duración (horas):</label>
+      <input type="number" id="activity-time" min="0.25" max="24" step="0.25" value="1" aria-required="true" aria-label="Duración de la actividad">
+    </div>
+    <div class="form-group">
+      <label for="activity-notes">Notas:</label>
+      <textarea id="activity-notes" rows="3" aria-label="Notas sobre la actividad"></textarea>
+    </div>
+    <button id="save-activity" class="save-button">Guardar actividad</button>
+  </div>
+</div>

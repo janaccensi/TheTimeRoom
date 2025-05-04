@@ -58,6 +58,42 @@ export class CalendarPanel {
         this.renderMonthDays();
       }
     });
+
+    // Añadir listener para actividades deportivas (similar a las de lectura)
+    document.addEventListener('sport-activity-added', (event) => {
+      const activity = event.detail.activity;
+      
+      // Convertir la actividad deportiva a formato de tarea de calendario
+      const dateKey = activity.date.split('T')[0]; // Formato YYYY-MM-DD
+      const task = {
+        text: `${activity.category}: ${activity.dumbbellTitle || 'Entrenamiento'}`,
+        category: activity.category,
+        createdAt: activity.timestamp || new Date().toISOString(),
+        completed: true,
+        duration: activity.hours,
+        sourceType: 'sport',
+        sourceId: activity.dumbbellId
+      };
+      
+      // Añadir al calendario
+      this.addTaskToCalendar(dateKey, task);
+      
+      // Actualizar la vista si estamos en el día relevante
+      const [year, month, day] = dateKey.split('-').map(Number);
+      if (this.currentView === 'day' && 
+          this.selectedDate.getDate() === day &&
+          this.selectedDate.getMonth() === month - 1 &&
+          this.selectedDate.getFullYear() === year) {
+        this.renderDayTasks();
+      }
+      
+      // Actualizar la vista mensual si estamos en el mes correspondiente
+      if (this.currentView === 'month' && 
+          this.currentDate.getMonth() === month - 1 &&
+          this.currentDate.getFullYear() === year) {
+        this.renderMonthDays();
+      }
+    });
   }
   
   updatePanelContent() {
@@ -405,6 +441,8 @@ export class CalendarPanel {
         // Añadir una clase específica según el origen
         if (activity.sourceType === 'reading') {
           taskElement.classList.add('reading-activity');
+        } else if (activity.sourceType === 'sport') {
+          taskElement.classList.add('sport-activity');
         } else {
           taskElement.classList.add('calendar-task');
         }
@@ -413,7 +451,6 @@ export class CalendarPanel {
         
         const title = document.createElement('div');
         title.className = 'task-title';
-        //title.textContent = activity.category || activity.bookTitle || 'Tarea';
         if (activity.sourceType === 'reading') {
           title.textContent = activity.bookTitle || 'Lectura';
           
@@ -421,6 +458,14 @@ export class CalendarPanel {
           const indicator = document.createElement('span');
           indicator.className = 'activity-type-icon';
           indicator.textContent = '📚'; // Icono de libro
+          title.prepend(indicator);
+        } else if (activity.sourceType === 'sport') {
+          title.textContent = activity.text || 'Deporte';
+          
+          // Agregar un icono o indicador de que es actividad deportiva
+          const indicator = document.createElement('span');
+          indicator.className = 'activity-type-icon';
+          indicator.textContent = '💪'; // Icono de deporte
           title.prepend(indicator);
         } else {
           title.textContent = activity.text || 'Tarea';
@@ -483,10 +528,9 @@ export class CalendarPanel {
     const taskForm = document.createElement('div');
     taskForm.className = 'task-form-overlay';
   
-    // Generar opciones de horas - CORREGIDO
+    // Generar opciones de horas
     let hourOptions = '';
-    for (let h = 8; h <= 18; h++) {
-      // Verificar correctamente si esta hora debería estar preseleccionada
+    for (let h = 0; h <= 23; h++) {
       const selected = (h === preselectedHour) ? 'selected' : '';
       hourOptions += `<option value="${h}" ${selected}>${h}:00</option>`;
     }
@@ -520,12 +564,25 @@ export class CalendarPanel {
           <div class="form-group">
             <label for="task-category">Categoría:</label>
             <select id="task-category">
-              <option value="Estudiar Factors Humans">Estudiar Factors Humans</option>
-              <option value="Estudiar Anàlisi Complexa">Estudiar Anàlisi Complexa</option>
-              <option value="Estudiar Programació">Estudiar Programació</option>
-              <option value="Llegir Fantasia">Llegir Fantasia</option>
-              <option value="Llegir Assaig">Llegir Assaig</option>
-              <option value="Otros">Otros</option>
+              <optgroup label="Estudio y Lectura">
+                <option value="Estudiar Factors Humans">Estudiar Factors Humans</option>
+                <option value="Estudiar Anàlisi Complexa">Estudiar Anàlisi Complexa</option>
+                <option value="Estudiar Programació">Estudiar Programació</option>
+                <option value="Llegir Fantasia">Llegir Fantasia</option>
+                <option value="Llegir Assaig">Llegir Assaig</option>
+              </optgroup>
+              <optgroup label="Deportes">
+                <option value="Gimnasio">Gimnasio</option>
+                <option value="Correr">Correr</option>
+                <option value="Baloncesto">Baloncesto</option>
+                <option value="Fútbol">Fútbol</option>
+                <option value="Natación">Natación</option>
+                <option value="Ciclismo">Ciclismo</option>
+                <option value="Yoga">Yoga</option>
+              </optgroup>
+              <optgroup label="Otros">
+                <option value="Otros">Otros</option>
+              </optgroup>
             </select>
           </div>
           <div class="form-actions">
@@ -551,7 +608,7 @@ export class CalendarPanel {
       
       const text = form.querySelector('#task-text').value;
       const hour = form.querySelector('#task-hour').value;
-      const duration = form.querySelector('#task-duration').value; // Obtener duración
+      const duration = form.querySelector('#task-duration').value;
       const category = form.querySelector('#task-category').value;
       
       // Garantizar que usamos la fecha correcta
@@ -564,13 +621,18 @@ export class CalendarPanel {
         0
       );
       
+      // Determinar el tipo de actividad según la categoría
+      const sportCategories = ["Gimnasio", "Correr", "Baloncesto", "Fútbol", "Natación", "Ciclismo", "Yoga"];
+      const sourceType = sportCategories.includes(category) ? 'sport' : 'calendar';
+      
       this.addNewActivity({
         text: text,
         category: category,
         date: `${taskDate.getFullYear()}-${(taskDate.getMonth() + 1).toString().padStart(2, '0')}-${taskDate.getDate().toString().padStart(2, '0')}`,
         timestamp: taskDate.toISOString(),
         completed: false,
-        duration: parseFloat(duration) // Añadir duración como número
+        duration: parseFloat(duration),
+        sourceType: sourceType // Añadir el tipo correcto según la categoría
       });
         
       document.body.removeChild(taskForm);
@@ -609,7 +671,6 @@ export class CalendarPanel {
   
   // Métodos auxiliares para gestión de datos
   
-  // Corregir la conversión de actividades
   getAllActivityData() {
     // Obtener actividades de lectura
     const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
@@ -623,10 +684,14 @@ export class CalendarPanel {
         category: activity.category || 'Lectura',
         date: activity.date,
         timestamp: activity.timestamp || new Date().toISOString(),
-        // Usar un ID para diferenciar el origen
-        sourceType: 'reading'
+        duration: activity.hours,
+        sourceType: 'reading',
+        sourceId: activity.bookId
       };
     });
+    
+    // NO incluir las actividades deportivas directamente, ya están en el calendario
+    // Las actividades deportivas ya se añaden como tareas de calendario en el evento sport-activity-added
     
     // Convertir tareas del calendario para formato uniforme
     const calendarTasks = [];
@@ -639,16 +704,15 @@ export class CalendarPanel {
           completed: task.completed || false,
           timestamp: task.createdAt || new Date(year, month-1, day, 12, 0, 0).toISOString(),
           category: task.category,
-          // Añadir duración
           duration: task.duration || 1,
-          // Resto del código...
-          sourceType: 'calendar',
-          taskId: task.createdAt
+          sourceType: task.sourceType || 'calendar',
+          taskId: task.createdAt,
+          sourceId: task.sourceId // Mantener el ID original de las actividades deportivas
         });
       });
     });
     
-    // Devolver ambos tipos de actividades
+    // Devolver actividades de lectura y tareas del calendario (que ya incluyen deportivas)
     return [...formattedReadingActivities, ...calendarTasks];
   }
   
@@ -673,13 +737,21 @@ export class CalendarPanel {
     return activitiesMap;
   }
   
-  // Corregir la adición de nuevas actividades
   addNewActivity(activity) {
     // Si tiene bookId, es una actividad de lectura (no la procesamos aquí)
     if (activity.bookId || activity.sourceType === 'reading') {
       console.warn("Las actividades de lectura deben añadirse desde ActivityModal");
       return;
     }
+    
+    // Detectar si es una categoría deportiva si no se especificó directamente
+    if (!activity.sourceType) {
+      const sportCategories = ["Gimnasio", "Correr", "Baloncesto", "Fútbol", "Natación", "Ciclismo", "Yoga"];
+      activity.sourceType = sportCategories.includes(activity.category) ? 'sport' : 'calendar';
+    }
+    
+    // Crear una ID única para la actividad
+    const createdAt = activity.timestamp || new Date().toISOString();
     
     // Guardar como tarea del calendario
     const activityDate = new Date(activity.date);
@@ -689,15 +761,44 @@ export class CalendarPanel {
       this.tasks[dateKey] = [];
     }
     
-    this.tasks[dateKey].push({
+    // NO asignamos sourceId por defecto para actividades deportivas,
+    // esto permite que se muestren en cada mancuerna que se abra
+    const newTask = {
       text: activity.text,
       category: activity.category,
       completed: activity.completed || false,
-      createdAt: activity.timestamp || new Date().toISOString(),
-      duration: activity.duration || 1 // Guardar duración, por defecto 1 hora
-    });
+      createdAt: createdAt,
+      duration: activity.duration || 1,
+      sourceType: activity.sourceType,
+      // Solo pasamos sourceId si ya viene asignado específicamente
+      ...(activity.sourceId && { sourceId: activity.sourceId })
+    };
     
+    this.tasks[dateKey].push(newTask);
     this.saveTasks();
+    
+    // Si es actividad deportiva completada, disparar evento
+    if (activity.sourceType === 'sport' && activity.completed) {
+      document.dispatchEvent(new CustomEvent('calendar-task-completed', {
+        detail: { 
+          task: newTask,
+          category: activity.category 
+        }
+      }));
+    }
+  }
+
+  addTaskToCalendar(dateKey, task) {
+    // Obtener tareas existentes
+    if (!this.tasks[dateKey]) {
+      this.tasks[dateKey] = [];
+    }
+    
+    // Añadir la nueva tarea
+    this.tasks[dateKey].push(task);
+    
+    // Guardar en localStorage
+    localStorage.setItem('calendar-tasks', JSON.stringify(this.tasks));
   }
 
   updateActivity(activity) {
@@ -809,7 +910,15 @@ export class CalendarPanel {
       'Llegir Fantasia': '#9b59b6',
       'Llegir Assaig': '#e74c3c',
       'Calendario': '#1abc9c',
-      'Otros': '#95a5a6'
+      'Otros': '#95a5a6',
+      'Gimnasio': '#d35400',
+      'Correr': '#16a085',
+      'Baloncesto': '#8e44ad',
+      'Fútbol': '#27ae60',
+      'Natación': '#3498db',
+      'Ciclismo': '#c0392b',
+      'Yoga': '#2980b9',
+      'Deporte': '#95a5a6'
     };
     
     return colorMap[category] || '#95a5a6';

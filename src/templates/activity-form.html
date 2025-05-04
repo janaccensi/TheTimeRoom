@@ -1,0 +1,33 @@
+<div class="modal-content">
+  <span class="close-button" aria-label="Tancar">&times;</span>
+  <h2 id="form-title">Registra activitat</h2>
+  <p id="form-book-title" class="book-form-title"></p>
+  <div id="modal-description" class="visually-hidden">Formulari per registrar hores de lectura</div>
+  
+  <div class="activity-form">
+    <div class="form-group">
+      <label for="activity-category">Categoria:</label>
+      <select id="activity-category" aria-required="true" aria-label="Categoria de l'activitat">
+        <option value="Estudiar Factors Humans">Estudiar Factors Humans</option>
+        <option value="Estudiar Anàlisi Complexa">Estudiar Anàlisi Complexa</option>
+        <option value="Estudiar Programació">Estudiar Programació</option>
+        <option value="Llegir Fantasia">Llegir Fantasia</option>
+        <option value="Llegir Assaig">Llegir Assaig</option>
+        <option value="Altres">Altres</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="activity-date">Data:</label>
+      <input type="date" id="activity-date" aria-required="true" aria-label="Data de lectura">
+    </div>
+    <div class="form-group">
+      <label for="activity-time">Hores d'activitat:</label>
+      <input type="number" id="activity-time" min="0.25" max="24" step="0.25" value="1" aria-required="true" aria-label="Hores d'activitat">
+    </div>
+    <div class="form-group">
+      <label for="activity-notes">Notes:</label>
+      <textarea id="activity-notes" rows="3" aria-label="Notes sobre l'activitat"></textarea>
+    </div>
+    <button id="save-activity" class="save-button">Desa activitat</button>
+  </div>
+</div>

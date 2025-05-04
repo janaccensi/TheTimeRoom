@@ -20,6 +20,7 @@ import { createCenterTable } from '@/three/objects/CenterTable.js'; // Importar 
 import { createSofa } from '@/three/objects/Sofa.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
 
+import { SportActivityModal } from '../components/SportActivityModal';
 import { InteractionManager } from '../three/interactions/InteractionManager';
 import { ActivityModal } from '../components/ActivityModal';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -94,8 +95,37 @@ export default function useRoom(canvas) {
   const dumbbell = createDumbbell(scene, {
     position: { x: 1.05, y: 0.177, z: 1.8 }, 
     weight: 8,
-    color: 0x222222
+    color: 0x222222,
+    userData: {
+      id: "dumbbell_0",
+      title: "Mancuerna 8kg",
+      type: 'dumbbell'
+    }
   });
+
+  // También la otra mancuerna inicial
+  const lightDumbbell = createDumbbell(scene, {
+    position: { x: 1.7, y: 0.15, z: 1.8 },
+    weight: 3,
+    color: 0x444444,
+    userData: {
+      id: "dumbbell_mini",
+      title: "Mancuerna 3kg",
+      type: 'dumbbell'
+    }
+  });
+
+  // Inicializar el contador de mancuernas creadas (las 2 iniciales)
+  if (!localStorage.getItem('dumbbellsCreated')) {
+    localStorage.setItem('dumbbellsCreated', '2');
+  }
+
+  // Verificar si deberíamos tener más mancuernas basado en las horas acumuladas
+  setTimeout(() => {
+    // Simular el evento check-dumbbells
+    document.dispatchEvent(new Event('check-dumbbells'));
+  }, 1000);
+
   // Afegim la TV
   
   const tv = createTV(scene, {
@@ -118,13 +148,6 @@ export default function useRoom(canvas) {
     baseColor: 0x111111,
     accentColor: 0xff0000,
     isOn: true
-  });
-
-  // También puedes crear varias con diferentes pesos
-  const lightDumbbell = createDumbbell(scene, {
-    position: { x: 1.7, y: 0.15, z: 1.8 },
-    weight: 3,
-    color: 0x444444
   });
 
   const sofa = createSofa(scene, {
@@ -340,7 +363,7 @@ export default function useRoom(canvas) {
     
     // Creem el modal d'activitats
     const activityModal = new ActivityModal();
-
+    const sportActivityModal = new SportActivityModal();
     // Crear el panel del calendario
     const calendarPanel = new CalendarPanel();
     
@@ -361,7 +384,7 @@ export default function useRoom(canvas) {
         }
       }
       else if (object.userData && object.userData.type === 'dumbbell') {
-        activityModal.show(object);
+        sportActivityModal.show(object);
       }
       else if (object.userData && object.userData.type === 'remote-controller') {
         activityModal.show(object);
@@ -393,6 +416,55 @@ export default function useRoom(canvas) {
     // Configurem el callback quan es desa una activitat
     activityModal.setOnSave(activityData => {
       saveActivity(activityData);
+    });
+
+    // Listener para crear nuevas mancuernas al acumular horas
+    document.addEventListener('create-new-dumbbells', (event) => {
+      const { count, totalCount } = event.detail;
+      console.log(`Creando ${count} nuevas mancuernas. Total: ${totalCount}`);
+      
+      // Calculamos la posición base donde empezar a colocar las mancuernas
+      // Posición base de la primera mancuerna (la que ya existe)
+      const basePosition = {
+        x: 1.05, 
+        y: 0.177, 
+        z: 1.8
+      };
+      
+      // La separación entre mancuernas - REDUCIDA de 0.65 a 0.25
+      const spacing = 0.25;
+      
+      // Empezamos a crear desde la siguiente a la última
+      for (let i = 0; i < count; i++) {
+        // Calculamos la posición para la nueva mancuerna
+        const currentIndex = (totalCount - count) + i;
+        
+        // Calculamos un factor de peso basado en el índice
+        // Las primeras empiezan con 8kg, 10kg, 12kg, etc.
+        const weight = 8 + (currentIndex * 2);
+        
+        // Calculamos la posición horizontal (x) para colocarlas en línea
+        const posX = basePosition.x - (currentIndex * spacing);
+        
+        // Creamos la nueva mancuerna con peso personalizado
+        createDumbbell(scene, {
+          position: { x: posX, y: basePosition.y, z: basePosition.z },
+          weight: weight, 
+          color: 0x222222,
+          userData: {
+            id: `dumbbell_${currentIndex}`,
+            title: `Mancuerna ${weight}kg`, 
+            type: 'dumbbell'
+          }
+        });
+        
+        console.log(`Mancuerna ${currentIndex + 1} creada con peso ${weight}kg en posición X: ${posX}`);
+      }
+    });
+
+    // Añadir listener para verificar nuevas mancuernas
+    document.addEventListener('check-dumbbells', () => {
+      sportActivityModal.checkForNewDumbbells();
     });
   }
   
