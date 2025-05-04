@@ -466,7 +466,7 @@ export class ActivityModal {
     console.log(`Mostrant l'historial de ${this.currentObject.userData.title} (${activityType})`);
     
     // Obtenim les activitats per aquest objecte i tipus d'activitat
-    const activitats = this.getActivitiesByObjectId(objectId, activityType);
+    const activitats = this.getActivitiesByActivityType(activityType);
     
     // Mostrem l'historial
     if (activitats.length > 0) {
@@ -486,7 +486,7 @@ export class ActivityModal {
     if (!objectId) return;
 
     // Obtenir activitats relacionades amb aquest objecte
-    const activitats = this.getActivitiesByObjectId(objectId, activityType);
+    const activitats = this.getActivitiesByActivityType(activityType);
     
     // Obtenir tasques del calendari que coincideixen amb les categories d'aquest objecte
     const calendarTasksRaw = JSON.parse(localStorage.getItem('calendar-tasks')) || {};
@@ -623,22 +623,12 @@ export class ActivityModal {
     return hash % 360;
   }
   
-  getActivitiesByObjectId(objectId, activityType = 'reading') {
+  getActivitiesByActivityType(activityType) {
+
+    console.log("Holaaa")
     // Recuperem les activitats del tipus específic
     const storageKey = `${activityType}Activities`;
-    const allActivities = JSON.parse(localStorage.getItem(storageKey)) || [];
-    
-    // Filtrem només les activitats relacionades amb aquest objecte
-    return allActivities.filter(act => {
-      // Comprovem diferents propietats segons el tipus d'activitat
-      if (activityType === 'reading') {
-        return act.bookId === objectId;
-      } else if (activityType === 'work') {
-        return act.folderId === objectId;
-      } else {
-        return act.objectId === objectId;
-      }
-    });
+    return JSON.parse(localStorage.getItem(storageKey)) || [];            
   }
   
   setOnSave(callback) {
