@@ -30,7 +30,7 @@ import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectio
 
 import { createTVTable } from '@/three/objects/TVTable.js';
 import { CalendarPanel } from '@/components/CalendarPanel.js';
-import { CleaningModal } from '../components/CleaningModal.js';
+
 
 
 
@@ -308,7 +308,7 @@ export default function useRoom(canvas) {
     const calendarPanel = new CalendarPanel();
 
     // Crear el modal de neteja
-    const cleaningModal = new CleaningModal();
+    
     
 
 
@@ -438,12 +438,7 @@ export default function useRoom(canvas) {
       }
     });
 
-    // También podemos inicializar el nivel de limpieza al inicio
-    // Al final de la función initInteractions():
-    setTimeout(() => {
-      // Disparar un evento para actualizar la escoba con el nivel inicial desde localStorage
-      cleaningModal.calculateCleanlinessLevel();
-    }, 500);
+   
 
   }
   
