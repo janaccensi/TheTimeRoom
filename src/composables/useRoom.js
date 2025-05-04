@@ -19,7 +19,7 @@ import { createBroom } from '@/three/objects/Broom.js'; // Importar la función 
 import { createCenterTable } from '@/three/objects/CenterTable.js'; // Importar la función de mesa central
 import { createSofa } from '@/three/objects/Sofa.js';
 import { createMicrophone } from '../three/objects/Microphone.js'; // Importar la función de micrófono
-
+import { createAssistant } from '../three/objects/Assistant.js'; // Importar la función de asistente
 import { InteractionManager } from '../three/interactions/InteractionManager';
 import { ActivityModal } from '../components/ActivityModal';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -183,6 +183,11 @@ export default function useRoom(canvas) {
     //screenTexture: codeTexture // Añadir la textura del código
   });
 
+
+  const assistant = createAssistant(scene, {
+    position: { x: 2.1, y: 0.4, z: -1.3 }
+  });
+
   const chair = createChair(scene, {
     position: { x: -1, y: 0.0, z: -1 },
     color: 0x2c3e50,
@@ -309,6 +314,12 @@ export default function useRoom(canvas) {
 
     // Configurem el callback quan es clica un llibre
     interactionManager.setOnObjectClick(object => {
+
+      if (object.userData && object.userData.type === 'assistant') {
+        if (object.userData.onClick) {
+          object.userData.onClick(object);
+        }
+      }
 
       if(object.userData.onClick){
         object.userData.onClick(object);
