@@ -1,3 +1,4 @@
+import { ActivityModal } from '@/components/ActivityModal';
 import * as THREE from 'three';
 
 export function createComputer(scene, options = {}) {
@@ -20,8 +21,15 @@ export function createComputer(scene, options = {}) {
         type: 'computer',          // Todos los meshes tienen el mismo tipo
         isInteractive: true,       // Todos son interactivos
         title: 'Ordinador',
+        activityType: 'study',
         description: 'Un ordinador potent',
-        action: 'toggleComputer'   // Acción para encender/apagar
+        action: 'toggleComputer',   // Acción para encender/apagar,        
+        onClick: (object) => {
+            
+          const activityModal = new ActivityModal();            
+          activityModal.show(object);          
+        }
+
       };
     }
   }

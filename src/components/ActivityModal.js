@@ -1,27 +1,29 @@
+import { ActivitiesMockData } from "../models/ActivitiesMockData";
+
 export class ActivityModal {
   constructor() {
     this.modal = null;
     this.formModal = null;
-    this.currentBook = null;
+    this.currentObject = null;
     this.onSave = null;
     this.init();
     
     // Afegim activitats simulades si no hi ha dades
     this.addMockActivities();
 
-    // Escuchar eventos de actividades de calendario
+    // Escoltem events d'activitats de calendari
     document.addEventListener('calendar-task-completed', () => {
-      // Actualizar estadísticas cuando se completa una tarea del calendario
-      if (this.currentBook) {
-        this.loadBookStats(this.currentBook.userData.id);
+      // Actualitzem estadístiques quan es completa una tasca del calendari
+      if (this.currentObject) {
+        this.loadObjectStats(this.currentObject.userData.id, this.currentObject.userData.activityType || 'reading');
       }
       this.loadCategoryStats();
     });
     
     document.addEventListener('calendar-task-uncompleted', () => {
-      // Actualizar estadísticas cuando una tarea cambia a no completada
-      if (this.currentBook) {
-        this.loadBookStats(this.currentBook.userData.id);
+      // Actualitzem estadístiques quan una tasca canvia a no completada
+      if (this.currentObject) {
+        this.loadObjectStats(this.currentObject.userData.id, this.currentObject.userData.activityType || 'reading');
       }
       this.loadCategoryStats();
     });
@@ -33,32 +35,14 @@ export class ActivityModal {
     this.modal.className = 'activity-modal hidden';
     this.modal.setAttribute('role', 'dialog');
     this.modal.setAttribute('aria-modal', 'true');
-    this.modal.setAttribute('aria-labelledby', 'book-title');
+    this.modal.setAttribute('aria-labelledby', 'activity-title');
     
     this.modal.innerHTML = `
       <div class="modal-content stats-modal">
         <span class="close-button" aria-label="Tancar">&times;</span>
-        <h2 id="book-title">Llibre</h2>
+        <h2 id="activity-title">Activitat</h2>
         
-        <div class="book-stats">
-          <h3>Activitat recent</h3>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-value" id="total-hours">0</div>
-              <div class="stat-label">Hores totals</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="last-session">-</div>
-              <div class="stat-label">Última sessió</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="sessions-count">0</div>
-              <div class="stat-label">Sessions</div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Nova secció per mostrar les categories i el progrés -->
+        <!-- Secció per mostrar les categories i el progrés -->
         <div class="category-stats">
           <h3>Distribució per categories</h3>
           <div id="categories-progress" class="categories-container">
@@ -85,27 +69,65 @@ export class ActivityModal {
     this.formModal.setAttribute('aria-describedby', 'modal-description');
     
     this.formModal.innerHTML = `
-      <div class="modal-content">
+        <div class="modal-content">
         <span class="close-button" aria-label="Tancar">&times;</span>
         <h2 id="form-title">Registra activitat</h2>
-        <p id="form-book-title" class="book-form-title"></p>
-        <div id="modal-description" class="visually-hidden">Formulari per registrar hores de lectura</div>
+        
+        <!-- Contenidor específic pels detalls de l'objecte per evitar sobreposició -->
+        <div class="object-details-container">
+          <p id="form-object-title" class="object-form-title"></p>
+          <p id="form-activity-type" class="activity-type-indicator"></p>
+        </div>
+        
+        <div id="modal-description" class="visually-hidden">Formulari per registrar hores d'activitat</div>
         
         <div class="activity-form">
           <div class="form-group">
             <label for="activity-category">Categoria:</label>
             <select id="activity-category" aria-required="true" aria-label="Categoria de l'activitat">
-              <option value="Estudiar Factors Humans">Estudiar Factors Humans</option>
-              <option value="Estudiar Anàlisi Complexa">Estudiar Anàlisi Complexa</option>
-              <option value="Estudiar Programació">Estudiar Programació</option>
-              <option value="Llegir Fantasia">Llegir Fantasia</option>
-              <option value="Llegir Assaig">Llegir Assaig</option>
-              <option value="Altres">Altres</option>
+              <!-- Les opcions s'ompliran dinàmicament segons el tipus d'activitat -->
             </select>
           </div>
+          
+          <!-- Nou camp de text personalitzat, inicialment ocult -->
+          <div class="form-group custom-category-group hidden" id="custom-category-container">
+            <label for="custom-category">La teva categoria:</label>
+            <input type="text" id="custom-category" placeholder="Introdueix la categoria personalitzada" 
+              aria-label="Categoria personalitzada">
+          </div>
+          
           <div class="form-group">
             <label for="activity-date">Data:</label>
-            <input type="date" id="activity-date" aria-required="true" aria-label="Data de lectura">
+            <input type="date" id="activity-date" aria-required="true" aria-label="Data de l'activitat">
+          </div>
+          <div class="form-group">
+            <label for="activity-hour">Hora:</label>
+            <select id="activity-hour" aria-label="Hora de l'activitat">
+              <option value="0">00:00</option>
+              <option value="1">01:00</option>
+              <option value="2">02:00</option>
+              <option value="3">03:00</option>
+              <option value="4">04:00</option>
+              <option value="5">05:00</option>
+              <option value="6">06:00</option>
+              <option value="7">07:00</option>
+              <option value="8">08:00</option>
+              <option value="9">09:00</option>
+              <option value="10">10:00</option>
+              <option value="11">11:00</option>
+              <option value="12">12:00</option>
+              <option value="13">13:00</option>
+              <option value="14">14:00</option>
+              <option value="15">15:00</option>
+              <option value="16">16:00</option>
+              <option value="17">17:00</option>
+              <option value="18">18:00</option>
+              <option value="19">19:00</option>
+              <option value="20">20:00</option>
+              <option value="21">21:00</option>
+              <option value="22">22:00</option>              
+              <option value="23">23:00</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="activity-time">Hores d'activitat:</label>
@@ -115,6 +137,35 @@ export class ActivityModal {
             <label for="activity-notes">Notes:</label>
             <textarea id="activity-notes" rows="3" aria-label="Notes sobre l'activitat"></textarea>
           </div>
+          
+          <!-- Botón para mostrar/ocultar campos adicionales -->
+          <button type="button" id="show-more-activity-fields" class="secondary-button">Afegir més dades</button>
+          
+          <!-- Sección adicional inicialmente oculta -->
+          <div id="additional-activity-fields" class="additional-fields" style="display: none;">
+            <div class="form-group">
+              <label for="activity-location">Ubicació:</label>
+              <input type="text" id="activity-location" placeholder="Direcció o ubicació" aria-label="Ubicació de l'activitat">
+            </div>
+            <div class="form-group">
+              <label for="activity-urgency">Nivell d'urgència:</label>
+              <select id="activity-urgency" aria-label="Nivell d'urgència de l'activitat">
+                <option value="baixa">Baixa</option>
+                <option value="normal" selected>Normal</option>
+                <option value="alta">Alta</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="activity-url">URL relacionat:</label>
+              <input type="url" id="activity-url" placeholder="https://..." aria-label="URL relacionat amb l'activitat">
+            </div>
+            <div class="form-group">
+              <label for="activity-guests">Convidats:</label>
+              <input type="text" id="activity-guests" placeholder="Noms separats per comes" aria-label="Persones convidades a l'activitat">
+            </div>
+          </div>
+          
           <button id="save-activity" class="save-button">Desa activitat</button>
         </div>
       </div>
@@ -153,44 +204,160 @@ export class ActivityModal {
         }
       }
     });
+
+    const showMoreFieldsBtn = this.formModal.querySelector('#show-more-activity-fields');
+    const additionalFields = this.formModal.querySelector('#additional-activity-fields');
+
+    showMoreFieldsBtn.addEventListener('click', () => {
+      if (additionalFields.style.display === 'none') {
+        // Primer fem que l'element sigui visible però amb altura 0
+        additionalFields.style.display = 'block';
+        additionalFields.style.maxHeight = '0';
+        additionalFields.style.overflow = 'hidden';
+        additionalFields.style.transition = 'max-height 0.5s ease-in-out, opacity 0.4s ease-in-out';
+        additionalFields.style.opacity = '0';
+        
+        // Forcem un reflow abans d'aplicar la nova alçada
+        void additionalFields.offsetHeight;
+        
+        // Ara ajustem l'alçada i opacitat per fer l'animació
+        additionalFields.style.maxHeight = '800px'; // Valor prou gran
+        additionalFields.style.opacity = '1';
+        
+        showMoreFieldsBtn.textContent = 'Mostrar menys dades';
+        
+        // Fem scroll suaument cap a la secció
+        setTimeout(() => {
+          additionalFields.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+      } else {
+        // Animació per ocultar
+        additionalFields.style.maxHeight = '0';
+        additionalFields.style.opacity = '0';
+        
+        // Esperem que acabi l'animació abans d'ocultar-lo completament
+        setTimeout(() => {
+          additionalFields.style.display = 'none';
+        }, 400); // Temps lleugerament inferior a la transició per evitar salts
+        
+        showMoreFieldsBtn.textContent = 'Afegir més dades';
+      }
+    });
     
     // Inicialitzem la data a avui
     const dateInput = this.formModal.querySelector('#activity-date');
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
     dateInput.value = dateStr;
+
+    // Afegim l'event listener per detectar quan se selecciona "Altres"
+    const categorySelect = this.formModal.querySelector('#activity-category');
+    categorySelect.addEventListener('change', () => {
+      const customCategoryContainer = this.formModal.querySelector('#custom-category-container');
+      if (categorySelect.value === 'Altres') {
+        customCategoryContainer.classList.remove('hidden');
+        setTimeout(() => {
+          this.formModal.querySelector('#custom-category').focus();
+        }, 100);
+      } else {
+        customCategoryContainer.classList.add('hidden');
+      }
+    });
   }
   
-  show(book) {
-    this.currentBook = book;
+  /**
+   * Mostra el modal per a un objecte específic
+   * @param {Object} object - L'objecte 3D que s'ha fet clic
+   */
+  show(object) {
+    this.currentObject = object;
+    const objectType = object.userData.type || 'item';
+    const activityType = object.userData.activityType || 'general';
     
-    // Actualitzem només el títol del llibre
-    const bookTitle = this.modal.querySelector('#book-title');
-    bookTitle.textContent = book.userData.title;
-    
-    // Carreguem les estadístiques del llibre
-    this.loadBookStats(book.userData.id);
+    // Actualitzem el títol segons l'objecte
+    const objectTitle = this.modal.querySelector('#activity-title');
+    objectTitle.textContent = this.getActivityTypeTitle(activityType) || 'Activitat';
+     
+    // Carreguem les estadístiques de l'objecte
+    this.loadObjectStats(object.userData.id, activityType);
     
     // Carreguem les estadístiques de categories
-    this.loadCategoryStats();
+    this.loadCategoryStats(activityType);
     
-    // Mostrem el primer modal
+    // Mostrem el modal
     this.modal.classList.remove('hidden');
+  }
+  
+
+  
+  /**
+   * Obté el títol descriptiu per cada tipus d'activitat
+   * @param {string} activityType - El tipus d'activitat
+   * @returns {string} - Títol descriptiu
+   */
+  getActivityTypeTitle(activityType) {
+    const titles = {
+      'reading': 'Lectura',
+      'work': 'Treball',
+      'sport': 'Activitat física',
+      'cleaning': 'Neteja',
+      'leisure': 'Temps lliure',
+      'study': 'Estudi'
+    };
+    return titles[activityType] || 'Activitat';
+  }
+  
+  /**
+   * Obté les categories disponibles per un tipus d'activitat
+   * @param {string} activityType - El tipus d'activitat
+   * @returns {Array} - Array amb les categories
+   */
+  getCategoriesForActivityType(activityType) {
+    const categories = {
+      'reading': ['Literatura Fantàstica', 'Ciència Ficció', 'Novel·la Contemporània', 
+                 'Literatura Clàssica', 'Divulgació Científica', 'Literatura Infantil', 'Assaig', 'Altres'],
+      'work': ['Desenvolupament', 'Reunions', 'Documentació', 'Planificació', 
+               'Investigació', 'Avaluació', 'Gestió de Projectes', 'Altres'],
+      'sport': ['Gimnàs', 'Entrenament funcional', 'Esports d\'equip', 'Flexibilitat', 
+               'Resistència', 'Córrer', 'Natació', 'Ciclisme', 'Altres'],
+      'cleaning': ['Manteniment llar', 'Organització', 'Espai de treball', 'Cuina', 
+                  'Roba', 'Neteja profunda', 'Altres'],
+      'leisure': ['Sèries', 'Pel·lícules', 'Música', 'Videojocs', 'Documentals', 
+                 'Cinema', 'Lectura per plaer', 'Altres'],
+      'study': ['Factors Humans', 'Anàlisi Complexa', 'Programació', 'Idiomes', 
+               'Història', 'Ciències', 'Matemàtiques', 'Altres']
+    };
+    
+    return categories[activityType] || ['General', 'Altres'];
   }
   
   hide() {
     this.modal.classList.add('hidden');
     this.formModal.classList.add('hidden');
-    this.currentBook = null;
+    this.currentObject = null;
   }
   
   showActivityForm() {
     // Ocultem el primer modal i mostrem el formulari
     this.modal.classList.add('hidden');
     
-    // Actualitzem la informació del llibre al formulari
-    const formBookTitle = this.formModal.querySelector('#form-book-title');
-    formBookTitle.textContent = this.currentBook.userData.title;
+    const objectType = this.currentObject.userData.type || 'item';
+    const activityType = this.currentObject.userData.activityType || 'general';
+    
+    // Actualitzem la informació de l'objecte al formulari
+    const formObjectTitle = this.formModal.querySelector('#form-object-title');
+    formObjectTitle.textContent = this.currentObject.userData.title || 'Activitat';
+    
+    // Mostrem el tipus d'activitat
+    const formActivityType = this.formModal.querySelector('#form-activity-type');
+    formActivityType.textContent = `Tipus: ${this.getActivityTypeTitle(activityType)}`;
+    
+    // Actualitzem les categories disponibles
+    this.updateCategoryOptions(activityType);
+    
+    // Actualitzem el títol del formulari
+    const formTitle = this.formModal.querySelector('#form-title');
+    formTitle.textContent = `Registra ${this.getActivityTypeTitle(activityType).toLowerCase()}`;
     
     // Mostrem el formulari
     this.formModal.classList.remove('hidden');
@@ -201,111 +368,137 @@ export class ActivityModal {
     }, 100);
   }
   
+  /**
+   * Actualitza les opcions del selector de categories segons el tipus d'activitat
+   * @param {string} activityType - El tipus d'activitat
+   */
+  updateCategoryOptions(activityType) {
+    const categorySelect = this.formModal.querySelector('#activity-category');
+    const customCategoryContainer = this.formModal.querySelector('#custom-category-container');
+    
+    categorySelect.innerHTML = '';
+    
+    const categories = this.getCategoriesForActivityType(activityType);
+    
+    // Assegurem que "Altres" sempre és l'última opció
+    let otherOption = null;
+    categories.forEach(category => {
+      if (category !== 'Altres') {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categorySelect.appendChild(option);
+      } else {
+        // Guardem l'opció "Altres" per afegir-la al final
+        otherOption = category;
+      }
+    });
+    
+    // Afegim "Altres" al final
+    if (otherOption) {
+      const option = document.createElement('option');
+      option.value = otherOption;
+      option.textContent = otherOption;
+      categorySelect.appendChild(option);
+    }
+    
+    // Si l'objecte té una categoria predefinida, la seleccionem
+    if (this.currentObject.userData.category && categories.includes(this.currentObject.userData.category)) {
+      categorySelect.value = this.currentObject.userData.category;
+    }
+    
+    // Mostrem/ocultem el camp personalitzat segons l'opció seleccionada
+    if (categorySelect.value === 'Altres') {
+      customCategoryContainer.classList.remove('hidden');
+    } else {
+      customCategoryContainer.classList.add('hidden');
+    }
+  }
+  
   showHistory() {
-    // Implementació per mostrar l'historial (podria ser un tercer modal o una secció)
-    console.log("Mostrant l'historial de " + this.currentBook.userData.title);
+    const activityType = this.currentObject.userData.activityType || 'reading';
+    const objectId = this.currentObject.userData.id;
     
-    // Aquí es podria carregar l'historial del localStorage i mostrar-lo
-    const activitats = this.getActivitatsByBookId(this.currentBook.userData.id);
+    console.log(`Mostrant l'historial de ${this.currentObject.userData.title} (${activityType})`);
     
-    // Per ara simplement mostrarem un alert amb les activitats
+    // Obtenim les activitats per aquest objecte i tipus d'activitat
+    const activitats = this.getActivitiesByObjectId(objectId, activityType);
+    
+    // Mostrem l'historial
     if (activitats.length > 0) {
-      let missatge = `Historial d'activitats per "${this.currentBook.userData.title}":\n\n`;
+      let missatge = `Historial d'activitats per "${this.currentObject.userData.title}":\n\n`;
       activitats.forEach((act, index) => {
-        missatge += `${index + 1}. ${act.date}: ${act.hours} hores\n`;
+        const date = new Date(act.date).toLocaleDateString('ca-ES');
+        missatge += `${index + 1}. ${date}: ${act.hours} hores - ${act.category}\n`;
         if (act.notes) missatge += `   Notes: ${act.notes}\n`;
       });
       alert(missatge);
     } else {
-      alert(`Encara no hi ha activitats registrades per "${this.currentBook.userData.title}".`);
+      alert(`Encara no hi ha activitats registrades per "${this.currentObject.userData.title}".`);
     }
   }
   
-  loadBookStats(bookId) {
-    if (!bookId) return;
+  loadObjectStats(objectId, activityType) {
+    if (!objectId) return;
 
-    // Obtener actividades de lectura relacionadas con este libro
-    const actividades = this.getActivitatsByBookId(bookId);
+    // Obtenir activitats relacionades amb aquest objecte
+    const activitats = this.getActivitiesByObjectId(objectId, activityType);
     
-    // Obtener tareas del calendario que estén relacionadas con este libro
+    // Obtenir tasques del calendari que coincideixen amb les categories d'aquest objecte
     const calendarTasksRaw = JSON.parse(localStorage.getItem('calendar-tasks')) || {};
     const calendarActivities = [];
     
-    // Lista de categorías de lectura/estudio
-    const readingCategories = [
-      "Estudiar Factors Humans", "Estudiar Anàlisi Complexa", 
-      "Estudiar Programació", "Llegir Fantasia", "Llegir Assaig"
-    ];
+    // Busquem les categories utilitzades per aquest objecte
+    const objectCategories = new Set(activitats.map(act => act.category));
     
-    Object.entries(calendarTasksRaw).forEach(([dateKey, tasks]) => {
-      tasks.forEach(task => {
-        // Solo incluir tareas completadas, de tipo lectura o con categorías de lectura
-        // y excluir explícitamente tareas de tipo deporte
-        if (task.completed && 
-            (readingCategories.includes(task.category) || task.sourceType === 'reading') && 
-            task.sourceType !== 'sport') {
-          
-          // Si la tarea tiene sourceId de libro y coincide con este libro,
-          // o si no tiene sourceId pero es de una categoría usada por este libro
-          if ((task.sourceId === bookId) || 
-              (bookId === this.currentBook?.userData?.id && !task.sourceId)) {
+    // Si hi ha categories, busquem tasques del calendari relacionades
+    if (objectCategories.size > 0) {
+      Object.entries(calendarTasksRaw).forEach(([dateKey, tasks]) => {
+        tasks.forEach(task => {
+          // Si la tasca està completada i la seva categoria coincideix
+          if (task.completed && objectCategories.has(task.category)) {
             calendarActivities.push({
               category: task.category,
               hours: task.duration || 1,
               timestamp: task.createdAt || new Date().toISOString()
             });
           }
-        }
+        });
       });
-    });
-
-    // Combinar ambas fuentes de datos
-    const allActivities = [...actividades, ...calendarActivities];
+    }
     
-    // Actualitzem els elements d'estadística
-    const totalHoursElement = this.modal.querySelector('#total-hours');
-    const lastSessionElement = this.modal.querySelector('#last-session');
-    const sessionsCountElement = this.modal.querySelector('#sessions-count');
+    // Combinar totes les fonts de dades
+    const allActivities = [...activitats, ...calendarActivities];
     
-    // Calcular estadísticas combinadas
-    const totalHoras = allActivities.reduce((sum, act) => {
+    // En comptes d'actualitzar elements del DOM que no existeixen,
+    // guardem les dades per si les necessitem més endavant
+    this._objectActivities = allActivities;
+    this._totalActivitiesHours = allActivities.reduce((sum, act) => {
       const hours = parseFloat(act.hours || act.duration || 0);
       return sum + (isNaN(hours) ? 0 : hours);
     }, 0);
-    totalHoursElement.textContent = totalHoras.toFixed(1);
-    
-    // Nombre de sessions
-    sessionsCountElement.textContent = actividades.length;
-    
-    // Última sessió
-    if (actividades.length > 0) {
-      // Ordenem per data més recent
-      const sortedActivitats = [...actividades].sort((a, b) => 
-        new Date(b.date) - new Date(a.date)
-      );
-      
-      const lastDate = new Date(sortedActivitats[0].date);
-      const formatOptions = { day: 'numeric', month: 'short' };
-      lastSessionElement.textContent = lastDate.toLocaleDateString('ca-ES', formatOptions);
-    } else {
-      lastSessionElement.textContent = '-';
-    }
+    this._activitiesSessions = activitats.length;
   }
   
-  loadCategoryStats() {
-    // Obtener actividades de lectura
-    const readingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+  loadCategoryStats(activityType) {
+    // Si no es proporciona un tipus, utilitzem el tipus de l'objecte actual
+    const currentType = activityType || (this.currentObject && this.currentObject.userData.activityType) || 'reading';
+    
+    // Obtenim les activitats del tipus especificat
+    const storageKey = `${currentType}Activities`;
+    const activities = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-    // Obtener tareas del calendario
+    // Obtenim tasques del calendari relacionades amb aquest tipus d'activitat
     const calendarTasksRaw = JSON.parse(localStorage.getItem('calendar-tasks')) || {};
     const calendarActivities = [];
 
-    // Convertir el formato de tareas de calendario a un array similar al de lectura
+    // Convertim les tasques del calendari a un format similar
     Object.entries(calendarTasksRaw).forEach(([dateKey, tasks]) => {
       tasks.forEach(task => {
-        if (task.completed) { // Solo contar las tareas completadas
+        // Només comptem tasques completades que coincideixin amb el tipus d'activitat
+        if (task.completed && task.activityType === currentType) {
           calendarActivities.push({
-            category: task.category || 'Otros',
+            category: task.category || 'Altres',
             hours: task.duration || 1,
             timestamp: task.createdAt || new Date().toISOString()
           });
@@ -313,8 +506,8 @@ export class ActivityModal {
       });
     });
     
-    // Combinar ambas fuentes de actividades
-    const allActivities = [...readingActivities, ...calendarActivities];
+    // Combinar totes les fonts d'activitats
+    const allActivities = [...activities, ...calendarActivities];
     
     if (allActivities.length === 0) {
       const categoriesContainer = this.modal.querySelector('#categories-progress');
@@ -329,7 +522,7 @@ export class ActivityModal {
     let totalHours = 0;
     
     allActivities.forEach(activity => {
-      const category = activity.category;
+      const category = activity.category || 'Altres';
       if (!categoryHours[category]) {
         categoryHours[category] = 0;
       } 
@@ -348,12 +541,12 @@ export class ActivityModal {
     Object.entries(categoryHours)
       .sort((a, b) => b[1] - a[1]) // Ordenem per hores (descendent)
       .forEach(([category, hours]) => {
-        // Usar toFixed para mostrar siempre un decimal en el porcentaje
+        // Usem toFixed per mostrar sempre un decimal en el percentatge
         const realPercentage = totalHours > 0 ? (hours / totalHours * 100).toFixed(1) : '0.0';
         
         const scaledPercentage = maxHours > 0 ? Math.round((hours / maxHours) * 100) : 0;
         
-        // Mismo toFixed para horas
+        // També per a les hores
         const formattedHours = hours.toFixed(1);
         
         const categoryElement = document.createElement('div');
@@ -386,148 +579,138 @@ export class ActivityModal {
     return hash % 360;
   }
   
-  getActivitatsByBookId(bookId) {
-    // Recupera les activitats del localStorage
-    const allActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
+  getActivitiesByObjectId(objectId, activityType = 'reading') {
+    // Recuperem les activitats del tipus específic
+    const storageKey = `${activityType}Activities`;
+    const allActivities = JSON.parse(localStorage.getItem(storageKey)) || [];
     
-    // Filtra només les d'aquest llibre
-    return allActivities.filter(act => act.bookId === bookId);
+    // Filtrem només les activitats relacionades amb aquest objecte
+    return allActivities.filter(act => {
+      // Comprovem diferents propietats segons el tipus d'activitat
+      if (activityType === 'reading') {
+        return act.bookId === objectId;
+      } else if (activityType === 'work') {
+        return act.folderId === objectId;
+      } else {
+        return act.objectId === objectId;
+      }
+    });
   }
   
   setOnSave(callback) {
     this.onSave = callback;
   }
   
+  /**
+   * Desa una nova activitat al localStorage i dispara els events corresponents
+   */
   saveActivity() {
-    if (!this.currentBook) return;
-  
+    if (!this.currentObject) return;
+
+    const activityType = this.currentObject.userData.activityType || 'reading';
     const categorySelect = this.formModal.querySelector('#activity-category');
+    const customCategoryInput = this.formModal.querySelector('#custom-category');
     const dateInput = this.formModal.querySelector('#activity-date');
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
 
+    const locationInput = this.formModal.querySelector('#activity-location');
+    const urgencySelect = this.formModal.querySelector('#activity-urgency');
+    const urlInput = this.formModal.querySelector('#activity-url');
+    const guestsInput = this.formModal.querySelector('#activity-guests');
+
     const hours = parseFloat(timeInput.value);
     if (isNaN(hours)) {
-      alert('Por favor, introduce un número válido de horas');
+      alert('Si us plau, introdueix un nombre vàlid d\'hores');
       return;
     }
     
+    // Determinem la categoria final, usant el valor personalitzat si s'ha seleccionat "Altres"
+    let finalCategory = categorySelect.value;
+    if (finalCategory === 'Altres' && customCategoryInput.value.trim()) {
+      finalCategory = customCategoryInput.value.trim();
+    }
+    
+    // Preparem les dades de l'activitat amb els camps comuns
     const activityData = {
-      bookId: this.currentBook.userData.id,
-      bookTitle: this.currentBook.userData.title,
-      category: categorySelect.value,
+      objectId: this.currentObject.userData.id,
+      objectTitle: this.currentObject.userData.title,
+      type: activityType,
+      category: finalCategory,
       date: dateInput.value,
       hours: hours,
       notes: notesInput.value,
       timestamp: new Date().toISOString(),
-      sourceType: 'reading',
-      completed: true, // Marcar automáticamente como completado
-      duration: hours // Añadir también la duración para consistencia
+      completed: true,
+      duration: hours
     };
     
-    // El resto del código permanece igual
-    const activities = JSON.parse(localStorage.getItem('readingActivities')) || [];
-    activities.push(activityData);
-    localStorage.setItem('readingActivities', JSON.stringify(activities));
+    // Afegim camps específics segons el tipus d'activitat
+    if (activityType === 'reading') {
+      activityData.bookId = this.currentObject.userData.id;
+      activityData.bookTitle = this.currentObject.userData.title;
+    } else if (activityType === 'work') {
+      activityData.folderId = this.currentObject.userData.id;
+      activityData.folderTitle = this.currentObject.userData.title;
+    }
     
-    // Disparar un evento que CalendarPanel pueda escuchar para actualizar su vista
-    const event = new CustomEvent('reading-activity-added', { 
+    // Obtenim les activitats existents del tipus corresponent i afegim la nova
+    const storageKey = `${activityType}Activities`;
+    const activities = JSON.parse(localStorage.getItem(storageKey)) || [];
+    activities.push(activityData);
+    localStorage.setItem(storageKey, JSON.stringify(activities));
+    
+    // Actualitzem també el magatzem general d'activitats per compatibilitat
+    const allActivities = JSON.parse(localStorage.getItem('userActivities')) || [];
+    allActivities.push(activityData);
+    localStorage.setItem('userActivities', JSON.stringify(allActivities));
+    
+    // Disparar dos events: un per al calendari i un altre per actualitzar l'objecte visual
+    const calendarEvent = new CustomEvent(`${activityType}-activity-added`, { 
       detail: { activity: activityData }
     });
-    document.dispatchEvent(event);
+    document.dispatchEvent(calendarEvent);
     
-    // Actualizar estadísticas y cerrar el formulario
-    this.loadBookStats(this.currentBook.userData.id);
-    this.loadCategoryStats();
+    // Disparar esdeveniment específic per actualitzar l'objecte visual corresponent
+    const updateEvent = new CustomEvent(`${activityType}-object-update-needed`, {
+      detail: { 
+        type: activityType, 
+        activity: activityData 
+      }
+    });
+    document.dispatchEvent(updateEvent);
+    
+    // També mantenim l'esdeveniment genèric per compatibilitat
+    const bookshelfEvent = new CustomEvent('bookshelf-update-needed', {
+      detail: { 
+        type: activityType, 
+        activity: activityData 
+      }
+    });
+    document.dispatchEvent(bookshelfEvent);
+    
+    // Actualitzem estadístiques i tanquem el formulari
+    this.loadObjectStats(this.currentObject.userData.id, activityType);
+    this.loadCategoryStats(activityType);
     this.formModal.classList.add('hidden');
-    this.modal.classList.remove('hidden');
+    
+    // Mostrar animación de progreso
+    ProgressAnimationService.showProgressAnimation(
+      activityData.category, 
+      'reading'
+    );
+    
+    // Volver a mostrar modal principal después de la animación
+    setTimeout(() => {
+      this.loadBookStats(this.currentBook.userData.id);
+      this.loadCategoryStats();
+      this.modal.classList.remove('hidden');
+    }, 2800);
   }
 
   // Afegim mètode per generar activitats de prova
   addMockActivities() {
     // Comprovem si ja existeixen activitats
-    const existingActivities = JSON.parse(localStorage.getItem('readingActivities')) || [];
-    
-    if (existingActivities.length > 0) {
-      console.log("Ja hi ha activitats registrades, no s'afegiran les simulades.");
-      return;
-    }
-    
-    const mockActivities = [
-      // Activitats d'estudi de Factors Humans
-      {
-        bookId: "book_0",
-        bookTitle: "Llibre 1",
-        category: "Estudiar Factors Humans",
-        date: "2025-03-15",
-        hours: 2.5,
-        notes: "Capítol sobre disseny centrat en l'usuari",
-        timestamp: "2025-03-15T10:30:00.000Z"
-      },
-      {
-        bookId: "book_5",
-        bookTitle: "Llibre 6",
-        category: "Estudiar Factors Humans",
-        date: "2025-03-20",
-        hours: 1.75,
-        notes: "Accessibilitat i disseny universal",
-        timestamp: "2025-03-20T15:45:00.000Z"
-      },
-      {
-        bookId: "book_2",
-        bookTitle: "Llibre 3",
-        category: "Estudiar Factors Humans",
-        date: "2025-04-05",
-        hours: 3,
-        notes: "Preparació exercicis avaluació d'usabilitat",
-        timestamp: "2025-04-05T09:15:00.000Z"
-      },
-      
-      // Activitats d'estudi d'Anàlisi Complexa
-      {
-        bookId: "book_1",
-        bookTitle: "Llibre 2",
-        category: "Estudiar Anàlisi Complexa",
-        date: "2025-03-18",
-        hours: 2,
-        notes: "Teoria de funcions holomorfes",
-        timestamp: "2025-03-18T14:20:00.000Z"
-      },
-      {
-        bookId: "book_3",
-        bookTitle: "Llibre 4",
-        category: "Estudiar Anàlisi Complexa",
-        date: "2025-04-01",
-        hours: 3.5,
-        notes: "Exercicis d'integració en el pla complex",
-        timestamp: "2025-04-01T16:30:00.000Z"
-      },
-      
-      // La resta d'activitats simulades amb diferents llibres i categories...
-    ];
-    
-    // Desem les activitats simulades al localStorage
-    localStorage.setItem('readingActivities', JSON.stringify(mockActivities));
-    console.log("S'han afegit activitats simulades per provar el sistema de progrés.");
+    ActivitiesMockData.ensureMockActivitiesExist();
   }
-}
-
-// Classe d'estil auxiliar per text ocult per a lectors de pantalla
-if (!document.getElementById('accessibility-styles')) {
-  const style = document.createElement('style');
-  style.id = 'accessibility-styles';
-  style.textContent = `
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      margin: -1px;
-      padding: 0;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-  `;
-  document.head.appendChild(style);
 }

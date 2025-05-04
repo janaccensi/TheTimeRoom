@@ -1,7 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import './assets/styles.css'
-import './assets/modal.css'; // Només importem el CSS
+import './assets/unified.css' // CSS unificado con todos los estilos de la aplicación
 
 const app = createApp(App)
 app.config.devtools = false
