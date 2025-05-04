@@ -613,6 +613,7 @@ export class ActivityModal {
     const dateInput = this.formModal.querySelector('#activity-date');
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
+    const hourSelect = this.formModal.querySelector('#activity-hour');
 
     const locationInput = this.formModal.querySelector('#activity-location');
     const urgencySelect = this.formModal.querySelector('#activity-urgency');
@@ -638,6 +639,7 @@ export class ActivityModal {
       type: activityType,
       category: finalCategory,
       date: dateInput.value,
+      hour: parseInt(hourSelect.value, 10),
       hours: hours,
       notes: notesInput.value,
       timestamp: new Date().toISOString(),
