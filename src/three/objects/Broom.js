@@ -23,7 +23,8 @@ export const createBroom = (scene, config = {}) => {
                 isInteractive: true,     // Todos son interactivos
                 title: 'Escombra',
                 description: 'Una escombra màgica',
-                action: 'examine'
+                action: 'examine',
+                activityType: 'cleaning'
             };
         }
     }
@@ -43,7 +44,7 @@ export const createBroom = (scene, config = {}) => {
     // MODIFICADO: Aplicar propiedades interactivas
     setInteractiveProperties(handle);
     broomGroup.add(handle);
-
+    
     const getDirtyColor = (baseColor, cleanliness) => {
         if (cleanliness < 10) {
             // Escoba muy sucia: NEGRO intenso
@@ -215,7 +216,7 @@ export const createBroom = (scene, config = {}) => {
     // NUEVO: Marcar el grupo como un grupo interactivo especial
     broomGroup.userData = {
         isInteractiveGroup: true,
-        type: 'broom'
+        type: 'broom'        
     };
     
     // Posicionamiento final
@@ -223,22 +224,24 @@ export const createBroom = (scene, config = {}) => {
     
     // Añadir a la escena
     scene.add(broomGroup);
+
+
     
     return {
         group: broomGroup,
-        updateCleanliness: (newCleanliness) => {
-            // Eliminar el grupo antiguo de la escena
-            scene.remove(broomGroup);
-            
-            // Crear una nueva escoba con el nivel de limpieza actualizado
-            const newConfig = {
-                ...config,
-                position: broomGroup.position,
-                cleanliness: newCleanliness
-            };
-            
-            return createBroom(scene, newConfig);
-        },
+        updateCleanliness: (newCleanliness) => 
+            {console.log("Actualizando limpieza de la escoba a:", newCleanliness);
+        // Eliminar el grupo antiguo de la escena
+        scene.remove(broomGroup);
+        
+        // Crear una nueva escoba con el nivel de limpieza actualizado
+        const newConfig = {
+            ...config,
+            position: broomGroup.position,
+            cleanliness: newCleanliness
+        };
+        
+        return createBroom(scene, newConfig);},
         cleanliness
     };
 };
