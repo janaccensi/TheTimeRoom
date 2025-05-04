@@ -31,7 +31,7 @@ import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectio
 import { createTVTable } from '@/three/objects/TVTable.js';
 import { CalendarPanel } from '@/components/CalendarPanel.js';
 
-
+import {ActivitiesMockData} from '../models/ActivitiesMockData.js';
 
 
 
@@ -56,6 +56,8 @@ export default function useRoom(canvas) {
   // Crear els elements de l'escena
   createRoom(scene, roomConfig);
   createTable(scene, roomConfig);
+    
+  ActivitiesMockData.ensureMockActivitiesExist();
   
   // Afegim l'estanteria
   const bookshelf = createBookshelf(scene, roomConfig); 
@@ -531,6 +533,8 @@ export default function useRoom(canvas) {
   });
 
   function initBookshelfEvents() {
+
+
     // Escoltarem l'esdeveniment de quan s'afegeix una nova activitat
     document.addEventListener('bookshelf-update-needed', (event) => {
       const { type } = event.detail;
@@ -557,6 +561,8 @@ export default function useRoom(canvas) {
         }
       };
     });
+
+ 
 
     // Configurar la integración de actividades de limpieza con el calendario
     document.addEventListener('cleaning-activity-added', (event) => {
@@ -615,6 +621,7 @@ export default function useRoom(canvas) {
     checkSportHoursAndAddDumbbells();
     
     initBookshelfEvents(); // Afegim aquesta línia per inicialitzar els events de l'estanteria
+    console.log("init done")
   }
   
   // Cridem la funció d'inicialització després de crear tots els objectes
