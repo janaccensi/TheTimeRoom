@@ -21,9 +21,9 @@ export function getMaterials() {
   });
 
   // Textures pel terra (parquet)
-  const floorTexture = textureLoader.load('/textures/floor/parquet_diffuse.jpg');
-  const floorNormalMap = textureLoader.load('/textures/floor/parquet_normal.jpg');
-  const floorRoughnessMap = textureLoader.load('/textures/floor/parquet_roughness.jpg');
+  const floorTexture = textureLoader.load('./textures/floor/parquet_diffuse.jpg');
+  const floorNormalMap = textureLoader.load('./textures/floor/parquet_normal.jpg');
+  const floorRoughnessMap = textureLoader.load('./textures/floor/parquet_roughness.jpg');
   
   // Configuració de repetició per la textura del terra
   floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
@@ -45,9 +45,9 @@ export function getMaterials() {
   });
 
   // Textures de fusta per estanteries (més clara)
-  const shelfWoodTexture = textureLoader.load('/textures/wood/hardwood2_diffuse.jpg');
-  const shelfWoodNormalMap = textureLoader.load('/textures/wood/hardwood2_roughness.jpg');
-  const shelfWoodRoughness = textureLoader.load('/textures/wood/hardwood2_roughness.jpg');
+  const shelfWoodTexture = textureLoader.load('./textures/wood/hardwood2_diffuse.jpg');
+  const shelfWoodNormalMap = textureLoader.load('./textures/wood/hardwood2_roughness.jpg');
+  const shelfWoodRoughness = textureLoader.load('./textures/wood/hardwood2_roughness.jpg');
   
   // Configuració de repetició per les textures d'estanteria
   shelfWoodTexture.wrapS = shelfWoodTexture.wrapT = THREE.RepeatWrapping;
@@ -55,9 +55,9 @@ export function getMaterials() {
   shelfWoodRoughness.wrapS = shelfWoodRoughness.wrapT = THREE.RepeatWrapping;
   
   // Textures de fusta per taula (fusta més fosca)
-  const tableWoodTexture = textureLoader.load('/textures/wood/Wood_027_basecolor.jpg');
-  const tableWoodNormalMap = textureLoader.load('/textures/wood/Wood_027_normal.jpg');
-  const tableWoodRoughness = textureLoader.load('/textures/wood/Wood_027_roughness.jpg');
+  const tableWoodTexture = textureLoader.load('./textures/wood/Wood_027_basecolor.jpg');
+  const tableWoodNormalMap = textureLoader.load('./textures/wood/Wood_027_normal.jpg');
+  const tableWoodRoughness = textureLoader.load('./textures/wood/Wood_027_roughness.jpg');
   // Configuració de repetició per les textures de taula
   tableWoodTexture.wrapS = tableWoodTexture.wrapT = THREE.RepeatWrapping;
   tableWoodNormalMap.wrapS = tableWoodNormalMap.wrapT = THREE.RepeatWrapping;
@@ -82,7 +82,7 @@ export function getMaterials() {
     color: 0xc9b299 // Tint taronja-marró per intensificar el color de la fusta
   });
   // Material de paper per al calendari
-  const paperTexture = textureLoader.load('/textures/paper/Paper001_1K-JPG_Color.jpg');
+  const paperTexture = textureLoader.load('./textures/paper/Paper001_1K-JPG_Color.jpg');
   paperTexture.wrapS = paperTexture.wrapT = THREE.RepeatWrapping;
   paperTexture.repeat.set(1, 1);
   const paperMaterial = new THREE.MeshStandardMaterial({
