@@ -495,6 +495,15 @@ input:focus {
   font-size: 18px;
   font-weight: 500;
   color: var(--color-text-primary, #2c3e50);
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.activity-stats h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-text-primary, #2c3e50);
+  margin-top: 15px;
   margin-bottom: 15px;
 }
 
