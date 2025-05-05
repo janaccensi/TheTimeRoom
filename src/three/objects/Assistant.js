@@ -200,6 +200,8 @@ export const createAssistant = (scene, config = {}) => {
   });
   const smile = new THREE.Line(smileGeometry, smileMaterial);
   smile.position.z = 0.9;
+  smile.position.y = -1;
+  smile.rotation.z = Math.PI;
   headGroup.add(smile);
   
   // Cejas más gruesas para hombre
@@ -435,9 +437,10 @@ export const createAssistant = (scene, config = {}) => {
   
   // Mensajes predefinidos que se mostrarán en rotación
   const messages = [
-    "Puedes interactuar con la TV, el calendario, las mancuernas, los libros, las carpetas y el PC",
-    "Para cualquier duda, clica sobre mí y habla con el micrófono",
-    "Bienvenido a tu organizador interactivo de tareas"
+    "¡Hola! Soy tu asistente, bienvenido a tu organizador interactivo de tareas", 
+    "Los objetos interactivos son: la TV, el calendario, las mancuernas, los libros, las carpetas, la escoba y el PC",
+    "Desde los diferentes objetos interactivos puedes añadir tareas completadas a tu calendario.",
+    "Desde el calendario puedes añadir tareas no completadas de cualquier tipo"
   ];
   
   const createSpeechBubble = (message) => {
@@ -463,7 +466,7 @@ export const createAssistant = (scene, config = {}) => {
     // Calcular tamaño adecuado para el contenido
     const messageLength = message.length;
     const bubbleWidth = Math.min(1.5, Math.max(1.0, messageLength * 0.01)); 
-    const bubbleHeight = Math.min(0.8, Math.max(0.5, messageLength * 0.004)); // Más alto
+    const bubbleHeight = Math.min(0.8, Math.max(0.5, messageLength * 0.01)); // Más alto
     
     // Crear una forma unificada (bocadillo + flecha integrada)
     const bubbleShape = new THREE.Shape();
@@ -524,7 +527,7 @@ export const createAssistant = (scene, config = {}) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Tamaño de texto más pequeño y proporcional
-    const fontSize = 55; // Tamaño fijo más apropiado
+    const fontSize = 45; // Tamaño fijo más apropiado
     ctx.font = `bold ${fontSize}px Arial, sans-serif`;
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'center';
