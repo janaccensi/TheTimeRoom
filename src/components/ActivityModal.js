@@ -8,7 +8,7 @@ export class ActivityModal {
     this.formModal = null;
     this.currentObject = null;
     this.onSave = null;
-    this.init();
+    this.init();       
     
     // Añadimos actividades simuladas si no hay datos
     this.addMockActivities();
@@ -345,6 +345,21 @@ export class ActivityModal {
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
     dateInput.value = dateStr;
+    // Limitamos la fecha máxima al día de hoy
+    dateInput.setAttribute('max', dateStr);
+
+    // Afegim un indicador visual de la limitació temporal
+    const dateGroup = dateInput.closest('.form-group');
+    const dateLimitIndicator = document.createElement('div');
+    dateLimitIndicator.className = 'date-limit-indicator';
+    dateLimitIndicator.style.color = '#616161';  // Color gris més suau
+    dateLimitIndicator.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="fill: #616161;">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      <span>Solo puedes registrar actividades ya completadas</span>
+    `;
+    dateGroup.appendChild(dateLimitIndicator);
 
     // Añadimos el event listener para detectar cuando se selecciona "Otros"
     const categorySelect = this.formModal.querySelector('#activity-category');
@@ -359,6 +374,8 @@ export class ActivityModal {
         customCategoryContainer.classList.add('hidden');
       }
     });
+    
+  
   }
   
   /**
@@ -813,23 +830,16 @@ export class ActivityModal {
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
 
-    // Comprobamos que exista el selector de hora
-    if (!hourSelect) {
-      console.error("El selector de hora no se ha encontrado");
+    // Validación de la data: no pot ser posterior a avui
+    const selectedDate = new Date(dateInput.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Resetem l'hora a 00:00:00 per comparar només dates
+    
+    if (selectedDate > today) {
+      alert('No pots registrar activitats futures. Si us plau, selecciona una data anterior o igual a avui.');
       return;
     }
     
-    const locationInput = this.formModal.querySelector('#activity-location');
-    const urgencySelect = this.formModal.querySelector('#activity-urgency');
-    const urlInput = this.formModal.querySelector('#activity-url');
-    const guestsInput = this.formModal.querySelector('#activity-guests');
-
-    const hours = parseFloat(timeInput.value);
-    if (isNaN(hours)) {
-      alert('Por favor, introduce un número válido de horas');
-      return;
-    }
-
     if(this.currentObject.userData.type === 'broom') {
       // ... existing code for broom ...
     }
@@ -841,9 +851,9 @@ export class ActivityModal {
     }
 
     // Crear fecha con hora correcta para el timestamp
-    const selectedDate = new Date(dateInput.value);
-    selectedDate.setHours(parseInt(hourSelect.value, 10), 0, 0);
-    const timestamp = selectedDate.toISOString();
+    const selectedDateObj = new Date(dateInput.value);
+    selectedDateObj.setHours(parseInt(hourSelect.value, 10), 0, 0);
+    const timestamp = selectedDateObj.toISOString();
     
     // Preparamos los datos de la actividad con los campos comunes
     const activityData = {
@@ -929,4 +939,7 @@ export class ActivityModal {
     // Comprobamos si ya existen actividades
     ActivitiesMockData.ensureMockActivitiesExist();
   }
+  
+ 
+  
 }
