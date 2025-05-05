@@ -96,7 +96,7 @@ export default function useRoom(canvas) {
     type: 'indoor'
   });
 
-  // En una función de configuración Three.js
+  // En una funció de configuració Three.js
   const dumbbell = createDumbbell(scene, {
     position: { x: 1.85, y: 0.135, z: 1.8 }, 
     weight: 8,
@@ -269,13 +269,15 @@ export default function useRoom(canvas) {
   function initPostprocessing() {
     // Configuració del compositor d'efectes amb renderTarget correcte
     const renderTarget = new THREE.WebGLRenderTarget(
-      window.innerWidth, 
-      window.innerHeight, 
+      window.innerWidth * window.devicePixelRatio, 
+      window.innerHeight * window.devicePixelRatio, 
       {
         minFilter: THREE.LinearFilter,
         magFilter: THREE.LinearFilter,
         format: THREE.RGBAFormat,
-        encoding: THREE.sRGBEncoding
+        encoding: THREE.sRGBEncoding,
+        samples: renderer.capabilities.isWebGL2 ? 4 : 0, // Antialiasing
+        type: THREE.HalfFloatType // Millor precisió de color
       }
     );
     composer = new EffectComposer(renderer, renderTarget);
@@ -303,6 +305,12 @@ export default function useRoom(canvas) {
     // Afegeix un ShaderPass per ajustar la lluminositat final si és necessari
     const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
     composer.addPass(gammaCorrectionPass);
+    
+    // Forçar una actualització completa de la mida
+    handleResize();
+    
+    // Assegurar que el renderTarget es configura correctament
+    composer.setPixelRatio(renderer.getPixelRatio());
   }
   
   // Funció per inicialitzar les interaccions
@@ -320,7 +328,7 @@ export default function useRoom(canvas) {
     // Creem el modal d'activitats
     const activityModal = new ActivityModal();
 
-    // Crear el panel del calendario
+    // Crear el panel del calendari
     const calendarPanel = new CalendarPanel();
 
     // Crear el modal de neteja
@@ -501,7 +509,7 @@ export default function useRoom(canvas) {
     // Depuración para ver qué está pasando
     console.log(`Mancuernas: necesarias=${requiredDumbbells}, actuales=${currentDumbbells}, horas=${totalHours}`);
     
-    // Restablecer el contador en localStorage para sincronizar con la realidad
+    // Restablecer el contador en localStorage para sincronizar amb la realitat
     localStorage.setItem('dumbbellsCreated', currentDumbbells.toString());
     
     // Si necesitamos más mancuernas, las creamos
@@ -523,7 +531,7 @@ export default function useRoom(canvas) {
     }
   }
   
-  // Añadir escucha para actividades deportivas
+  // Añadir escucha para actividades esportives
   document.addEventListener('sport-activity-added', (event) => {
     const sportActivity = event.detail.activity;
     console.log('Actividad deportiva registrada:', sportActivity);
@@ -632,13 +640,13 @@ export default function useRoom(canvas) {
   
   const animate = () => {
     controls.update();
-
-
-
     
-    renderer.render(scene, camera);
+    // Eliminar aquesta línia:
+    // renderer.render(scene, camera);
+    
+    // Mantenir només aquesta:
     composer.render();
-
+    
     animationFrameId = window.requestAnimationFrame(animate);
   };
   
