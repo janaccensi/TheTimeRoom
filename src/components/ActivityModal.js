@@ -609,11 +609,14 @@ export class ActivityModal {
     console.log(`[DEBUG] Total actividades ${activityType} encontradas:`, todas_actividades.length);
     console.log('[DEBUG] Primeras 3 actividades:', todas_actividades.slice(0, 3));
     
-    // Filtrar actividades anteriores a hoy
+    // Filtrar actividades anteriores a hoy y que estén completadas
     const actividades = todas_actividades.filter(act => {
+      // Verificar la fecha
       const actDate = new Date(act.date || act.timestamp);
       actDate.setHours(0, 0, 0, 0); // Reseteamos la hora para comparar solo fechas
-      return actDate <= today; // Solo actividades anteriores a hoy
+      
+      // Comprobar que sea anterior a hoy y que esté completada (o que no tenga estado de completado)
+      return actDate <= today && (act.completed !== false);
     });
     
     // Actualizamos los elementos de estadística si existen
@@ -830,15 +833,9 @@ export class ActivityModal {
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
 
-    // Validación de la data: no pot ser posterior a avui
-    const selectedDate = new Date(dateInput.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Resetem l'hora a 00:00:00 per comparar només dates
-    
-    if (selectedDate > today) {
-      alert('No pots registrar activitats futures. Si us plau, selecciona una data anterior o igual a avui.');
-      return;
-    }
+    const hours = parseFloat(timeInput.value);
+
+   
     
     if(this.currentObject.userData.type === 'broom') {
       // ... existing code for broom ...
