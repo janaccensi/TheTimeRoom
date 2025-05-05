@@ -27,8 +27,7 @@ export function createMicrophone(scene, options = {}) {
   function setMicHeadInteractive(object) {
     if (object.isMesh) {
       object.userData = {
-        type: 'microphone',
-        isInteractive: true,
+        isInteractive: false,
         title: 'Micròfon',
         description: 'Un micròfon professional',
         action: 'toggleMicrophone'
@@ -203,8 +202,7 @@ export function createMicrophone(scene, options = {}) {
 
   // Marcar el grupo como un grupo interactivo especial
   microphoneGroup.userData = {
-    isInteractiveGroup: true,
-    type: 'microphone'
+    isInteractiveGroup: false
   };
 
   // Posicionar el micrófono completo

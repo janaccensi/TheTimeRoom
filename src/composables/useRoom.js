@@ -148,7 +148,7 @@ export default function useRoom(canvas) {
   });
 
   const sofa = createSofa(scene, {
-    position: { x: 0.8, y: 0, z: 1 },
+    position: { x: 0.95, y: 0, z: 1 },
     rotation: Math.PI,
     color: 0xccc9aa,
     type: 'sectional',
