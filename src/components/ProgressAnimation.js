@@ -10,8 +10,8 @@ export class ProgressAnimationService {
       
       // Mensaje predeterminado según el tipo de actividad si no se proporciona uno personalizado
       const defaultMessage = activityType === 'cleaning' ? 
-        'Neteja registrada correctament' : 
-        (activityType === 'reading' ? 'Lectura registrada correctament' : 'Tasca registrada correctament');
+        'Limpieza registrada correctamente' : 
+        (activityType === 'reading' ? 'Lectura registrada correctamente' : 'Tarea registrada correctamente');
       
       // Usar el mensaje personalizado si se proporciona
       const displayMessage = message || defaultMessage;
@@ -20,7 +20,7 @@ export class ProgressAnimationService {
       animContainer.innerHTML = `
         <div class="progress-animation-content">
           <div class="progress-animation-header">
-            <h3>Activitat afegida!</h3>
+            <h3>¡Actividad añadida!</h3>
             <p>${displayMessage}</p>
           </div>
           
@@ -34,7 +34,7 @@ export class ProgressAnimationService {
             </div>
           </div>
           
-          <div class="progress-message">Actualitzant progrés...</div>
+          <div class="progress-message">Actualizando progreso...</div>
         </div>
       `;
       
@@ -55,7 +55,7 @@ export class ProgressAnimationService {
           const interval = setInterval(() => {
             if (width >= 100) {
               clearInterval(interval);
-              messageText.textContent = 'Completat!';
+              messageText.textContent = '¡Completado!';
               
               // Cerrar después de mostrar por completo
               setTimeout(() => {

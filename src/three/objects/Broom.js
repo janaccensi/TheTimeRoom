@@ -21,7 +21,7 @@ export const createBroom = (scene, config = {}) => {
             object.userData = {
                 type: 'broom',          // Todos los meshes tienen el mismo tipo
                 isInteractive: true,     // Todos son interactivos
-                title: 'Escombra',
+                title: 'Actividades del hogar',
                 description: 'Una escombra màgica',
                 action: 'examine',
                 activityType: 'cleaning'

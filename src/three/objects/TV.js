@@ -78,7 +78,7 @@ export function createTV(scene, options = {}) {
       object.userData = {
         type: 'tv',          // Todos los meshes tienen el mismo tipo
         isInteractive: true, // Todos son interactivos
-        title: 'Televisió',
+        title: 'Oci',
         activityType: 'leisure',
         description: 'Una televisió moderna',
         action: 'toggleTV'

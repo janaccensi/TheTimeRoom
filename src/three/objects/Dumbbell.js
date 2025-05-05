@@ -52,7 +52,7 @@ export function createDumbbell(scene, options = {}) {
         type: type,          // Todos los meshes tienen el mismo tipo (dumbbell1 o dumbbell2)
         isInteractive: true, // Todos son interactivos
         activityType: 'sport',
-        title: `Mancuerna ${weight}kg`,
+        title: `Deporte`,
         description: `Una mancuerna de ${weight} kilogramos`,
         action: 'examine'    // Acción por defecto
       };
