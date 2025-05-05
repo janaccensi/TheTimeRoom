@@ -829,14 +829,28 @@ export class ActivityModal {
     const categorySelect = this.formModal.querySelector('#activity-category');
     const customCategoryInput = this.formModal.querySelector('#custom-category');
     const dateInput = this.formModal.querySelector('#activity-date');
+    // Afegeixo aquesta línia per obtenir l'hora seleccionada
     const hourSelect = this.formModal.querySelector('#activity-hour');
     const timeInput = this.formModal.querySelector('#activity-time');
     const notesInput = this.formModal.querySelector('#activity-notes');
 
-    const hours = parseFloat(timeInput.value);
-
-   
+    // Comprovem que existeixi el selector d'hora
+    if (!hourSelect) {
+      console.error("El selector d'hora no s'ha trobat");
+      return;
+    }
     
+    const locationInput = this.formModal.querySelector('#activity-location');
+    const urgencySelect = this.formModal.querySelector('#activity-urgency');
+    const urlInput = this.formModal.querySelector('#activity-url');
+    const guestsInput = this.formModal.querySelector('#activity-guests');
+
+    const hours = parseFloat(timeInput.value);
+    if (isNaN(hours)) {
+      alert('Si us plau, introdueix un nombre vàlid d\'hores');
+      return;
+    }
+
     if(this.currentObject.userData.type === 'broom') {
       
       const activities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
@@ -880,37 +894,29 @@ export class ActivityModal {
         }));                      
     }
     
-    // Determinamos la categoría final, usando el valor personalizado si se ha seleccionado "Otros"
+    // Determinem la categoria final, usant el valor personalitzat si s'ha seleccionat "Altres"
     let finalCategory = categorySelect.value;
-    if (finalCategory === 'Otros' && customCategoryInput.value.trim()) {
+    if (finalCategory === 'Altres' && customCategoryInput.value.trim()) {
       finalCategory = customCategoryInput.value.trim();
     }
-
-    // Crear fecha con hora correcta para el timestamp
-    const selectedDateObj = new Date(dateInput.value);
-    selectedDateObj.setHours(parseInt(hourSelect.value, 10), 0, 0);
-    const timestamp = selectedDateObj.toISOString();
     
-    // Preparamos los datos de la actividad con los campos comunes
+    // Preparem les dades de l'activitat amb els camps comuns
     const activityData = {
       objectId: this.currentObject.userData.id,
       objectTitle: this.currentObject.userData.title,
       type: activityType,
       category: finalCategory,
       date: dateInput.value,
-      hour: parseInt(hourSelect.value, 10),
+      // Afegim l'hora a les dades de l'activitat
+      hour: parseInt(hourSelect.value, 10),  // Important: assegurar-se que es converteix a enter
       hours: hours,
-      duration: hours,  // Asegurarse que duration también está establecido
       notes: notesInput.value,
-      timestamp: timestamp,
+      timestamp: dateInput.value,
       completed: true,
-      sourceType: activityType  // Importante: añadir sourceType para identificar en el calendario
+      duration: hours
     };
     
-    // Debug log
-    console.log(`[DEBUG] Guardando actividad ${activityType}:`, activityData);
-    
-    // Añadimos los campos de los campos adicionales si están visibles
+    // Afegim els camps dels camps addicionals si estan visibles
     const additionalFields = this.formModal.querySelector('#additional-activity-fields');
     if (additionalFields && additionalFields.style.display !== 'none') {
       if (locationInput) activityData.location = locationInput.value;
@@ -919,24 +925,24 @@ export class ActivityModal {
       if (guestsInput) activityData.guests = guestsInput.value;
     }
     
-    // Obtenemos las actividades existentes del tipo correspondiente y añadimos la nueva
+    // Obtenim les activitats existents del tipus corresponent i afegim la nova
     const storageKey = `${activityType}Activities`;
     const activities = JSON.parse(localStorage.getItem(storageKey)) || [];
     activities.push(activityData);
     localStorage.setItem(storageKey, JSON.stringify(activities));
     
-    // Actualizamos también el almacenamiento general de actividades por compatibilidad
+    // Actualitzem també el magatzem general d'activitats per compatibilitat
     const allActivities = JSON.parse(localStorage.getItem('userActivities')) || [];
     allActivities.push(activityData);
     localStorage.setItem('userActivities', JSON.stringify(allActivities));
     
-    // Disparar dos eventos: uno para el calendario y otro para actualizar el objeto visual
+    // Disparar dos events: un per al calendari i un altre per actualitzar l'objecte visual
     const calendarEvent = new CustomEvent(`${activityType}-activity-added`, { 
       detail: { activity: activityData }
     });
     document.dispatchEvent(calendarEvent);
     
-    // Disparar evento específico para actualizar el objeto visual correspondiente
+    // Disparar esdeveniment específic per actualitzar l'objecte visual corresponent
     const updateEvent = new CustomEvent(`${activityType}-object-update-needed`, {
       detail: { 
         type: activityType, 
@@ -945,27 +951,32 @@ export class ActivityModal {
     });
     document.dispatchEvent(updateEvent);
     
-    // También mantenemos el evento genérico por compatibilidad
-    const genericEvent = new CustomEvent('activity-added', {
+    // També mantenim l'esdeveniment genèric per compatibilitat
+    const bookshelfEvent = new CustomEvent('bookshelf-update-needed', {
       detail: { 
         type: activityType, 
         activity: activityData 
       }
     });
-    document.dispatchEvent(genericEvent);
+    document.dispatchEvent(bookshelfEvent);
     
-    // Actualizamos estadísticas y cerramos el formulario
+    // Actualitzem estadístiques i tanquem el formulari
     this.loadObjectStats(activityType);
     this.loadCategoryStats(activityType);
     this.formModal.classList.add('hidden');
     
-    // Mostrar animación de progreso
+
+    
+    // Mostrar animació de progrés
     ProgressAnimationService.showProgressAnimation(activityData.category, activityType);
+    
+
+    
     
     // Volver a mostrar modal principal después de la animación
     setTimeout(() => {
-      this.loadObjectStats(activityType);
-      this.loadCategoryStats(activityType);
+      this.loadBookStats(this.currentBook.userData.id);
+      this.loadCategoryStats();
       this.modal.classList.remove('hidden');
     }, 2800);
   }
