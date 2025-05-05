@@ -874,7 +874,7 @@ export class CalendarPanel {
   
     taskForm.innerHTML = `
       <div class="task-form-container">
-      <h3>Nueva tarea para ${formattedDate}</h3>
+      <h3>Nueva tarea para ${formattedDate}</h3><br>
       <form id="add-task-form">
         <div class="form-group">
           <label for="task-activity-type">Tipo de actividad:</label>
