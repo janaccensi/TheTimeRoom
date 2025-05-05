@@ -40,7 +40,7 @@ export default function useRoom(canvas) {
   const scene = new THREE.Scene();  
   scene.background = new THREE.Color(0x000000); // Color gris clar
   let broomObject;
-  
+  let calendarPanel; // Declara-la aquí, a l'àmbit superior
   
   // Mides de l'habitació
   const roomConfig = {
@@ -328,8 +328,8 @@ export default function useRoom(canvas) {
     // Creem el modal d'activitats
     const activityModal = new ActivityModal();
 
-    // Crear el panel del calendari
-    const calendarPanel = new CalendarPanel();
+    // Inicialitza-la aquí (no la declaris amb 'const')
+    calendarPanel = new CalendarPanel();
 
     // Crear el modal de neteja
     
@@ -457,8 +457,7 @@ export default function useRoom(canvas) {
     // Configurar la integración de actividades de limpieza con el calendario
     document.addEventListener('cleaning-activity-added', (event) => {
       const cleaningActivity = event.detail.activity;
-      console.log('Actividad de limpieza registrada:', cleaningActivity);
-      
+      console.log('Actividad de limpieza registrada:', cleaningActivity);      
       // NO añadir al calendario - ya se carga automáticamente desde localStorage
       // Solo actualizar la vista si el panel está visible
       if (calendarPanel.isVisible) {
@@ -579,7 +578,7 @@ export default function useRoom(canvas) {
             
       // NO añadir al calendario - ya se carga automáticamente desde localStorage
       // Solo actualizar la vista si el panel está visible
-      if (calendarPanel.isVisible) {
+      if (calendarPanel && calendarPanel.isVisible) {
         if (calendarPanel.currentView === 'month') {
           calendarPanel.renderMonthDays();
         } else {
@@ -616,6 +615,7 @@ export default function useRoom(canvas) {
   const cleanupFunctions = {};
 
   function init() {
+    
     // Assegura't que tot es carrega abans d'inicialitzar les interaccions
     console.log("Iniciant postprocessing...");
     initPostprocessing();

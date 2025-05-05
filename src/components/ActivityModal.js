@@ -838,7 +838,46 @@ export class ActivityModal {
    
     
     if(this.currentObject.userData.type === 'broom') {
-      // ... existing code for broom ...
+      
+      const activities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
+
+      console.log(activities.length);
+      
+        // Si no hay actividades, escoba completamente sucia (nivel 0)
+        if (activities.length == 0) {          
+          this.cleanlinessLevel = 0;
+          console.log("Nivel de limpieza: 0 (sin actividades)");
+          document.dispatchEvent(new CustomEvent('cleanliness-level-changed', { 
+              detail: { level: 0 }
+          }));
+          return 0;
+        }
+        
+          
+        // Calcular horas totales de la semana
+        const weeklyHours = activities.reduce((sum, act) => {
+        return sum + parseFloat(act.hours || 0);
+        }, 0);
+                
+        // Objetivo: 17 horas semanales = 100% limpia
+        const targetHours = 17;
+        
+        // Calcular nivel de limpieza (0-100) basado en horas semanales
+        let cleanlinessPercentage = Math.min(100, (weeklyHours / targetHours) * 100);
+        
+        // Garantizar que el nivel no sea menor a 10% si hay alguna actividad reciente
+        if (cleanlinessPercentage < 10) {
+        cleanlinessPercentage = 10;
+        }
+        
+        this.cleanlinessLevel = Math.round(cleanlinessPercentage);
+        
+        console.log(`Nivel de limpieza: ${this.cleanlinessLevel}% (${weeklyHours.toFixed(1)} horas semanales)`);
+        
+        // Disparar evento para actualizar la escoba
+        document.dispatchEvent(new CustomEvent('cleanliness-level-changed', { 
+        detail: { level: this.cleanlinessLevel }
+        }));                      
     }
     
     // Determinamos la categoría final, usando el valor personalizado si se ha seleccionado "Otros"

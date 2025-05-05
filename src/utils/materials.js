@@ -3,10 +3,13 @@ import * as THREE from 'three';
 // TextureLoader per carregar les textures
 const textureLoader = new THREE.TextureLoader();
 
+// Helper per a carregar textures amb la ruta base correcta
+const loadTexture = (path) => {
+  const basePath = import.meta.env.BASE_URL || './';
+  return textureLoader.load(`${basePath}${path}`);
+};
+
 export function getMaterials() {
-  // Cargamos la textura de alfombra que usaremos también en la pared frontal
-
-
   // Material compartido para alfombra y pared frontal
   const carpetMaterial = new THREE.MeshStandardMaterial({
     color: 0xf5886b,
@@ -21,9 +24,9 @@ export function getMaterials() {
   });
 
   // Textures pel terra (parquet)
-  const floorTexture = textureLoader.load('./textures/floor/parquet_diffuse.jpg');
-  const floorNormalMap = textureLoader.load('./textures/floor/parquet_normal.jpg');
-  const floorRoughnessMap = textureLoader.load('./textures/floor/parquet_roughness.jpg');
+  const floorTexture = loadTexture('textures/floor/parquet_diffuse.jpg');
+  const floorNormalMap = loadTexture('textures/floor/parquet_normal.jpg');
+  const floorRoughnessMap = loadTexture('textures/floor/parquet_roughness.jpg');
   
   // Configuració de repetició per la textura del terra
   floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
@@ -45,9 +48,9 @@ export function getMaterials() {
   });
 
   // Textures de fusta per estanteries (més clara)
-  const shelfWoodTexture = textureLoader.load('./textures/wood/hardwood2_diffuse.jpg');
-  const shelfWoodNormalMap = textureLoader.load('./textures/wood/hardwood2_roughness.jpg');
-  const shelfWoodRoughness = textureLoader.load('./textures/wood/hardwood2_roughness.jpg');
+  const shelfWoodTexture = loadTexture('textures/wood/hardwood2_diffuse.jpg');
+  const shelfWoodNormalMap = loadTexture('textures/wood/hardwood2_roughness.jpg');
+  const shelfWoodRoughness = loadTexture('textures/wood/hardwood2_roughness.jpg');
   
   // Configuració de repetició per les textures d'estanteria
   shelfWoodTexture.wrapS = shelfWoodTexture.wrapT = THREE.RepeatWrapping;
@@ -55,9 +58,9 @@ export function getMaterials() {
   shelfWoodRoughness.wrapS = shelfWoodRoughness.wrapT = THREE.RepeatWrapping;
   
   // Textures de fusta per taula (fusta més fosca)
-  const tableWoodTexture = textureLoader.load('./textures/wood/Wood_027_basecolor.jpg');
-  const tableWoodNormalMap = textureLoader.load('./textures/wood/Wood_027_normal.jpg');
-  const tableWoodRoughness = textureLoader.load('./textures/wood/Wood_027_roughness.jpg');
+  const tableWoodTexture = loadTexture('textures/wood/Wood_027_basecolor.jpg');
+  const tableWoodNormalMap = loadTexture('textures/wood/Wood_027_normal.jpg');
+  const tableWoodRoughness = loadTexture('textures/wood/Wood_027_roughness.jpg');
   // Configuració de repetició per les textures de taula
   tableWoodTexture.wrapS = tableWoodTexture.wrapT = THREE.RepeatWrapping;
   tableWoodNormalMap.wrapS = tableWoodNormalMap.wrapT = THREE.RepeatWrapping;
@@ -82,7 +85,7 @@ export function getMaterials() {
     color: 0xc9b299 // Tint taronja-marró per intensificar el color de la fusta
   });
   // Material de paper per al calendari
-  const paperTexture = textureLoader.load('./textures/paper/Paper001_1K-JPG_Color.jpg');
+  const paperTexture = loadTexture('textures/paper/Paper001_1K-JPG_Color.jpg');
   paperTexture.wrapS = paperTexture.wrapT = THREE.RepeatWrapping;
   paperTexture.repeat.set(1, 1);
   const paperMaterial = new THREE.MeshStandardMaterial({
