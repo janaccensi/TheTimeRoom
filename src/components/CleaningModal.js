@@ -57,7 +57,7 @@ export class CleaningModal {
               
               const lastDate = new Date(sortedActivities[0].date);
               const formatOptions = { day: 'numeric', month: 'short' };
-              lastSessionElement.textContent = lastDate.toLocaleDateString('ca-ES', formatOptions);
+              lastSessionElement.textContent = lastDate.toLocaleDateString('es-ES', formatOptions);
             } else {
               lastSessionElement.textContent = '-';
             }
@@ -86,39 +86,39 @@ export class CleaningModal {
       
       this.modal.innerHTML = `
         <div class="modal-content stats-modal">
-          <span class="close-button" aria-label="Tancar">&times;</span>
-          <h2 id="cleaning-title">Escombra</h2>
+          <span class="close-button" aria-label="Cerrar">&times;</span>
+          <h2 id="cleaning-title">Escoba</h2>
           
           <div class="cleaning-stats">
-            <h3>Activitat de neteja recent</h3>
+            <h3>Actividad de limpieza reciente</h3>
             <div class="stats-grid">
               <div class="stat-item">
                 <div class="stat-value" id="total-cleaning-hours">0</div>
-                <div class="stat-label">Hores totals</div>
+                <div class="stat-label">Horas totales</div>
               </div>
               <div class="stat-item">
                 <div class="stat-value" id="last-cleaning-session">-</div>
-                <div class="stat-label">Última neteja</div>
+                <div class="stat-label">Última limpieza</div>
               </div>
               <div class="stat-item">
                 <div class="stat-value" id="cleaning-sessions-count">0</div>
-                <div class="stat-label">Netejes totals</div>
+                <div class="stat-label">Limpiezas totales</div>
               </div>
             </div>
           </div>
           
           <!-- Sección para mostrar tipos de limpieza y progreso -->
           <div class="cleaning-type-stats">
-            <h3>Tipus de neteja</h3>
+            <h3>Tipos de limpieza</h3>
             <div id="cleaning-progress" class="cleaning-container">
               <!-- Aquí se insertarán las barras de progreso -->
-              <div class="loading-cleaning">Carregant dades de neteja...</div>
+              <div class="loading-cleaning">Cargando datos de limpieza...</div>
             </div>
           </div>
           
           <div class="modal-actions">
-            <button id="view-cleaning-history" class="secondary-button">Veure historial</button>
-            <button id="add-cleaning" class="primary-button">Registrar neteja</button>
+            <button id="view-cleaning-history" class="secondary-button">Ver historial</button>
+            <button id="add-cleaning" class="primary-button">Registrar limpieza</button>
           </div>
         </div>
       `;
@@ -134,27 +134,27 @@ export class CleaningModal {
       
       this.formModal.innerHTML = `
         <div class="modal-content">
-          <span class="close-button" aria-label="Tancar">&times;</span>
-          <h2 id="form-title">Registra una neteja</h2>
+          <span class="close-button" aria-label="Cerrar">&times;</span>
+          <h2 id="form-title">Registrar una limpieza</h2>
           <p id="form-cleaning-title" class="form-subtitle"></p>
           
           <div class="cleaning-form">
             <div class="form-group">
-              <label for="cleaning-type">Tipus de neteja:</label>
+              <label for="cleaning-type">Tipo de limpieza:</label>
               <select id="cleaning-type" aria-required="true">
-                <option value="Escombrar">Escombrar</option>
-                <option value="Fregar">Fregar el terra</option>
-                <option value="Treure la pols">Treure la pols</option>
-                <option value="Netejar vidres">Netejar vidres</option>
-                <option value="Neteja general">Neteja general</option>
+                <option value="Barrer">Barrer</option>
+                <option value="Fregar">Fregar el suelo</option>
+                <option value="Quitar el polvo">Quitar el polvo</option>
+                <option value="Limpiar cristales">Limpiar cristales</option>
+                <option value="Limpieza general">Limpieza general</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="cleaning-date">Data:</label>
+              <label for="cleaning-date">Fecha:</label>
               <input type="date" id="cleaning-date" aria-required="true">
             </div>
             <div class="form-group">
-            <label for="cleaning-hour">Hora d'inici:</label>
+            <label for="cleaning-hour">Hora de inicio:</label>
             <select id="cleaning-hour" aria-required="true">
               <option value="0">00:00</option>
               <option value="1">01:00</option>
@@ -183,44 +183,44 @@ export class CleaningModal {
             </select>
           </div>
             <div class="form-group">
-              <label for="cleaning-time">Duració (hores):</label>
+              <label for="cleaning-time">Duración (horas):</label>
               <input type="number" id="cleaning-time" min="0.25" max="24" step="0.25" value="1" aria-required="true">
             </div>
             <div class="form-group">
-              <label for="cleaning-notes">Notes:</label>
+              <label for="cleaning-notes">Notas:</label>
               <textarea id="cleaning-notes" rows="3"></textarea>
             </div>
 
             <!-- Botón para mostrar/ocultar campos adicionales -->
-            <button type="button" id="show-more-fields" class="secondary-button">Afegir més dades</button>
+            <button type="button" id="show-more-fields" class="secondary-button">Añadir más datos</button>
             
             <!-- Sección adicional inicialmente oculta -->
             <div id="additional-fields" class="additional-fields" style="display: none;">
               <hr>
               <div class="form-group">
-                <label for="cleaning-location">Ubicació:</label>
-                <input type="text" id="cleaning-location" placeholder="Direcció o ubicació">
+                <label for="cleaning-location">Ubicación:</label>
+                <input type="text" id="cleaning-location" placeholder="Dirección o ubicación">
               </div>
               <div class="form-group">
-                <label for="cleaning-urgency">Nivell d'urgència:</label>
+                <label for="cleaning-urgency">Nivel de urgencia:</label>
                 <select id="cleaning-urgency">
-                  <option value="baixa">Baixa</option>
+                  <option value="baja">Baja</option>
                   <option value="normal" selected>Normal</option>
                   <option value="alta">Alta</option>
-                  <option value="urgent">Urgent</option>
+                  <option value="urgente">Urgente</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="cleaning-url">URL relacionat:</label>
+                <label for="cleaning-url">URL relacionada:</label>
                 <input type="url" id="cleaning-url" placeholder="https://...">
               </div>
               <div class="form-group">
-                <label for="cleaning-guests">Convidats:</label>
-                <input type="text" id="cleaning-guests" placeholder="Noms separats per comes">
+                <label for="cleaning-guests">Invitados:</label>
+                <input type="text" id="cleaning-guests" placeholder="Nombres separados por comas">
               </div>
             </div>
             
-            <button id="save-cleaning" class="save-button">Desa activitat</button>
+            <button id="save-cleaning" class="save-button">Guardar actividad</button>
           </div>
         </div>
       `;
@@ -252,10 +252,10 @@ export class CleaningModal {
       showMoreFieldsBtn.addEventListener('click', () => {
         if (additionalFields.style.display === 'none') {
           additionalFields.style.display = 'block';
-          showMoreFieldsBtn.textContent = 'Mostrar menys dades';
+          showMoreFieldsBtn.textContent = 'Mostrar menos datos';
         } else {
           additionalFields.style.display = 'none';
-          showMoreFieldsBtn.textContent = 'Afegir més dades';
+          showMoreFieldsBtn.textContent = 'Añadir más datos';
         }
       });
       
@@ -271,7 +271,7 @@ export class CleaningModal {
       
       // Actualizar título
       const cleaningTitle = this.modal.querySelector('#cleaning-title');
-      cleaningTitle.textContent = "Activitats de neteja";
+      cleaningTitle.textContent = "Actividades de limpieza";
       
       // Cargar estadísticas
       this.loadCleaningStats();
@@ -292,7 +292,7 @@ export class CleaningModal {
       
       // Actualizar información en el formulario
       const formTitle = this.formModal.querySelector('#form-cleaning-title');
-      formTitle.textContent = "Registra una nova activitat de neteja";
+      formTitle.textContent = "Registra una nueva actividad de limpieza";
       
       // Mostrar formulario
       this.formModal.classList.remove('hidden');
@@ -309,14 +309,14 @@ export class CleaningModal {
       
       // Mostrar historial
       if (cleaningActivities.length > 0) {
-        let message = `Historial d'activitats de neteja:\n\n`;
+        let message = `Historial de actividades de limpieza:\n\n`;
         cleaningActivities.forEach((act, index) => {
-          message += `${index + 1}. ${act.date}: ${act.hours} hores - ${act.type}\n`;
-          if (act.notes) message += `   Notes: ${act.notes}\n`;
+          message += `${index + 1}. ${act.date}: ${act.hours} horas - ${act.type}\n`;
+          if (act.notes) message += `   Notas: ${act.notes}\n`;
         });
         alert(message);
       } else {
-        alert('Encara no hi ha activitats de neteja registrades.');
+        alert('Todavía no hay actividades de limpieza registradas.');
       }
     }
     
@@ -345,7 +345,7 @@ export class CleaningModal {
         
         const lastDate = new Date(sortedActivities[0].date);
         const formatOptions = { day: 'numeric', month: 'short' };
-        lastSessionElement.textContent = lastDate.toLocaleDateString('ca-ES', formatOptions);
+        lastSessionElement.textContent = lastDate.toLocaleDateString('es-ES', formatOptions);
       } else {
         lastSessionElement.textContent = '-';
       }
@@ -359,7 +359,7 @@ export class CleaningModal {
       
       if (cleaningActivities.length === 0) {
         cleaningContainer.innerHTML = `
-          <p class="no-data-message">Encara no hi ha activitats de neteja registrades.</p>
+          <p class="no-data-message">Todavía no hay actividades de limpieza registradas.</p>
         `;
         return;
       }
@@ -405,7 +405,7 @@ export class CleaningModal {
             <div class="cleaning-progress-container">
               <div class="cleaning-progress-bar" style="width: ${scaledPercentage}%; background-color: ${color}"></div>
             </div>
-            <div class="cleaning-type-hours">${hours.toFixed(1)} hores</div>
+            <div class="cleaning-type-hours">${hours.toFixed(1)} horas</div>
           `;
           
           cleaningContainer.appendChild(typeElement);
@@ -438,7 +438,7 @@ export class CleaningModal {
       
       const hours = parseFloat(timeInput.value);
       if (isNaN(hours)) {
-        alert('Si us plau, introdueix un número vàlid d\'hores');
+        alert('Por favor, introduce un número válido de horas');
         return;
       }
       
@@ -503,10 +503,10 @@ export class CleaningModal {
       
       const mockActivities = [
         {
-          type: "Escombrar",
+          type: "Barrer",
           date: "2025-03-10",
           hours: 0.5,
-          notes: "Neteja de la sala d'estar",
+          notes: "Limpieza del salón",
           timestamp: "2025-03-10T10:30:00.000Z",
           completed: true
         },
@@ -514,41 +514,40 @@ export class CleaningModal {
           type: "Fregar",
           date: "2025-03-15",
           hours: 1.0,
-          notes: "Neteja completa de la casa",
+          notes: "Limpieza completa de la casa",
           timestamp: "2025-03-15T14:00:00.000Z",
           completed: true
         },
         {
-          type: "Treure la pols",
+          type: "Quitar el polvo",
           date: "2025-03-20",
           hours: 0.75,
-          notes: "Neteja de la llibreria",
+          notes: "Limpieza de la librería",
           timestamp: "2025-03-20T09:30:00.000Z",
           completed: true
         },
         {
-          type: "Netejar vidres",
+          type: "Limpiar cristales",
           date: "2025-04-01",
           hours: 1.25,
-          notes: "Neteja de les finestres",
+          notes: "Limpieza de las ventanas",
           timestamp: "2025-04-01T15:20:00.000Z",
           completed: true
         },
         {
-          type: "Escombrar",
+          type: "Barrer",
           date: "2025-04-05",
           hours: 0.5,
-          notes: "Neteja ràpida",
+          notes: "Limpieza rápida",
           timestamp: "2025-04-05T18:00:00.000Z",
           completed: true
         }
       ];
       
       localStorage.setItem('cleaningActivities', JSON.stringify(mockActivities));
-      console.log("S'han afegit activitats de neteja simulades.");
+      console.log("Se han añadido actividades de limpieza simuladas.");
     }
 
-    // Añadir/modificar este método:
     calculateCleanlinessLevel() {
         const activities = this.getCleaningActivities();
         

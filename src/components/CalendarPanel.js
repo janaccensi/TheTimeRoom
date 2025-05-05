@@ -88,6 +88,66 @@ export class CalendarPanel {
         this.renderMonthDays();
       }
     });
+
+    // Escuchar eventos de actividades de estudio
+    document.addEventListener('study-activity-added', (event) => {
+      // Actualizar la vista si estamos mostrando el día relacionado con la actividad añadida
+      const addedDate = new Date(event.detail.activity.date);
+      const currentViewDate = this.selectedDate;
+      
+      if (addedDate.getDate() === currentViewDate.getDate() &&
+          addedDate.getMonth() === currentViewDate.getMonth() &&
+          addedDate.getFullYear() === currentViewDate.getFullYear()) {
+        this.renderDayTasks();
+      }
+      
+      // Si estamos en vista mensual y es este mes, actualizar los días
+      if (this.currentView === 'month' && 
+          addedDate.getMonth() === this.currentDate.getMonth() &&
+          addedDate.getFullYear() === this.currentDate.getFullYear()) {
+        this.renderMonthDays();
+      }
+    });
+
+    // Escuchar eventos de actividades de ocio
+    document.addEventListener('leisure-activity-added', (event) => {
+      // Actualizar la vista si estamos mostrando el día relacionado con la actividad añadida
+      const addedDate = new Date(event.detail.activity.date);
+      const currentViewDate = this.selectedDate;
+      
+      if (addedDate.getDate() === currentViewDate.getDate() &&
+          addedDate.getMonth() === currentViewDate.getMonth() &&
+          addedDate.getFullYear() === currentViewDate.getFullYear()) {
+        this.renderDayTasks();
+      }
+      
+      // Si estamos en vista mensual y es este mes, actualizar los días
+      if (this.currentView === 'month' && 
+          addedDate.getMonth() === this.currentDate.getMonth() &&
+          addedDate.getFullYear() === this.currentDate.getFullYear()) {
+        this.renderMonthDays();
+      }
+    });
+    
+    // Escuchar eventos de actividades de trabajo
+    document.addEventListener('work-activity-added', (event) => {
+      // Actualizar la vista si estamos mostrando el día relacionado con la actividad añadida
+      const addedDate = new Date(event.detail.activity.date);
+      const currentViewDate = this.selectedDate;
+      
+      if (addedDate.getDate() === currentViewDate.getDate() &&
+          addedDate.getMonth() === currentViewDate.getMonth() &&
+          addedDate.getFullYear() === currentViewDate.getFullYear()) {
+        this.renderDayTasks();
+      }
+      
+      // Si estamos en vista mensual y es este mes, actualizar los días
+      if (this.currentView === 'month' && 
+          addedDate.getMonth() === this.currentDate.getMonth() &&
+          addedDate.getFullYear() === this.currentDate.getFullYear()) {
+        this.renderMonthDays();
+      }
+    });
   }
   
   updatePanelContent() {
@@ -573,6 +633,8 @@ export class CalendarPanel {
         taskElement.classList.add('cleaning-activity');
         } else if (activity.sourceType === 'sport') {
           taskElement.classList.add('sport-activity');
+      } else if (activity.sourceType === 'study') {
+        taskElement.classList.add('study-activity');
       } else {
         taskElement.classList.add('calendar-task');
       }
@@ -611,11 +673,35 @@ export class CalendarPanel {
         title.prepend(indicator);
       } 
       else if (activity.sourceType === 'sport') {
-        title.textContent = activity.type || 'Deporte';
+        title.textContent = activity.text || 'Deporte';
         
         const indicator = document.createElement('span');
         indicator.className = 'activity-type-icon';
         indicator.textContent = '🏋️'; // Icono de mancuerna
+        title.prepend(indicator);
+      }
+      else if (activity.sourceType === 'study') {
+        title.textContent = activity.text || 'Estudio';
+        
+        const indicator = document.createElement('span');
+        indicator.className = 'activity-type-icon';
+        indicator.textContent = '💻'; // Icono de ordenador/estudio
+        title.prepend(indicator);
+      }
+      else if (activity.sourceType === 'leisure') {
+        title.textContent = activity.text || 'Ocio';
+        
+        const indicator = document.createElement('span');
+        indicator.className = 'activity-type-icon';
+        indicator.textContent = '📺'; // Icono de televisión/ocio
+        title.prepend(indicator);
+      }
+      else if (activity.sourceType === 'work') {
+        title.textContent = activity.text || 'Trabajo';
+        
+        const indicator = document.createElement('span');
+        indicator.className = 'activity-type-icon';
+        indicator.textContent = '💼'; // Icono de maletín/trabajo
         title.prepend(indicator);
       }
       else {
@@ -791,74 +877,76 @@ export class CalendarPanel {
       <h3>Nueva tarea para ${formattedDate}</h3>
       <form id="add-task-form">
         <div class="form-group">
-          <label for="task-activity-type">Tipus d'activitat:</label>
+          <label for="task-activity-type">Tipo de actividad:</label>
           <select id="task-activity-type" required>
             <option value="general">General</option>
-            <option value="reading">Llibre/Lectura</option>
-            <option value="cleaning">Escombra/Tasques de casa</option>
-            <option value="sport">Manuella/Esport</option>
-
+            <option value="reading">Libro/Lectura</option>
+            <option value="cleaning">Escoba/Tareas del hogar</option>
+            <option value="sport">Mancuerna/Deporte</option>
+            <option value="study">Estudio</option>
+            <option value="leisure">Ocio</option>
+            <option value="work">Trabajo</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="task-category">Categoria:</label>
+          <label for="task-category">Categoría:</label>
           <select id="task-category">
             <!-- Las opciones se generarán dinámicamente -->
           </select>
         </div>
         
         <div class="form-group">
-          <label for="task-text">Descripció:</label>
+          <label for="task-text">Descripción:</label>
           <input type="text" id="task-text" required autofocus>
         </div>
         
         <div class="form-group">
-          <label for="task-hour">Hora d'inici:</label>
+          <label for="task-hour">Hora de inicio:</label>
           <select id="task-hour">
             ${hourOptions}
           </select>
         </div>
         
         <div class="form-group">
-          <label for="task-duration">Duració:</label>
+          <label for="task-duration">Duración:</label>
           <select id="task-duration">
             ${durationOptions}
           </select>
         </div>
         
         <!-- Botón para mostrar/ocultar campos adicionales -->
-        <button type="button" id="show-more-task-fields" class="secondary-button">Afegir més dades</button>
+        <button type="button" id="show-more-task-fields" class="secondary-button">Añadir más datos</button>
         
         <!-- Sección adicional inicialmente oculta -->
         <div id="additional-task-fields" class="additional-fields" style="display: none;">
           <hr>
           <div class="form-group">
-            <label for="task-location">Ubicació:</label>
-            <input type="text" id="task-location" placeholder="Direcció o ubicació">
+            <label for="task-location">Ubicación:</label>
+            <input type="text" id="task-location" placeholder="Dirección o ubicación">
           </div>
           <div class="form-group">
-            <label for="task-urgency">Nivell d'urgència:</label>
+            <label for="task-urgency">Nivel de urgencia:</label>
             <select id="task-urgency">
-              <option value="baixa">Baixa</option>
+              <option value="baja">Baja</option>
               <option value="normal" selected>Normal</option>
               <option value="alta">Alta</option>
-              <option value="urgent">Urgent</option>
+              <option value="urgente">Urgente</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="task-url">URL relacionat:</label>
+            <label for="task-url">URL relacionada:</label>
             <input type="url" id="task-url" placeholder="https://...">
           </div>
           <div class="form-group">
-            <label for="task-guests">Convidats:</label>
-            <input type="text" id="task-guests" placeholder="Noms separats per comes">
+            <label for="task-guests">Invitados:</label>
+            <input type="text" id="task-guests" placeholder="Nombres separados por comas">
           </div>
         </div>
         
         <div class="form-actions">
-          <button type="button" id="cancel-task">Cancel·lar</button>
-          <button type="submit">Desar</button>
+          <button type="button" id="cancel-task">Cancelar</button>
+          <button type="submit">Guardar</button>
         </div>
       </form>
     </div>
@@ -874,36 +962,64 @@ export class CalendarPanel {
 
     const categoriesByType = {
       general: [
-        { value: 'Reunió', text: 'Reunió' },
-        { value: 'Tasca', text: 'Tasca' },
-        { value: 'Esdeveniment', text: 'Esdeveniment' },
-        { value: 'Altres', text: 'Altres' }
+        { value: 'Reunión', text: 'Reunión' },
+        { value: 'Tarea', text: 'Tarea' },
+        { value: 'Evento', text: 'Evento' },
+        { value: 'Otros', text: 'Otros' }
       ],
       cleaning: [
-        { value: 'Escombrar', text: 'Escombrar' },
-        { value: 'Fregar el terra', text: 'Fregar el terra' },
-        { value: 'Treure la pols', text: 'Treure la pols' },
-        { value: 'Netejar vidres', text: 'Netejar vidres' },
-        { value: 'Neteja general', text: 'Neteja general' }
+        { value: 'Barrer', text: 'Barrer' },
+        { value: 'Fregar el suelo', text: 'Fregar el suelo' },
+        { value: 'Quitar el polvo', text: 'Quitar el polvo' },
+        { value: 'Limpiar vidrios', text: 'Limpiar vidrios' },
+        { value: 'Limpieza general', text: 'Limpieza general' }
+      ],
+      study: [
+        { value: 'Estudiar Factores Humanos', text: 'Estudiar Factores Humanos' },
+        { value: 'Estudiar Análisis Complejo', text: 'Estudiar Análisis Complejo' },
+        { value: 'Estudiar Programación', text: 'Estudiar Programación' },
+        { value: 'Estudiar Física', text: 'Estudiar Física' },
+        { value: 'Estudiar Matemáticas', text: 'Estudiar Matemáticas' },
+        { value: 'Estudiar Otros', text: 'Estudiar Otros' }
       ],
       reading: [
-        { value: 'Estudiar Factors Humans', text: 'Estudiar Factors Humans' },
-        { value: 'Estudiar Anàlisi Complexa', text: 'Estudiar Anàlisi Complexa' },
-        { value: 'Estudiar Programació', text: 'Estudiar Programació' },
-        { value: 'Llegir Fantasia', text: 'Llegir Fantasia' },
-        { value: 'Llegir Assaig', text: 'Llegir Assaig' },
-        { value: 'Altres', text: 'Altres' }
+        { value: 'Leer Fantasía', text: 'Leer Fantasía' },
+        { value: 'Leer Ensayo', text: 'Leer Ensayo' },
+        { value: 'Leer Novela', text: 'Leer Novela' },
+        { value: 'Leer Ciencia Ficción', text: 'Leer Ciencia Ficción' },
+        { value: 'Leer Biografía', text: 'Leer Biografía' },
+        { value: 'Leer Otros', text: 'Leer Otros' }
       ],
       sport: [
-        { value: 'Gimnàs', text: 'Gimnàs' },
-        { value: 'Entrenament funcional', text: 'Entrenament funcional' },
-        { value: 'Esports d\'equip', text: 'Esports d\'equip' },
-        { value: 'Flexibilitat', text: 'Flexibilitat' },
-        { value: 'Resistència', text: 'Resistència' },
-        { value: 'Córrer', text: 'Córrer' },
-        { value: 'Natació', text: 'Natació' },
-        { value: 'Ciclisme', text: 'Ciclisme' },
-        { value: 'Altres', text: 'Altres' }
+        { value: 'Gimnasio', text: 'Gimnasio' },
+        { value: 'Entrenamiento funcional', text: 'Entrenamiento funcional' },
+        { value: 'Deportes de equipo', text: 'Deportes de equipo' },
+        { value: 'Flexibilidad', text: 'Flexibilidad' },
+        { value: 'Resistencia', text: 'Resistencia' },
+        { value: 'Correr', text: 'Correr' },
+        { value: 'Natación', text: 'Natación' },
+        { value: 'Ciclismo', text: 'Ciclismo' },
+        { value: 'Otros', text: 'Otros' }
+      ],
+      leisure: [
+        { value: 'Ver películas', text: 'Ver películas' },
+        { value: 'Ver series', text: 'Ver series' },
+        { value: 'Videojuegos', text: 'Videojuegos' },
+        { value: 'Redes sociales', text: 'Redes sociales' },
+        { value: 'Música', text: 'Música' },
+        { value: 'Otros', text: 'Otros' }
+      ],
+      work: [
+        { value: 'Reunión de trabajo', text: 'Reunión de trabajo' },
+        { value: 'Proyecto', text: 'Proyecto' },
+        { value: 'Llamada', text: 'Llamada' },
+        { value: 'Presentación', text: 'Presentación' },
+        { value: 'Administración', text: 'Administración' },
+        { value: 'Planificación', text: 'Planificación' },
+        { value: 'Documentación', text: 'Documentación' },
+        { value: 'Email', text: 'Email' },
+        { value: 'Formación', text: 'Formación' },
+        { value: 'Otros', text: 'Otros' }
       ]
     };
 
@@ -983,6 +1099,7 @@ export class CalendarPanel {
         type: category, // Usar la categoría seleccionada como tipo
         date: formattedDate,
         hours: parseFloat(duration),
+        hour: parseInt(hour),
         notes: text,
         timestamp: timestamp,
         completed: true,
@@ -1017,9 +1134,10 @@ export class CalendarPanel {
         category: category,
         date: formattedDate,
         hours: parseFloat(duration),
+        hour: parseInt(hour),
         notes: '',
         timestamp: timestamp,
-        completed: true,
+        completed: false,
         sourceType: 'reading',
         location: location || null,
         urgency: urgency || 'normal',
@@ -1051,6 +1169,8 @@ export class CalendarPanel {
         category: category,
         date: formattedDate,
         hours: parseFloat(duration),
+        duration: parseFloat(duration),  // Aseguramos que se guarda la duración correctamente
+        hour: parseInt(hour),
         notes: '',
         timestamp: timestamp,
         completed: false,
@@ -1075,7 +1195,99 @@ export class CalendarPanel {
       }
       , 2800);
     }
-
+    else if (activityType === 'study') {
+      // Si es actividad de estudio
+      const studyActivity = {
+        text: text,
+        category: category,
+        date: formattedDate,
+        hours: parseFloat(duration),
+        hour: parseInt(hour),
+        notes: '',
+        timestamp: timestamp,
+        completed: false,
+        sourceType: 'study',
+        location: location || null,
+        urgency: urgency || 'normal',
+        url: url || null,
+        guests: guests || null
+      };
+      // Guardar en localStorage
+      const studyActivities = JSON.parse(localStorage.getItem('studyActivities')) || [];
+      studyActivities.push(studyActivity);
+      localStorage.setItem('studyActivities', JSON.stringify(studyActivities));
+      // Disparar evento
+      document.dispatchEvent(new CustomEvent('study-activity-added', {
+        detail: { activity: studyActivity }
+      }));
+      ProgressAnimationService.showProgressAnimation(category, 'study');
+      // Renderizar después de la animación
+      setTimeout(() => {
+        this.renderDayTasks();
+      }, 2800);
+    }
+    else if (activityType === 'leisure') {
+      // Si es actividad de ocio
+      const leisureActivity = {
+        text: text,
+        category: category,
+        date: formattedDate,
+        hours: parseFloat(duration),
+        hour: parseInt(hour),
+        notes: '',
+        timestamp: timestamp,
+        completed: false,
+        sourceType: 'leisure',
+        location: location || null,
+        urgency: urgency || 'normal',
+        url: url || null,
+        guests: guests || null
+      };
+      // Guardar en localStorage
+      const leisureActivities = JSON.parse(localStorage.getItem('leisureActivities')) || [];
+      leisureActivities.push(leisureActivity);
+      localStorage.setItem('leisureActivities', JSON.stringify(leisureActivities));
+      // Disparar evento
+      document.dispatchEvent(new CustomEvent('leisure-activity-added', {
+        detail: { activity: leisureActivity }
+      }));
+      ProgressAnimationService.showProgressAnimation(category, 'leisure');
+      // Renderizar después de la animación
+      setTimeout(() => {
+        this.renderDayTasks();
+      }, 2800);
+    }
+    else if (activityType === 'work') {
+      // Si es actividad de trabajo
+      const workActivity = {
+        text: text,
+        category: category,
+        date: formattedDate,
+        hours: parseFloat(duration),
+        hour: parseInt(hour),
+        notes: '',
+        timestamp: timestamp,
+        completed: false,
+        sourceType: 'work',
+        location: location || null,
+        urgency: urgency || 'normal',
+        url: url || null,
+        guests: guests || null
+      };
+      // Guardar en localStorage
+      const workActivities = JSON.parse(localStorage.getItem('workActivities')) || [];
+      workActivities.push(workActivity);
+      localStorage.setItem('workActivities', JSON.stringify(workActivities));
+      // Disparar evento
+      document.dispatchEvent(new CustomEvent('work-activity-added', {
+        detail: { activity: workActivity }
+      }));
+      ProgressAnimationService.showProgressAnimation(category, 'work');
+      // Renderizar después de la animación
+      setTimeout(() => {
+        this.renderDayTasks();
+      }, 2800);
+    }
     else {
       // Actividad general del calendario
       this.addNewActivity({
@@ -1178,6 +1390,7 @@ export class CalendarPanel {
       };
     });
 
+    // Obtener actividades de limpieza
     const cleaningActivities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
     const formattedCleaningActivities = cleaningActivities.map(activity => {
       const hour = activity.hour || 9;
@@ -1199,14 +1412,15 @@ export class CalendarPanel {
         sourceType: 'cleaning'
       };
     });
+    
     // Obtener actividades de deporte
     const sportActivities = JSON.parse(localStorage.getItem('sportActivities')) || [];
     const formattedSportActivities = sportActivities.map(activity => {
       const hour = activity.hour || 9;
       return {
         ...activity,
-        text: activity.text || "Activitat esportiva",
-        category: activity.category || "Esport",
+        text: activity.text || "Actividad deportiva",
+        category: activity.category || "Deporte",
         date: activity.date,
         hour: hour,
         timestamp: activity.timestamp,
@@ -1221,8 +1435,71 @@ export class CalendarPanel {
       };
     });
     
-    // NO incluir las actividades deportivas directamente, ya están en el calendario
-    // Las actividades deportivas ya se añaden como tareas de calendario en el evento sport-activity-added
+    // Obtener actividades de estudio
+    const studyActivities = JSON.parse(localStorage.getItem('studyActivities')) || [];
+    const formattedStudyActivities = studyActivities.map(activity => {
+      const hour = activity.hour || 9;
+      return {
+        ...activity,
+        text: activity.text || "Actividad de estudio",
+        category: activity.category || "Estudio",
+        date: activity.date,
+        hour: hour,
+        timestamp: activity.timestamp,
+        duration: activity.duration || activity.hours || 1,
+        completed: activity.completed || false,
+        // Campos adicionales - asegurar que se preservan
+        location: activity.location || null,
+        urgency: activity.urgency || 'normal',
+        url: activity.url || null,
+        guests: activity.guests || null,
+        sourceType: 'study'
+      };
+    });
+
+    // Obtener actividades de ocio
+    const leisureActivities = JSON.parse(localStorage.getItem('leisureActivities')) || [];
+    const formattedLeisureActivities = leisureActivities.map(activity => {
+      const hour = activity.hour || 9;
+      return {
+        ...activity,
+        text: activity.text || "Actividad de ocio",
+        category: activity.category || "Ocio",
+        date: activity.date,
+        hour: hour,
+        timestamp: activity.timestamp,
+        duration: activity.duration || activity.hours || 1,
+        completed: activity.completed || false,
+        // Campos adicionales - asegurar que se preservan
+        location: activity.location || null,
+        urgency: activity.urgency || 'normal',
+        url: activity.url || null,
+        guests: activity.guests || null,
+        sourceType: 'leisure'
+      };
+    });
+    
+    // Obtener actividades de trabajo
+    const workActivities = JSON.parse(localStorage.getItem('workActivities')) || [];
+    const formattedWorkActivities = workActivities.map(activity => {
+      const hour = activity.hour || 9;
+      return {
+        ...activity,
+        text: activity.text || "Actividad de trabajo",
+        category: activity.category || "Trabajo",
+        date: activity.date,
+        hour: hour,
+        timestamp: activity.timestamp,
+        duration: activity.duration || activity.hours || 1,
+        completed: activity.completed || false,
+        // Campos adicionales - asegurar que se preservan
+        location: activity.location || null,
+        urgency: activity.urgency || 'normal',
+        url: activity.url || null,
+        guests: activity.guests || null,
+        sourceType: 'work'
+      };
+    });
     
     // Convertir tareas del calendario para formato uniforme
     const calendarTasks = [];
@@ -1243,8 +1520,16 @@ export class CalendarPanel {
       });
     });
     
-    // Devolver ambos tipos de actividades
-    return [...formattedReadingActivities, ...formattedCleaningActivities, ...formattedSportActivities ,...calendarTasks];
+    // Devolver todos los tipos de actividades
+    return [
+      ...formattedReadingActivities, 
+      ...formattedCleaningActivities, 
+      ...formattedSportActivities,
+      ...formattedStudyActivities,
+      ...formattedLeisureActivities,
+      ...formattedWorkActivities,
+      ...calendarTasks
+    ];
   }
   
   getMonthActivitiesMap(year, month) {
@@ -1277,7 +1562,7 @@ export class CalendarPanel {
     
     // Detectar si es una categoría deportiva si no se especificó directamente
     if (!activity.sourceType) {
-      const sportCategories = ["Gimnàs", "Entrenament funcional", "Esports d'equip", "Flexibilitat", "Resistència", "Córrer", "Natació", "Ciclisme", "Altres"];
+      const sportCategories = ["Gimnasio", "Entrenamiento funcional", "Deportes de equipo", "Flexibilidad", "Resistencia", "Correr", "Natación", "Ciclismo", "Otros"];
       activity.sourceType = sportCategories.includes(activity.category) ? 'sport' : 'calendar';
     }
     
@@ -1390,6 +1675,63 @@ export class CalendarPanel {
       }
       return;
     }
+    
+    // Si es una actividad de estudio, actualizar en localStorage
+    if (activity.sourceType === 'study') {
+      const studyActivities = JSON.parse(localStorage.getItem('studyActivities')) || [];
+      const activityIndex = studyActivities.findIndex(act => 
+        act.timestamp === activity.timestamp
+      );
+      
+      if (activityIndex !== -1) {
+        studyActivities[activityIndex].completed = activity.completed;
+        localStorage.setItem('studyActivities', JSON.stringify(studyActivities));
+        
+        // Disparar evento para actualizar otras vistas
+        document.dispatchEvent(new CustomEvent('study-activity-updated', { 
+          detail: { activity: studyActivities[activityIndex] }
+        }));
+      }
+      return;
+    }
+    
+    // Si es una actividad de ocio, actualizar en localStorage
+    if (activity.sourceType === 'leisure') {
+      const leisureActivities = JSON.parse(localStorage.getItem('leisureActivities')) || [];
+      const activityIndex = leisureActivities.findIndex(act => 
+        act.timestamp === activity.timestamp
+      );
+      
+      if (activityIndex !== -1) {
+        leisureActivities[activityIndex].completed = activity.completed;
+        localStorage.setItem('leisureActivities', JSON.stringify(leisureActivities));
+        
+        // Disparar evento para actualizar otras vistas
+        document.dispatchEvent(new CustomEvent('leisure-activity-updated', { 
+          detail: { activity: leisureActivities[activityIndex] }
+        }));
+      }
+      return;
+    }
+
+    // Si es una actividad de trabajo, actualizar en localStorage
+    if (activity.sourceType === 'work') {
+      const workActivities = JSON.parse(localStorage.getItem('workActivities')) || [];
+      const activityIndex = workActivities.findIndex(act => 
+        act.timestamp === activity.timestamp
+      );
+      
+      if (activityIndex !== -1) {
+        workActivities[activityIndex].completed = activity.completed;
+        localStorage.setItem('workActivities', JSON.stringify(workActivities));
+        
+        // Disparar evento para actualizar otras vistas
+        document.dispatchEvent(new CustomEvent('work-activity-updated', { 
+          detail: { activity: workActivities[activityIndex] }
+        }));
+      }
+      return;
+    }
   
   // Para tareas de calendario
   if (activity.sourceType === 'calendar' && activity.taskId) {
@@ -1485,6 +1827,60 @@ export class CalendarPanel {
       return;
     }
     
+    // Si es una actividad de estudio, eliminarla del localStorage
+    if (activity.sourceType === 'study') {
+      const studyActivities = JSON.parse(localStorage.getItem('studyActivities')) || [];
+      const filteredActivities = studyActivities.filter(act => 
+        act.timestamp !== activity.timestamp
+      );
+      
+      // Guardar las actividades actualizadas
+      localStorage.setItem('studyActivities', JSON.stringify(filteredActivities));
+      
+      // Disparar evento para actualizar otras vistas
+      document.dispatchEvent(new CustomEvent('study-activity-deleted', { 
+        detail: { activity: activity }
+      }));
+      
+      return;
+    }
+    
+    // Si es una actividad de ocio, eliminarla del localStorage
+    if (activity.sourceType === 'leisure') {
+      const leisureActivities = JSON.parse(localStorage.getItem('leisureActivities')) || [];
+      const filteredActivities = leisureActivities.filter(act => 
+        act.timestamp !== activity.timestamp
+      );
+      
+      // Guardar las actividades actualizadas
+      localStorage.setItem('leisureActivities', JSON.stringify(filteredActivities));
+      
+      // Disparar evento para actualizar otras vistas
+      document.dispatchEvent(new CustomEvent('leisure-activity-deleted', { 
+        detail: { activity: activity }
+      }));
+      
+      return;
+    }
+    
+    // Si es una actividad de trabajo, eliminarla del localStorage
+    if (activity.sourceType === 'work') {
+      const workActivities = JSON.parse(localStorage.getItem('workActivities')) || [];
+      const filteredActivities = workActivities.filter(act => 
+        act.timestamp !== activity.timestamp
+      );
+      
+      // Guardar las actividades actualizadas
+      localStorage.setItem('workActivities', JSON.stringify(filteredActivities));
+      
+      // Disparar evento para actualizar otras vistas
+      document.dispatchEvent(new CustomEvent('work-activity-deleted', { 
+        detail: { activity: activity }
+      }));
+      
+      return;
+    }
+    
     // Para tareas del calendario continuar con el código existente
     if (activity.sourceType === 'calendar' || activity.taskId) {
       const dateKey = this.formatDateKey(new Date(activity.date));
@@ -1507,31 +1903,38 @@ export class CalendarPanel {
   
   getCategoryColor(category) {
     const colorMap = {
-      'Estudiar Factors Humans': '#f39c12',
-      'Estudiar Anàlisi Complexa': '#FF6633',
-      'Estudiar Programació': '#2ecc71',
-      'Llegir Fantasia': '#9b59b6',
-      'Llegir Assaig': '#e74c3c',
-      'Reunió': '#1abc9c',
-      'Tasca': '#3498db',
-      'Esdeveniment': '#FF9800',
-      'Neteja general': '#27ae60',
-      'Escombrar': '#8e44ad',
-      'Fregar el terra': '#2980b9',
-      'Treure la pols': '#c0392b',
-      'Netejar vidres': '#16a085',
+      'Estudiar Factores Humanos': '#f39c12',
+      'Estudiar Análisis Complejo': '#FF6633',
+      'Estudiar Programación': '#2ecc71',
+      'Estudiar Física': '#3498db',
+      'Estudiar Matemáticas': '#9b59b6',
+      'Estudiar Otros': '#e74c3c',
+      'Leer Fantasía': '#9b59b6',
+      'Leer Ensayo': '#e74c3c',
+      'Leer Novela': '#1abc9c',
+      'Leer Ciencia Ficción': '#FF9800',
+      'Leer Biografía': '#27ae60',
+      'Leer Otros': '#95a5a6',
+      'Reunión': '#1abc9c',
+      'Tarea': '#3498db',
+      'Evento': '#FF9800',
+      'Limpieza general': '#27ae60',
+      'Barrer': '#8e44ad',
+      'Fregar el suelo': '#2980b9',
+      'Quitar el polvo': '#c0392b',
+      'Limpiar vidrios': '#16a085',
       'Limpieza': '#27ae60',
-      'Altres': '#95a5a6',
-      // Categorías deportivas en catalán
-      'Gimnàs': '#d35400',
-      'Córrer': '#16a085',
-      'Esports d\'equip': '#8e44ad',
-      'Flexibilitat': '#2980b9',
-      'Resistència': '#27ae60',
-      'Natació': '#3498db',
-      'Ciclisme': '#c0392b',
-      'Entrenament funcional': '#e74c3c',
-      'Altres': '#95a5a6'
+      'Otros': '#95a5a6',
+      // Categorías deportivas en castellano
+      'Gimnasio': '#d35400',
+      'Correr': '#16a085',
+      'Deportes de equipo': '#8e44ad',
+      'Flexibilidad': '#2980b9',
+      'Resistencia': '#27ae60',
+      'Natación': '#3498db',
+      'Ciclismo': '#c0392b',
+      'Entrenamiento funcional': '#e74c3c',
+      'Otros': '#95a5a6'
     };
     
     return colorMap[category] || '#95a5a6';
@@ -1539,21 +1942,28 @@ export class CalendarPanel {
 
   getCategoryClass(category) {
     const classMap = {
-      'Estudiar Factors Humans': 'category-factors-humans',
-      'Estudiar Anàlisi Complexa': 'category-analysis-complex',
-      'Estudiar Programació': 'category-programming',
-      'Llegir Fantasia': 'category-fantasy',
-      'Llegir Assaig': 'category-essay',
-      'Reunió': 'category-meeting',
-      'Tasca': 'category-task',
-      'Esdeveniment': 'category-event',
-      'Neteja general': 'category-general-cleaning',
-      'Escombrar': 'category-sweeping',
-      'Fregar el terra': 'category-mopping',
-      'Treure la pols': 'category-dusting',
-      'Netejar vidres': 'category-window-cleaning',
+      'Estudiar Factores Humanos': 'category-factors-humans',
+      'Estudiar Análisis Complejo': 'category-analysis-complex',
+      'Estudiar Programación': 'category-programming',
+      'Estudiar Física': 'category-physics',
+      'Estudiar Matemáticas': 'category-mathematics',
+      'Estudiar Otros': 'category-study-others',
+      'Leer Fantasía': 'category-fantasy',
+      'Leer Ensayo': 'category-essay',
+      'Leer Novela': 'category-novel',
+      'Leer Ciencia Ficción': 'category-science-fiction',
+      'Leer Biografía': 'category-biography',
+      'Leer Otros': 'category-reading-others',
+      'Reunión': 'category-meeting',
+      'Tarea': 'category-task',
+      'Evento': 'category-event',
+      'Limpieza general': 'category-general-cleaning',
+      'Barrer': 'category-sweeping',
+      'Fregar el suelo': 'category-mopping',
+      'Quitar el polvo': 'category-dusting',
+      'Limpiar vidrios': 'category-window-cleaning',
       'Limpieza': 'category-cleaning',
-      'Altres': 'category-others'
+      'Otros': 'category-others'
     };
     
     return classMap[category] || null;

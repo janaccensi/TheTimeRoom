@@ -20,7 +20,7 @@ export function createComputer(scene, options = {}) {
       object.userData = {
         type: 'computer',          // Todos los meshes tienen el mismo tipo
         isInteractive: true,       // Todos son interactivos
-        title: 'Ordinador',
+        title: 'Estudis',
         activityType: 'study',
         description: 'Un ordinador potent',
         action: 'toggleComputer',   // Acción para encender/apagar,        

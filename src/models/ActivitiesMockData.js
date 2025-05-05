@@ -1,23 +1,23 @@
 /**
- * Proporciona dades simulades per diferents tipus d'activitats
+ * Proporciona datos simulados para diferentes tipos de actividades
  */
 export class ActivitiesMockData {
   
   /**
-   * Genera activitats simulades de lectura (llibres)
-   * @returns {Array} - Llista d'activitats de lectura
+   * Genera actividades simuladas de lectura (libros)
+   * @returns {Array} - Lista de actividades de lectura
    */
   static generateReadingActivities() {
     return [
-      // READING
+      // LECTURA
       {
         objectId: "book_0",
-        objectTitle: "Llegint El Senyor dels Anells",
+        objectTitle: "Leyendo El Señor de los Anillos",
         type: "reading",
-        category: "Literatura Fantàstica",
+        category: "Literatura Fantástica",
         date: "2025-04-01",
         hours: 1.5,
-        notes: "Capítol sobre la Comarca",
+        notes: "Capítulo sobre La Comarca",
         timestamp: "2025-04-01T18:00:00.000Z",
         completed: true
       },
@@ -25,18 +25,18 @@ export class ActivitiesMockData {
         objectId: "book_1",
         objectTitle: "Lectura de Dune",
         type: "reading",
-        category: "Ciència Ficció",
+        category: "Ciencia Ficción",
         date: "2025-04-02",
         hours: 2,
-        notes: "Capítols inicials",
+        notes: "Capítulos iniciales",
         timestamp: "2025-04-02T19:00:00.000Z",
         completed: true
       },
       {
         objectId: "book_2",
-        objectTitle: "Llegint una novel·la de Haruki Murakami",
+        objectTitle: "Leyendo una novela de Haruki Murakami",
         type: "reading",
-        category: "Novel·la Contemporània",
+        category: "Novela Contemporánea",
         date: "2025-04-03",
         hours: 1.2,
         notes: "Norwegian Wood",
@@ -45,45 +45,45 @@ export class ActivitiesMockData {
       },
       {
         objectId: "book_3",
-        objectTitle: "Llegint L'Odissea",
+        objectTitle: "Leyendo La Odisea",
         type: "reading",
-        category: "Literatura Clàssica",
+        category: "Literatura Clásica",
         date: "2025-04-04",
         hours: 1.7,
-        notes: "Capítol sobre Polifem",
+        notes: "Capítulo sobre Polifemo",
         timestamp: "2025-04-04T18:30:00.000Z",
         completed: true
       },
       {
         objectId: "book_4",
-        objectTitle: "Lectura sobre física quàntica",
+        objectTitle: "Lectura sobre física cuántica",
         type: "reading",
-        category: "Divulgació Científica",
+        category: "Divulgación Científica",
         date: "2025-04-05",
         hours: 1.5,
-        notes: "Capítol de 'L'univers elegant'",
+        notes: "Capítulo de 'El universo elegante'",
         timestamp: "2025-04-05T16:00:00.000Z",
         completed: true
       },
       {
         objectId: "book_5",
-        objectTitle: "Llegint un conte infantil",
+        objectTitle: "Leyendo un cuento infantil",
         type: "reading",
         category: "Literatura Infantil",
         date: "2025-04-06",
         hours: 0.8,
-        notes: "Conte per dormir",
+        notes: "Cuento para dormir",
         timestamp: "2025-04-06T20:00:00.000Z",
         completed: true
       },
       {
         objectId: "book_6",
-        objectTitle: "Lectura de 'Meditacions' de Marc Aureli",
+        objectTitle: "Lectura de 'Meditaciones' de Marco Aurelio",
         type: "reading",
-        category: "Assaig",
+        category: "Ensayo",
         date: "2025-04-07",
         hours: 1.3,
-        notes: "Reflexions filosòfiques",
+        notes: "Reflexiones filosóficas",
         timestamp: "2025-04-07T19:30:00.000Z",
         completed: true
       },
@@ -91,10 +91,10 @@ export class ActivitiesMockData {
         objectId: "book_7",
         objectTitle: "Lectura de textos diversos",
         type: "reading",
-        category: "Altres",
+        category: "Otros",
         date: "2025-04-08",
         hours: 1.1,
-        notes: "Articles online",
+        notes: "Artículos online",
         timestamp: "2025-04-08T21:00:00.000Z",
         completed: true
       }      
@@ -102,41 +102,41 @@ export class ActivitiesMockData {
   }
   
   /**
-   * Genera activitats simulades de treball (carpetes)
-   * @returns {Array} - Llista d'activitats de treball
+   * Genera actividades simuladas de trabajo (carpetas)
+   * @returns {Array} - Lista de actividades de trabajo
    */
   static generateWorkActivities() {
     return [
       {
         objectId: "folder_2_0",
-        objectTitle: "Implementar funcionalitat de pagament",
+        objectTitle: "Implementar funcionalidad de pago",
         type: "work",
-        category: "Desenvolupament",
+        category: "Desarrollo",
         date: "2025-04-01",
         hours: 4,
-        notes: "Integració amb Stripe",
+        notes: "Integración con Stripe",
         timestamp: "2025-04-01T09:00:00.000Z",
         completed: true
       },
       {
         objectId: "folder_2_1",
-        objectTitle: "Reunió amb l'equip de màrqueting",
+        objectTitle: "Reunión con el equipo de marketing",
         type: "work",
-        category: "Reunions",
+        category: "Reuniones",
         date: "2025-04-02",
         hours: 1,
-        notes: "Definició d'estratègia de llançament",
+        notes: "Definición de estrategia de lanzamiento",
         timestamp: "2025-04-02T10:00:00.000Z",
         completed: true
       },
       {
         objectId: "folder_2_2",
-        objectTitle: "Redactar document tècnic",
+        objectTitle: "Redactar documento técnico",
         type: "work",
-        category: "Documentació",
+        category: "Documentación",
         date: "2025-04-03",
         hours: 2,
-        notes: "Especificacions de l'API",
+        notes: "Especificaciones del API",
         timestamp: "2025-04-03T11:00:00.000Z",
         completed: true
       },
@@ -144,54 +144,54 @@ export class ActivitiesMockData {
         objectId: "folder_2_3",
         objectTitle: "Planificar roadmap Q2",
         type: "work",
-        category: "Planificació",
+        category: "Planificación",
         date: "2025-04-04",
         hours: 1.5,
-        notes: "Definició d'objectius i KPIs",
+        notes: "Definición de objetivos y KPIs",
         timestamp: "2025-04-04T12:00:00.000Z",
         completed: true
       },
       {
         objectId: "folder_2_4",
-        objectTitle: "Analitzar tecnologies Web3",
+        objectTitle: "Analizar tecnologías Web3",
         type: "work",
-        category: "Investigació",
+        category: "Investigación",
         date: "2025-04-05",
         hours: 3,
-        notes: "Comparació entre Layer 2",
+        notes: "Comparación entre Layer 2",
         timestamp: "2025-04-05T13:00:00.000Z",
         completed: true
       },
       {
         objectId: "folder_2_5",
-        objectTitle: "Avaluació de rendiment de l'equip",
+        objectTitle: "Evaluación de rendimiento del equipo",
         type: "work",
-        category: "Avaluació",
+        category: "Evaluación",
         date: "2025-04-06",
         hours: 2,
-        notes: "Feedback individualitzat",
+        notes: "Feedback individualizado",
         timestamp: "2025-04-06T14:00:00.000Z",
         completed: true
       },
       {
         objectId: "folder_2_6",
-        objectTitle: "Seguiment del projecte X",
+        objectTitle: "Seguimiento del proyecto X",
         type: "work",
-        category: "Gestió de Projectes",
+        category: "Gestión de Proyectos",
         date: "2025-04-07",
         hours: 1.8,
-        notes: "Revisió de milestones",
+        notes: "Revisión de hitos",
         timestamp: "2025-04-07T15:00:00.000Z",
         completed: true
       },
       {
         objectId: "folder_2_7",
-        objectTitle: "Suport tècnic a client",
+        objectTitle: "Soporte técnico a cliente",
         type: "work",
-        category: "Altres",
+        category: "Otros",
         date: "2025-04-08",
         hours: 1.2,
-        notes: "Resolució de bug urgent",
+        notes: "Resolución de bug urgente",
         timestamp: "2025-04-08T16:00:00.000Z",
         completed: true
       }
@@ -199,97 +199,97 @@ export class ActivitiesMockData {
   }
   
   /**
-   * Genera activitats simulades d'esport (peses)
-   * @returns {Array} - Llista d'activitats esportives
+   * Genera actividades simuladas de deporte (pesas)
+   * @returns {Array} - Lista de actividades deportivas
    */
   static generateSportActivities() {
     return [
-// SPORT
+// DEPORTE
 {
   objectId: "dumbbell_0",
-  objectTitle: "Sessió de força al gimnàs",
+  objectTitle: "Sesión de fuerza en el gimnasio",
   type: "sport",
-  category: "Gimnàs",
+  category: "Gimnasio",
   date: "2025-04-02",
   hours: 1.2,
-  notes: "Treball de cames i esquena amb peses",
+  notes: "Trabajo de piernas y espalda con pesas",
   timestamp: "2025-04-02T18:00:00.000Z",
   completed: true
 },
 {
   objectId: "dumbbell_1",
-  objectTitle: "Entrenament funcional a l'aire lliure",
+  objectTitle: "Entrenamiento funcional al aire libre",
   type: "sport",
-  category: "Entrenament funcional",
+  category: "Entrenamiento funcional",
   date: "2025-04-03",
   hours: 1,
-  notes: "Circuit de HIIT amb pes corporal",
+  notes: "Circuito de HIIT con peso corporal",
   timestamp: "2025-04-03T07:30:00.000Z",
   completed: true
 },
 {
   objectId: "dumbbell_2",
-  objectTitle: "Partit de futbol amb amics",
+  objectTitle: "Partido de fútbol con amigos",
   type: "sport",
-  category: "Esports d'equip",
+  category: "Deportes de equipo",
   date: "2025-04-04",
   hours: 1.5,
-  notes: "Partit setmanal, bon ritme i treball en equip",
+  notes: "Partido semanal, buen ritmo y trabajo en equipo",
   timestamp: "2025-04-04T20:00:00.000Z",
   completed: true
 },
 {
   objectId: "dumbbell_3",
-  objectTitle: "Ioga per a flexibilitat",
+  objectTitle: "Yoga para flexibilidad",
   type: "sport",
-  category: "Flexibilitat",
+  category: "Flexibilidad",
   date: "2025-04-05",
   hours: 0.8,
-  notes: "Sessió enfocada en estiraments de maluc i esquena",
+  notes: "Sesión enfocada en estiramientos de cadera y espalda",
   timestamp: "2025-04-05T09:00:00.000Z",
   completed: true
 },
 {
   objectId: "dumbbell_4",
-  objectTitle: "Sessió de bici estàtica de resistència",
+  objectTitle: "Sesión de bici estática de resistencia",
   type: "sport",
-  category: "Resistència",
+  category: "Resistencia",
   date: "2025-04-06",
   hours: 1.3,
-  notes: "Sessió moderada de 60 minuts + escalfament i estiraments",
+  notes: "Sesión moderada de 60 minutos + calentamiento y estiramientos",
   timestamp: "2025-04-06T17:00:00.000Z",
   completed: true
 },
 {
   objectId: "dumbbell_5",
-  objectTitle: "Cursa de 5 km pel parc",
+  objectTitle: "Carrera de 5 km por el parque",
   type: "sport",
-  category: "Córrer",
+  category: "Correr",
   date: "2025-04-07",
   hours: 0.9,
-  notes: "Bons temps, millora de ritme respecte la setmana passada",
+  notes: "Buenos tiempos, mejora de ritmo respecto a la semana pasada",
   timestamp: "2025-04-07T08:00:00.000Z",
   completed: true
 },
 {
   objectId: "dumbbell_6",
-  objectTitle: "Entrenament de natació estil crol",
+  objectTitle: "Entrenamiento de natación estilo crol",
   type: "sport",
-  category: "Natació",
+  category: "Natación",
   date: "2025-04-08",
   hours: 1.1,
-  notes: "Series de 50 m i tècnica de respiració",
+  notes: "Series de 50 m y técnica de respiración",
   timestamp: "2025-04-08T19:30:00.000Z",
   completed: true
 },
 {
   objectId: "dumbbell_7",
-  objectTitle: "Sortida en bicicleta de muntanya",
+  objectTitle: "Salida en bicicleta de montaña",
   type: "sport",
-  category: "Ciclisme",
+  category: "Ciclismo",
   date: "2025-04-09",
   hours: 2.5,
-  notes: "Ruta pel parc natural amb desnivell considerable",
+  notes: "Ruta por el parque natural con desnivel considerable",
   timestamp: "2025-04-09T10:00:00.000Z",
   completed: true
 },
@@ -297,10 +297,10 @@ export class ActivitiesMockData {
   objectId: "dumbbell_8",
   objectTitle: "Escalada indoor",
   type: "sport",
-  category: "Altres",
+  category: "Otros",
   date: "2025-04-10",
   hours: 1.7,
-  notes: "Pràctica de blocs de dificultat mitjana",
+  notes: "Práctica de bloques de dificultad media",
   timestamp: "2025-04-10T18:00:00.000Z",
   completed: true
 }
@@ -309,63 +309,63 @@ export class ActivitiesMockData {
   }
   
   /**
-   * Genera activitats simulades de neteja (escombra)
-   * @returns {Array} - Llista d'activitats de neteja
+   * Genera actividades simuladas de limpieza (escoba)
+   * @returns {Array} - Lista de actividades de limpieza
    */
   static generateCleaningActivities() {
     return [
       {
         objectId: "broom_0",
-        objectTitle: "Neteja general",
+        objectTitle: "Limpieza general",
         type: "cleaning",
-        category: "Manteniment llar",
+        category: "Mantenimiento hogar",
         date: "2025-04-04",
         hours: 2.0,
-        notes: "Neteja general de tot l'apartament",
+        notes: "Limpieza general de todo el apartamento",
         timestamp: "2025-04-04T10:00:00.000Z",
         completed: true
       },
       {
         objectId: "broom_1",
-        objectTitle: "Organització d'armari",
+        objectTitle: "Organización de armario",
         type: "cleaning",
-        category: "Organització",
+        category: "Organización",
         date: "2025-04-09",
         hours: 1.5,
-        notes: "Reorganització i neteja de l'armari",
+        notes: "Reorganización y limpieza del armario",
         timestamp: "2025-04-09T16:00:00.000Z",
         completed: true
       },
       {
         objectId: "broom_0",
-        objectTitle: "Neteja àrea d'estudi",
+        objectTitle: "Limpieza área de estudio",
         type: "cleaning",
-        category: "Espai de treball",
+        category: "Espacio de trabajo",
         date: "2025-04-13",
         hours: 0.75,
-        notes: "Reorganització i neteja de l'escriptori",
+        notes: "Reorganización y limpieza del escritorio",
         timestamp: "2025-04-13T11:30:00.000Z",
         completed: true
       },
       {
         objectId: "broom_1",
-        objectTitle: "Neteja profunda de cuina",
+        objectTitle: "Limpieza profunda de cocina",
         type: "cleaning",
-        category: "Cuina",
+        category: "Cocina",
         date: "2025-04-19",
         hours: 2.25,
-        notes: "Neteja a fons de la cuina i electrodomèstics",
+        notes: "Limpieza a fondo de la cocina y electrodomésticos",
         timestamp: "2025-04-19T09:45:00.000Z",
         completed: true
       },
       {
         objectId: "broom_0",
-        objectTitle: "Bugaderia i planxa",
+        objectTitle: "Lavandería y plancha",
         type: "cleaning",
-        category: "Roba",
+        category: "Ropa",
         date: "2025-04-23",
         hours: 1.25,
-        notes: "Rentar i planxar la roba de la setmana",
+        notes: "Lavar y planchar la ropa de la semana",
         timestamp: "2025-04-23T14:00:00.000Z",
         completed: true
       }
@@ -373,96 +373,96 @@ export class ActivitiesMockData {
   }
   
   /**
-   * Genera activitats simulades de lleure (TV/Micròfon)
-   * @returns {Array} - Llista d'activitats de lleure
+   * Genera actividades simuladas de ocio (TV/Micrófono)
+   * @returns {Array} - Lista de actividades de ocio
    */
   static generateLeisureActivities() {
     return [
       {
         objectId: "tv_0",
-        objectTitle: "Marató de sèrie",
+        objectTitle: "Maratón de serie",
         type: "leisure",
-        category: "Sèries",
+        category: "Series",
         date: "2025-04-01",
         hours: 3.5,
-        notes: "Marató de la nova temporada de The Office",
+        notes: "Maratón de la nueva temporada de The Office",
         timestamp: "2025-04-01T20:00:00.000Z",
         completed: true
       },
       {
         objectId: "tv_1",
-        objectTitle: "Sessió de cinema",
+        objectTitle: "Sesión de cine",
         type: "leisure",
-        category: "Pel·lícules",
+        category: "Películas",
         date: "2025-04-02",
         hours: 2,
-        notes: "Vam veure 'Dune' al cinema",
+        notes: "Vimos 'Dune' en el cine",
         timestamp: "2025-04-02T19:00:00.000Z",
         completed: true
       },
       {
         objectId: "tv_2",
-        objectTitle: "Escoltar àlbum nou",
+        objectTitle: "Escuchar álbum nuevo",
         type: "leisure",
         category: "Música",
         date: "2025-04-03",
         hours: 1,
-        notes: "Primer escolta de l'últim disc de Coldplay",
+        notes: "Primera escucha del último disco de Coldplay",
         timestamp: "2025-04-03T17:00:00.000Z",
         completed: true
       },
       {
         objectId: "tv_3",
-        objectTitle: "Partida a videojocs",
+        objectTitle: "Partida de videojuegos",
         type: "leisure",
-        category: "Videojocs",
+        category: "Videojuegos",
         date: "2025-04-04",
         hours: 2.5,
-        notes: "Sessió cooperativa a Zelda: Tears of the Kingdom",
+        notes: "Sesión cooperativa en Zelda: Tears of the Kingdom",
         timestamp: "2025-04-04T21:00:00.000Z",
         completed: true
       },
       {
         objectId: "tv_4",
-        objectTitle: "Documental sobre ciència",
+        objectTitle: "Documental sobre ciencia",
         type: "leisure",
-        category: "Documentals",
+        category: "Documentales",
         date: "2025-04-05",
         hours: 1.5,
-        notes: "Nova sèrie de Netflix sobre l'espai",
+        notes: "Nueva serie de Netflix sobre el espacio",
         timestamp: "2025-04-05T18:00:00.000Z",
         completed: true
       },
       {
         objectId: "tv_5",
-        objectTitle: "Sortida al cinema",
+        objectTitle: "Salida al cine",
         type: "leisure",
-        category: "Cinema",
+        category: "Cine",
         date: "2025-04-06",
         hours: 2,
-        notes: "Cinema amb amics per veure 'Barbie'",
+        notes: "Cine con amigos para ver 'Barbie'",
         timestamp: "2025-04-06T19:30:00.000Z",
         completed: true
       },
       {
         objectId: "tv_6",
-        objectTitle: "Llegir per plaer",
+        objectTitle: "Leer por placer",
         type: "leisure",
-        category: "Lectura per plaer",
+        category: "Lectura por placer",
         date: "2025-04-07",
         hours: 1.2,
-        notes: "Capítols finals de 'El Petit Príncep'",
+        notes: "Capítulos finales de 'El Principito'",
         timestamp: "2025-04-07T22:00:00.000Z",
         completed: true
       },
       {
         objectId: "tv_7",
-        objectTitle: "Relax amb podcast",
+        objectTitle: "Relax con podcast",
         type: "leisure",
-        category: "Altres",
+        category: "Otros",
         date: "2025-04-08",
         hours: 0.8,
-        notes: "Escoltant un podcast de filosofia al vespre",
+        notes: "Escuchando un podcast de filosofía por la tarde",
         timestamp: "2025-04-08T20:30:00.000Z",
         completed: true
       }
@@ -471,106 +471,103 @@ export class ActivitiesMockData {
   
 
   /**
-   * Genera activitats simulades d'estudi (escola/universitat)
-   * @returns {Array} - Llista d'activitats d'estudi
+   * Genera actividades simuladas de estudio (escuela/universidad)
+   * @returns {Array} - Lista de actividades de estudio
    */
-
-
-
   static generateStudyActivities() {
     return [
       {
         objectId: "study_0_0",
-        objectTitle: "Disseny Centrat en l'Usuari",
+        objectTitle: "Diseño Centrado en el Usuario",
         type: "study",
-        category: "Factors Humans",
+        category: "Factores Humanos",
         date: "2025-04-03",
         hours: 2.5,
-        notes: "Anàlisi d'interacció persona-ordinador i principis d'usabilitat",
+        notes: "Análisis de interacción persona-ordenador y principios de usabilidad",
         timestamp: "2025-04-03T14:00:00.000Z",
         completed: true
       },
       {
         objectId: "study_0_1",
-        objectTitle: "Transformades i Series",
+        objectTitle: "Transformadas y Series",
         type: "study",
-        category: "Anàlisi Complexa",
+        category: "Análisis Complejo",
         date: "2025-04-07",
         hours: 3.0,
-        notes: "Estudi de transformades de Fourier i series complexes",
+        notes: "Estudio de transformadas de Fourier y series complejas",
         timestamp: "2025-04-07T10:30:00.000Z",
         completed: true
       },
       {
         objectId: "study_0_2",
-        objectTitle: "Desenvolupament Web",
+        objectTitle: "Desarrollo Web",
         type: "study",
-        category: "Programació",
+        category: "Programación",
         date: "2025-04-11",
         hours: 2.75,
-        notes: "Pràctiques amb React i Node.js per aplicacions web",
+        notes: "Prácticas con React y Node.js para aplicaciones web",
         timestamp: "2025-04-11T15:45:00.000Z",
         completed: true
       },
       {
         objectId: "study_1_0",
-        objectTitle: "Alemany B1",
+        objectTitle: "Alemán B1",
         type: "study",
-        category: "Idiomes",
+        category: "Idiomas",
         date: "2025-04-14",
         hours: 1.5,
-        notes: "Pràctica de gramàtica i vocabulari per l'examen oficial",
+        notes: "Práctica de gramática y vocabulario para el examen oficial",
         timestamp: "2025-04-14T18:00:00.000Z",
         completed: true
       },
       {
         objectId: "study_1_1",
-        objectTitle: "Història Contemporània",
+        objectTitle: "Historia Contemporánea",
         type: "study",
-        category: "Història",
+        category: "Historia",
         date: "2025-04-18",
         hours: 2.0,
-        notes: "Revisió dels esdeveniments clau del segle XX",
+        notes: "Revisión de los acontecimientos clave del siglo XX",
         timestamp: "2025-04-18T17:15:00.000Z",
         completed: true
       },
       {
         objectId: "study_1_2",
-        objectTitle: "Física Quàntica",
+        objectTitle: "Física Cuántica",
         type: "study",
-        category: "Ciències",
+        category: "Ciencias",
         date: "2025-04-21",
         hours: 3.25,
-        notes: "Principis fonamentals i mecànica quàntica bàsica",
+        notes: "Principios fundamentales y mecánica cuántica básica",
         timestamp: "2025-04-21T09:00:00.000Z",
         completed: true
       },
       {
         objectId: "study_2_0",
-        objectTitle: "Estadística Avançada",
+        objectTitle: "Estadística Avanzada",
         type: "study",
-        category: "Matemàtiques",
+        category: "Matemáticas",
         date: "2025-04-23",
         hours: 2.5,
-        notes: "Models probabilístics i anàlisi multivariant",
+        notes: "Modelos probabilísticos y análisis multivariante",
         timestamp: "2025-04-23T13:30:00.000Z",
         completed: true
       },
       {
         objectId: "study_2_1",
-        objectTitle: "Tècniques d'Estudi",
+        objectTitle: "Técnicas de Estudio",
         type: "study",
-        category: "Altres",
+        category: "Otros",
         date: "2025-04-25",
         hours: 1.0,
-        notes: "Millora de metodologies d'aprenentatge i gestió del temps",
+        notes: "Mejora de metodologías de aprendizaje y gestión del tiempo",
         timestamp: "2025-04-25T16:00:00.000Z",
         completed: true
       }
     ];
   }
   /**
-   * Afegeix totes les activitats simulades al localStorage
+   * Añade todas las actividades simuladas al localStorage
    */
   static addAllMockActivities() {
     const readingActivities = this.generateReadingActivities();
@@ -580,7 +577,7 @@ export class ActivitiesMockData {
     const leisureActivities = this.generateLeisureActivities();
     const studyActivities = this.generateStudyActivities();
     
-    // Guardem cada tipus d'activitat al seu propi espai
+    // Guardamos cada tipo de actividad en su propio espacio
     localStorage.setItem('readingActivities', JSON.stringify(readingActivities));
     localStorage.setItem('workActivities', JSON.stringify(workActivities));
     localStorage.setItem('sportActivities', JSON.stringify(sportActivities));
@@ -588,7 +585,7 @@ export class ActivitiesMockData {
     localStorage.setItem('leisureActivities', JSON.stringify(leisureActivities));
     localStorage.setItem('studyActivities', JSON.stringify(studyActivities));
     
-    // També guardem totes les activitats juntes a userActivities per compatibilitat
+    // También guardamos todas las actividades juntas en userActivities para compatibilidad
     const allActivities = [
       ...readingActivities,
       ...workActivities,
@@ -600,20 +597,20 @@ export class ActivitiesMockData {
     
     localStorage.setItem('userActivities', JSON.stringify(allActivities));
     
-    console.log(`S'han afegit ${allActivities.length} activitats simulades: 
+    console.log(`Se han añadido ${allActivities.length} actividades simuladas: 
       - ${readingActivities.length} lectura
-      - ${workActivities.length} treball
-      - ${sportActivities.length} esport
-      - ${cleaningActivities.length} neteja
-      - ${leisureActivities.length} lleure
-      - ${studyActivities.length} estudi`
+      - ${workActivities.length} trabajo
+      - ${sportActivities.length} deporte
+      - ${cleaningActivities.length} limpieza
+      - ${leisureActivities.length} ocio
+      - ${studyActivities.length} estudio`
     );
     
     return allActivities;
   }
   
   /**
-   * Comprova si hi ha activitats i afegeix simulades si no n'hi ha
+   * Comprueba si hay actividades y añade simuladas si no las hay
    */
   static ensureMockActivitiesExist() {
     const existingActivities = JSON.parse(localStorage.getItem('userActivities')) || [];
@@ -621,7 +618,7 @@ export class ActivitiesMockData {
     if (existingActivities.length === 0) {
       return this.addAllMockActivities();
     } else {
-      console.log(`Ja existeixen ${existingActivities.length} activitats, no s'afegiran simulades`);
+      console.log(`Ya existen ${existingActivities.length} actividades, no se añadirán simuladas`);
       return existingActivities;
     }
   }

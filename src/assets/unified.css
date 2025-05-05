@@ -78,7 +78,31 @@ html, body {
   z-index: 1000;
   justify-content: center;
   align-items: center;
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif) !important;
+}
+
+/* Asegurar fuente unificada en todos los formularios y paneles */
+.modal-content,
+.activity-form,
+.form-group,
+input,
+select,
+textarea,
+.stats-modal,
+.category-stats,
+.categories-container,
+.category-item,
+.day-header,
+.time-slot,
+.day-task-item,
+.cleaning-type-item,
+.cleaning-container,
+#book-title,
+#form-title,
+#form-book-title,
+#form-dumbbell-title,
+#form-activity-type {
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif) !important;
 }
 
 .activity-modal.hidden,
@@ -832,16 +856,6 @@ input:focus {
 
 .day-tasks .task-item.task-completed {
   position: relative;
-}
-
-/* Mantener exactamente los colores originales */
-.day-tasks .task-item.task-completed.categoria-1,
-.day-tasks .task-item.task-completed.categoria-2,
-.day-tasks .task-item.task-completed.categoria-3,
-.day-tasks .task-item.task-completed.categoria-4,
-.day-tasks .task-item.task-completed.categoria-5,
-.day-tasks .task-item.task-completed.categoria-6 {
-  /* No cambiar nada del color */
 }
 
 /* Agregar indicador de tarea completada en lugar de cambiar color */
