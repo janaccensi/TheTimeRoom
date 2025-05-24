@@ -312,7 +312,7 @@ export class ActivitiesMockData {
   date: "2025-05-18",
   hours: 2.0,
   notes: "Vuelta por el parque de Vallparadís, buen ritmo",
-  timestamp: "2025-04-10T11:00:00.000Z",
+  timestamp: "2025-05-18T11:00:00.000Z",
   completed: false
 }
 
@@ -585,7 +585,7 @@ export class ActivitiesMockData {
         date: "2025-05-18",
         hours: 3.0,
         notes: "Repaso de las leyes de Newton y sus aplicaciones",
-        timestamp: "2025-04-25T17:00:00.000Z",
+        timestamp: "2025-05-18T17:00:00.000Z",
         completed: false
       }
       
