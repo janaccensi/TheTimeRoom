@@ -303,7 +303,19 @@ export class ActivitiesMockData {
   notes: "Práctica de bloques de dificultad media",
   timestamp: "2025-04-10T18:00:00.000Z",
   completed: true
+},
+{
+  objectId: "dumbbell_9",
+  objectTitle: "Vuelta por Vallparadís",
+  type: "sport",
+  category: "Otros",
+  date: "2025-05-18",
+  hours: 2.0,
+  notes: "Vuelta por el parque de Vallparadís, buen ritmo",
+  timestamp: "2025-04-10T11:00:00.000Z",
+  completed: false
 }
+
     ];
 
   }
@@ -487,6 +499,7 @@ export class ActivitiesMockData {
         timestamp: "2025-04-03T14:00:00.000Z",
         completed: true
       },
+
       {
         objectId: "study_0_1",
         objectTitle: "Transformadas y Series",
@@ -563,7 +576,19 @@ export class ActivitiesMockData {
         notes: "Mejora de metodologías de aprendizaje y gestión del tiempo",
         timestamp: "2025-04-25T16:00:00.000Z",
         completed: true
+      },
+      {
+        objectId: "study_2_2",
+        objectTitle: "Estudiar tema 4 de física",
+        type: "study",
+        category: "Otros",
+        date: "2025-05-18",
+        hours: 3.0,
+        notes: "Repaso de las leyes de Newton y sus aplicaciones",
+        timestamp: "2025-04-25T17:00:00.000Z",
+        completed: false
       }
+      
     ];
   }
   /**
