@@ -1371,21 +1371,26 @@ export class CalendarPanel {
     
     // Convertir actividades de lectura al formato de calendario sin alterar su estructura original
     const formattedReadingActivities = readingActivities.map(activity => {
-      const hour = activity.hour || 9;
+      // Extraer la hora del timestamp si no está especificada directamente
+      let hour = activity.hour;
+      if (!hour && activity.timestamp) {
+        const timestampDate = new Date(activity.timestamp);
+        hour = timestampDate.getHours();
+      }
+      // Si aún no hay hora, usar 9 como fallback
+      hour = hour || 9;
+      
       return {
-        ...activity, // Mantener todos los campos originales
-        // Solo añadir campos necesarios para la visualización si no existen
+        ...activity,
         text: activity.bookTitle || activity.notes || activity.category,
         category: activity.category || 'Lectura',
         date: activity.date,
         hour: hour,
         timestamp: activity.timestamp || new Date().toISOString(),
-        // Campos adicionales - asegurar que se preservan
         location: activity.location || null,
         urgency: activity.urgency || 'normal',
         url: activity.url || null,
         guests: activity.guests || null,
-        // Usar un ID para diferenciar el origen
         sourceType: 'reading'
       };
     });
@@ -1393,7 +1398,13 @@ export class CalendarPanel {
     // Obtener actividades de limpieza
     const cleaningActivities = JSON.parse(localStorage.getItem('cleaningActivities')) || [];
     const formattedCleaningActivities = cleaningActivities.map(activity => {
-      const hour = activity.hour || 9;
+      // Extraer la hora del timestamp
+      let hour = activity.hour;
+      if (!hour && activity.timestamp) {
+        const timestampDate = new Date(activity.timestamp);
+        hour = timestampDate.getHours();
+      }
+      hour = hour || 9;
 
       return {
         ...activity,
@@ -1404,7 +1415,6 @@ export class CalendarPanel {
         timestamp: activity.timestamp,
         duration: activity.hours,
         completed: activity.completed || true,
-        // Campos adicionales - asegurar que se preservan
         location: activity.location || null,
         urgency: activity.urgency || 'normal',
         url: activity.url || null,
@@ -1416,7 +1426,14 @@ export class CalendarPanel {
     // Obtener actividades de deporte
     const sportActivities = JSON.parse(localStorage.getItem('sportActivities')) || [];
     const formattedSportActivities = sportActivities.map(activity => {
-      const hour = activity.hour || 9;
+      // Extraer la hora del timestamp
+      let hour = activity.hour;
+      if (!hour && activity.timestamp) {
+        const timestampDate = new Date(activity.timestamp);
+        hour = timestampDate.getHours();
+      }
+      hour = hour || 9;
+      
       return {
         ...activity,
         text: activity.text || "Actividad deportiva",
@@ -1426,7 +1443,6 @@ export class CalendarPanel {
         timestamp: activity.timestamp,
         duration: activity.duration || 1,
         completed: activity.completed || false,
-        // Campos adicionales - asegurar que se preservan
         location: activity.location || null,
         urgency: activity.urgency || 'normal',
         url: activity.url || null,
@@ -1438,7 +1454,14 @@ export class CalendarPanel {
     // Obtener actividades de estudio
     const studyActivities = JSON.parse(localStorage.getItem('studyActivities')) || [];
     const formattedStudyActivities = studyActivities.map(activity => {
-      const hour = activity.hour || 9;
+      // Extraer la hora del timestamp
+      let hour = activity.hour;
+      if (!hour && activity.timestamp) {
+        const timestampDate = new Date(activity.timestamp);
+        hour = timestampDate.getHours();
+      }
+      hour = hour || 9;
+      
       return {
         ...activity,
         text: activity.text || "Actividad de estudio",
@@ -1448,7 +1471,6 @@ export class CalendarPanel {
         timestamp: activity.timestamp,
         duration: activity.duration || activity.hours || 1,
         completed: activity.completed || false,
-        // Campos adicionales - asegurar que se preservan
         location: activity.location || null,
         urgency: activity.urgency || 'normal',
         url: activity.url || null,
@@ -1460,7 +1482,14 @@ export class CalendarPanel {
     // Obtener actividades de ocio
     const leisureActivities = JSON.parse(localStorage.getItem('leisureActivities')) || [];
     const formattedLeisureActivities = leisureActivities.map(activity => {
-      const hour = activity.hour || 9;
+      // Extraer la hora del timestamp
+      let hour = activity.hour;
+      if (!hour && activity.timestamp) {
+        const timestampDate = new Date(activity.timestamp);
+        hour = timestampDate.getHours();
+      }
+      hour = hour || 9;
+      
       return {
         ...activity,
         text: activity.text || "Actividad de ocio",
@@ -1470,7 +1499,6 @@ export class CalendarPanel {
         timestamp: activity.timestamp,
         duration: activity.duration || activity.hours || 1,
         completed: activity.completed || false,
-        // Campos adicionales - asegurar que se preservan
         location: activity.location || null,
         urgency: activity.urgency || 'normal',
         url: activity.url || null,
@@ -1482,7 +1510,14 @@ export class CalendarPanel {
     // Obtener actividades de trabajo
     const workActivities = JSON.parse(localStorage.getItem('workActivities')) || [];
     const formattedWorkActivities = workActivities.map(activity => {
-      const hour = activity.hour || 9;
+      // Extraer la hora del timestamp
+      let hour = activity.hour;
+      if (!hour && activity.timestamp) {
+        const timestampDate = new Date(activity.timestamp);
+        hour = timestampDate.getHours();
+      }
+      hour = hour || 9;
+      
       return {
         ...activity,
         text: activity.text || "Actividad de trabajo",
@@ -1492,7 +1527,6 @@ export class CalendarPanel {
         timestamp: activity.timestamp,
         duration: activity.duration || activity.hours || 1,
         completed: activity.completed || false,
-        // Campos adicionales - asegurar que se preservan
         location: activity.location || null,
         urgency: activity.urgency || 'normal',
         url: activity.url || null,
@@ -1733,7 +1767,7 @@ export class CalendarPanel {
       return;
     }
   
-  // Para tareas de calendario
+  // Para tareas del calendario
   if (activity.sourceType === 'calendar' && activity.taskId) {
     const dateKey = this.formatDateKey(new Date(activity.date));
     if (this.tasks[dateKey]) {
