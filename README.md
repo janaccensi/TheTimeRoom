@@ -1,6 +1,6 @@
 # TheTimeRoom
 
-![TheTimeRoom]()
+![TheTimeRoom.png]()
 
 ## Project Setup
 
